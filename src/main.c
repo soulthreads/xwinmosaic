@@ -484,5 +484,6 @@ Options:\n\
   -i <int>          Size of window icons (default: 16)\n\
   -f \"font name\"    Which font to use for displaying widgets. (default: Sans)\n\
   -s <int>          Font size (default: 10)\n\
+\nTip: start typing to search for required window.\n\
 ");
 }
