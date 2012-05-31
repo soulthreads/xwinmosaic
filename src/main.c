@@ -401,7 +401,7 @@ static void refilter (GtkEditable *entry, gpointer data)
       int wn_size = strlen (wname_cmp);
       gchar *p1 = search_for;
       gchar *p2 = wname_cmp;
-      gboolean found;
+      gboolean found = FALSE;
       while (p1 < search_for + s_size) {
 	gunichar c1 = g_utf8_get_char (p1);
 	found = FALSE;

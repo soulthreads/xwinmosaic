@@ -221,7 +221,7 @@ GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
   GdkPixbuf *pixmap = NULL;
 
   /* get the _NET_WM_ICON property */
-  gulong nitems;
+  gint nitems = 0;
   gulong *data = (gulong *) property (win, a_NET_WM_ICON, XA_CARDINAL, &nitems);
   if (data) {
     gulong *pdata = data;

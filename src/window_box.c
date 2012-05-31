@@ -256,13 +256,11 @@ static void window_box_get_property (GObject *gobject,
 
 static void window_box_realize (GtkWidget *widget)
 {
-  WindowBox *box;
   GdkWindowAttr attributes;
   gint attributes_mask;
 
   g_return_if_fail (WINDOW_IS_BOX (widget));
 
-  box = WINDOW_BOX (widget);
   gtk_widget_set_realized (widget, TRUE);
 
   attributes.window_type = GDK_WINDOW_CHILD;
@@ -299,15 +297,11 @@ static void window_box_size_request (GtkWidget * widget, GtkRequisition * requis
 
 static void window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation)
 {
-  WindowBox *box;
-
   g_return_if_fail (WINDOW_IS_BOX (widget));
   g_return_if_fail (allocation != NULL);
 
   widget->allocation = *allocation;
   if (gtk_widget_get_realized (widget)) {
-    box = WINDOW_BOX (widget);
-
     gdk_window_move_resize (widget->window,
 			    allocation->x, allocation->y,
 			    allocation->width, allocation->height);
