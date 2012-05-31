@@ -134,6 +134,7 @@ window_box_init (WindowBox *box)
   box->icon_pixbuf = NULL;
   box->icon_surface = NULL;
   box->icon_context = NULL;
+  box->font_name = NULL;
 }
 
 static GObject*	window_box_constructor (GType gtype,
@@ -152,6 +153,8 @@ static GObject*	window_box_constructor (GType gtype,
     box->xclass = get_window_class (box->xwindow);
     box->desktop = get_window_desktop (box->xwindow);
   }
+  box->font_name = g_strdup ("Sans");
+  box->font_size = 10;
   box->show_desktop = FALSE;
   box->has_icon = FALSE;
   box->colorize = TRUE;
@@ -181,6 +184,7 @@ window_box_dispose (GObject *gobject)
     box->name = NULL;
     g_free (box->xclass);
     box->xclass = NULL;
+
     if (box->icon_context) {
       cairo_destroy (box->icon_context);
       cairo_surface_destroy (box->icon_surface);
@@ -190,6 +194,10 @@ window_box_dispose (GObject *gobject)
     if (box->icon_pixbuf)
       g_object_unref (box->icon_pixbuf);
     box->icon_pixbuf = NULL;
+
+    if (box->font_name)
+      g_free (box->font_name);
+    box->font_name = NULL;
   }
   G_OBJECT_CLASS (window_box_parent_class)->dispose (gobject);
 }
@@ -457,10 +465,10 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
     cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
   else
     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
-  cairo_select_font_face (cr, "Sans",
+  cairo_select_font_face (cr, box->font_name,
 			  CAIRO_FONT_SLANT_NORMAL,
 			  CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (cr, 10);
+  cairo_set_font_size (cr, box->font_size);
   cairo_text_extents (cr, box->name, &extents);
 
 
@@ -697,6 +705,17 @@ void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop)
   g_return_if_fail (WINDOW_IS_BOX (box));
 
   box->show_desktop = show_desktop;
+}
+
+void window_box_set_font (WindowBox *box, const gchar *font, guint size)
+{
+  g_return_if_fail (WINDOW_IS_BOX (box));
+
+  if (box->font_name)
+    g_free (box->font_name);
+
+  box->font_name = g_strdup (font);
+  box->font_size = size;
 }
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)

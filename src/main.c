@@ -59,7 +59,8 @@ int main (int argc, char **argv)
   options.show_icons = TRUE;
   options.show_desktop = TRUE;
   options.icon_size = 16;
-  while ((opt = getopt (argc, argv, "hCIDW:H:i:")) != -1) {
+  options.font_size = 10;
+  while ((opt = getopt (argc, argv, "hCIDW:H:i:f:s:")) != -1) {
     switch (opt) {
     case 'h':
       show_help ();
@@ -82,11 +83,19 @@ int main (int argc, char **argv)
     case 'i':
       options.icon_size = atoi (optarg);
       break;
+    case 'f':
+      options.font_name = g_strdup (optarg);
+      break;
+    case 's':
+      options.font_size = atoi (optarg);
+      break;
     default:
       show_help ();
       return 1;
     }
   }
+  if (!options.font_name)
+    options.font_name = g_strdup ("Sans");
 
   atoms_init ();
 
@@ -268,6 +277,7 @@ static void update_window_list ()
     boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
       boxes[i] = window_box_new_with_xwindow (wins[i]);
+      window_box_set_font (WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
       window_box_set_colorize (WINDOW_BOX (boxes[i]), options.colorize);
       window_box_set_show_desktop (WINDOW_BOX (boxes[i]), options.show_desktop);
       if (options.show_icons)
@@ -466,13 +476,15 @@ static void show_help ()
 {
   fprintf (stderr, "Usage: xwinmosaic [OPTIONS]\n\
 Actions:\n\
-  -h          Show this help\n\
-  -C          Turns off box colorizing\n\
-  -I          Turns off showing icons\n\
-  -D          Turns off showing desktop number\n\
+  -h                Show this help\n\
+  -C                Turns off box colorizing\n\
+  -I                Turns off showing icons\n\
+  -D                Turns off showing desktop number\n\
 \n\
-  -W <int>    Width of the boxes (default: 200)\n\
-  -H <int>    Height of the boxes (default: 40)\n\
-  -i <int>    Size of window icons (default: 16)\n\
+  -W <int>          Width of the boxes (default: 200)\n\
+  -H <int>          Height of the boxes (default: 40)\n\
+  -i <int>          Size of window icons (default: 16)\n\
+  -f \"font name\"    Which font to use for displaying widgets. (default: Sans)\n\
+  -s <int>          Font size (default: 10)\n\
 ");
 }

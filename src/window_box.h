@@ -42,6 +42,9 @@ struct _WindowBox
   cairo_t *icon_context;
   cairo_surface_t *icon_surface;
 
+  gchar *font_name;
+  guint font_size;
+
   guint x, y, width, height;
 };
 
@@ -74,6 +77,7 @@ void window_box_update_xclass (WindowBox *box);
 void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height);
 void window_box_set_colorize (WindowBox *box, gboolean colorize);
 void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop);
+void window_box_set_font (WindowBox *box, const gchar *font, guint size);
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height);
 G_END_DECLS
