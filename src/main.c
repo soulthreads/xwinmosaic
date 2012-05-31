@@ -12,6 +12,7 @@
 #include "window_box.h"
 
 static GtkWidget *window;
+static Window myown_window;
 static Window active_window; // For displaying it first in windows list.
 static Window *wins;
 static int wsize;
@@ -118,7 +119,6 @@ int main (int argc, char **argv)
 					 a_NET_ACTIVE_WINDOW,
 					 XA_WINDOW,
 					 NULL));
-  update_window_list ();
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
@@ -140,8 +140,6 @@ int main (int argc, char **argv)
 /**/
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
-
-  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, options.box_width, options.box_height);
 
   search = gtk_entry_new ();
   gtk_entry_set_width_chars (GTK_ENTRY (search), 20);
@@ -165,18 +163,22 @@ int main (int argc, char **argv)
   gtk_widget_show_all (window);
   gtk_widget_hide (search);
 
+  GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
+  myown_window = GDK_WINDOW_XID (gdk_window);
+
+  update_window_list ();
+  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, options.box_width, options.box_height);
+
+  // Window wil be shown on all desktops (and so hidden in windows list)
+  unsigned int desk = 0xFFFFFFFF; // -1
+  XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
+		  32, PropModeReplace, (unsigned char *)&desk, 1);
+
   // Get PropertyNotify events from root window.
   XSelectInput (gdk_x11_get_default_xdisplay (),
 		gdk_x11_get_default_root_xwindow (),
 		PropertyChangeMask);
   gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
-
-  // Window wil be shown on all desktops (and so hidden in windows list)
-  GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
-  Window mwin = GDK_WINDOW_XID (gdk_window);
-  unsigned int desk = 0xFFFFFFFF; // -1
-  XChangeProperty(gdk_x11_get_default_xdisplay (), mwin, a_NET_WM_DESKTOP, XA_CARDINAL,
-		  32, PropModeReplace, (unsigned char *)&desk, 1);
 
   gtk_main ();
 
@@ -266,7 +268,7 @@ static void update_window_list ()
     free (boxes);
     XFree (wins);
   }
-  wins = sorted_windows_list (&active_window, &wsize);
+  wins = sorted_windows_list (&myown_window, &active_window, &wsize);
   if (wins) {
     // Get PropertyNotify events from each relevant window.
     for (int i = 0; i < wsize; i++)

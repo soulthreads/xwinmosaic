@@ -32,7 +32,7 @@ int wm_supports_ewmh ();
 char* get_window_name (Window win);
 char* get_window_class (Window win);
 int get_window_desktop (Window win);
-Window* sorted_windows_list (Window *active_win, int *nitems);
+Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems);
 void switch_to_window (Window win);
 
 GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height);

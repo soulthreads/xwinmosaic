@@ -132,7 +132,7 @@ int get_window_desktop (Window win)
 }
 
 // Returns a list of windows (except panels and other windows with desktop=-1)
-Window* sorted_windows_list (Window *active_win, int *nitems)
+Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 {
   Window root_win = (Window)gdk_x11_get_default_root_xwindow ();
   int pre_size = 0;
@@ -142,14 +142,14 @@ Window* sorted_windows_list (Window *active_win, int *nitems)
     int size = 0;
     // Do not show panels and all-desktop applications in list.
     for (int i = 0; i < pre_size; i++)
-      if (get_window_desktop (pre_win_list[i]) != -1)
+      if ((get_window_desktop (pre_win_list[i]) != -1) && (pre_win_list[i] != *myown))
 	size++;
 
     Window *win_list = (Window *) malloc (size * sizeof (Window));
     // That's actually kinda stupid…
     int offset = 0;
     for (int i = 0; i < pre_size; i++) {
-      if (get_window_desktop (pre_win_list[i]) == -1) {
+      if ((get_window_desktop (pre_win_list[i]) == -1) || (pre_win_list[i] == *myown)) {
 	offset++;
 	continue;
       }
