@@ -474,8 +474,9 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
 
 static void show_help ()
 {
-  fprintf (stderr, "Usage: xwinmosaic [OPTIONS]\n\
-Actions:\n\
+  fprintf (stderr, "\
+Usage: xwinmosaic [OPTIONS]\n\
+Options:\n\
   -h                Show this help\n\
   -C                Turns off box colorizing\n\
   -I                Turns off showing icons\n\

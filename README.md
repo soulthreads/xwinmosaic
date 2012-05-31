@@ -14,7 +14,7 @@ Start typing to search for required window.
 ### Usage:
 
 	xwinmosaic [OPTIONS]
-	Actions:
+	Options:
 		-h                Show this help
 		-C                Turns off box colorizing
 		-I                Turns off showing icons
