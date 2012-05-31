@@ -1,10 +1,10 @@
 XWinMosaic
 ==========
 
-EWMH-compatible window switcher that arranges them in a sort-of colorful mosaic
--------------------------------------------------------------------------------
+X11 window switcher that draws windows list as colour mosaic
+------------------------------------------------------------
 
-Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html), written in C + GTK+2.
+Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html), but written in C + GTK+2, uses nice-looking colours and has some set of helpful features.
 
 ![xwinmosaic's screenshot](http://i.imgur.com/UoMDO.png "Screenshot")
 
@@ -15,17 +15,20 @@ Start typing to search for required window.
 
 	xwinmosaic [OPTIONS]
 	Actions:
-		-h          Show this help
-		-C          Turns off box colorizing
-		-I          Turns off showing icons
-		-D          Turns off showing desktop number
+		-h                Show this help
+		-C                Turns off box colorizing
+		-I                Turns off showing icons
+		-D                Turns off showing desktop number
 
-		-W <int>    Width of the boxes (default: 200)
-		-H <int>    Height of the boxes (default: 40)
-		-i <int>    Size of window icons (default: 16)
+		-W <int>          Width of the boxes (default: 200)
+		-H <int>          Height of the boxes (default: 40)
+		-i <int>          Size of window icons (default: 16)
+		-f "font name"    Which font to use for displaying widgets. (default: Sans)
+		-s <int>          Font size (default: 10)
 
 ### Dependencies:
 
+* [EWMH compatible Window Manager](http://en.wikipedia.org/wiki/Extended_Window_Manager_Hints)
 * GTK+2
 * CMake
 
