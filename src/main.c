@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
 #include <inttypes.h>
 #include <string.h>
 #include <X11/Xlib.h>
@@ -9,40 +11,82 @@
 #include "x_interaction.h"
 #include "window_box.h"
 
-guint box_width = 200;
-guint box_height = 40;
+static GtkWidget *window;
+static Window active_window; // For displaying it first in windows list.
+static Window *wins;
+static int wsize;
+static GtkWidget **boxes;
+static GtkWidget *layout;
+static GtkWidget *search;
+static Window *filtered_wins;
+static GtkWidget **filtered_boxes;
+static int filtered_size;
+static int width, height;
+static GdkDrawable *window_shape_bitmap;
 
-guint icon_size = 20;
+static struct {
+  guint box_width;
+  guint box_height;
+  gboolean colorize;
+  gboolean show_icons;
+  gboolean show_desktop;
+  guint icon_size;
+  gchar *font_name;
+  guint font_size;
+} options;
 
-GtkWidget *window;
-Window active_window; // For displaying it first in windows list.
-Window *wins;
-int wsize;
-GtkWidget **boxes;
-GtkWidget *layout;
-GtkWidget *search;
-Window *filtered_wins;
-GtkWidget **filtered_boxes;
-int filtered_size;
-
-int width, height;
-GdkDrawable *window_shape_bitmap;
-
-GdkRectangle current_monitor_size ();
-void draw_mosaic (GtkLayout *where,
+static GdkRectangle current_monitor_size ();
+static void draw_mosaic (GtkLayout *where,
 		  GtkWidget **widgets, int rsize,
 		  int focus_on,
 		  int rwidth, int rheight);
-void on_rect_click (GtkWidget *widget, gpointer data);
-void update_window_list ();
-gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data);
-GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
-void refilter (GtkEditable *editable, gpointer data);
-void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
+static void on_rect_click (GtkWidget *widget, gpointer data);
+static void update_window_list ();
+static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data);
+static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
+static void refilter (GtkEditable *editable, gpointer data);
+static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
+static void show_help ();
 
 int main (int argc, char **argv)
 {
   gtk_init (&argc, &argv);
+
+  int opt;
+  options.box_width = 200;
+  options.box_height = 40;
+  options.colorize = TRUE;
+  options.show_icons = TRUE;
+  options.show_desktop = TRUE;
+  options.icon_size = 16;
+  while ((opt = getopt (argc, argv, "hCIDW:H:i:")) != -1) {
+    switch (opt) {
+    case 'h':
+      show_help ();
+      return 0;
+    case 'C':
+      options.colorize = FALSE;
+      break;
+    case 'I':
+      options.show_icons = FALSE;
+      break;
+    case 'D':
+      options.show_desktop = FALSE;
+      break;
+    case 'W':
+      options.box_width = atoi (optarg);
+      break;
+    case 'H':
+      options.box_height = atoi (optarg);
+      break;
+    case 'i':
+      options.icon_size = atoi (optarg);
+      break;
+    default:
+      show_help ();
+      return 1;
+    }
+  }
 
   atoms_init ();
 
@@ -88,7 +132,7 @@ int main (int argc, char **argv)
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
 
-  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, box_width, box_height);
+  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, options.box_width, options.box_height);
 
   search = gtk_entry_new ();
   gtk_entry_set_width_chars (GTK_ENTRY (search), 20);
@@ -96,7 +140,7 @@ int main (int argc, char **argv)
   GtkRequisition s_req;
   gtk_widget_size_request (search, &s_req);
   gtk_layout_put (GTK_LAYOUT (layout), search,
-		  (width - s_req.width)/2, height - s_req.height - box_height);
+		  (width - s_req.width)/2, height - s_req.height - options.box_height);
   g_signal_connect (G_OBJECT (search), "changed",
 		    G_CALLBACK (refilter), NULL);
 
@@ -132,7 +176,7 @@ int main (int argc, char **argv)
   return 0;
 }
 
-GdkRectangle current_monitor_size ()
+static GdkRectangle current_monitor_size ()
 {
   // Where is the pointer now?
   int x, y;
@@ -144,7 +188,7 @@ GdkRectangle current_monitor_size ()
   return rect;
 }
 
-void draw_mosaic (GtkLayout *where,
+static void draw_mosaic (GtkLayout *where,
 		  GtkWidget **widgets, int rsize,
 		  int focus_on,
 		  int rwidth, int rheight)
@@ -197,14 +241,14 @@ void draw_mosaic (GtkLayout *where,
   gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
 }
 
-void on_rect_click (GtkWidget *widget, gpointer data)
+static void on_rect_click (GtkWidget *widget, gpointer data)
 {
   Window *win = (Window *) data;
   switch_to_window (*win);
   gtk_main_quit ();
 }
 
-void update_window_list ()
+static void update_window_list ()
 {
   if (wsize) {
     for (int i = 0; i < wsize; i++) {
@@ -224,14 +268,17 @@ void update_window_list ()
     boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
       boxes[i] = window_box_new_with_xwindow (wins[i]);
-      window_box_setup_icon (WINDOW_BOX(boxes[i]), icon_size, icon_size);
+      window_box_set_colorize (WINDOW_BOX (boxes[i]), options.colorize);
+      window_box_set_show_desktop (WINDOW_BOX (boxes[i]), options.show_desktop);
+      if (options.show_icons)
+	window_box_setup_icon (WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), &(WINDOW_BOX(boxes [i])->xwindow));
     }
   }
 }
 
-gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data)
+static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
   switch (event->keyval) {
   case GDK_KEY_Escape:
@@ -268,7 +315,7 @@ gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data)
   return FALSE;
 }
 
-GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
+static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 {
   if (xevent->type == PropertyNotify) {
     Atom atom = xevent->xproperty.atom;
@@ -292,9 +339,11 @@ GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 	update_window_list ();
 	if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
 	  refilter (GTK_EDITABLE (search), NULL);
-	  draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, focus_on, box_width, box_height);
+	  draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, focus_on,
+		       options.box_width, options.box_height);
 	} else {
-	  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, focus_on, box_width, box_height);
+	  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, focus_on,
+		       options.box_width, options.box_height);
 	}
       }
     } else {
@@ -306,11 +355,11 @@ GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 	    break;
 	  }
       }
-      if (atom == a_NET_WM_ICON) {
+      if (atom == a_NET_WM_ICON && options.show_icons) {
 	// Search for appropriate widget to update icon.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    window_box_setup_icon (WINDOW_BOX (boxes[i]), icon_size, icon_size);
+	    window_box_setup_icon (WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
 	    break;
 	  }
       }
@@ -320,7 +369,7 @@ GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
   return GDK_FILTER_CONTINUE;
 }
 
-void refilter (GtkEditable *entry, gpointer data)
+static void refilter (GtkEditable *entry, gpointer data)
 {
   if (filtered_size) {
     XFree (filtered_wins);
@@ -367,14 +416,16 @@ void refilter (GtkEditable *entry, gpointer data)
       g_free (wname_cmp);
       free (wname);
     }
-    draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0, box_width, box_height);
+    draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
+		 options.box_width, options.box_height);
   } else {
-    draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, box_width, box_height);
+    draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
+		 options.box_width, options.box_height);
   }
   g_free (search_for);
 }
 
-void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
+static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
 {
   cairo_t *cr;
 
@@ -387,6 +438,7 @@ void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
   cairo_restore (cr);
 
   cairo_set_source_rgb (cr, 1, 1, 1);
+  // Show each window_box.
   for (int i = 0; i < size; i++) {
     WindowBox *box = WINDOW_BOX (wdgts[i]);
     cairo_rectangle (cr,
@@ -395,14 +447,32 @@ void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
     cairo_fill (cr);
   }
 
-  if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
-    cairo_rectangle (cr,
-		     search->allocation.x,
-		     search->allocation.y,
-		     search->allocation.width,
-		     search->allocation.height);
-    cairo_fill (cr);
+  // show search entry if it is active.
+  if (search) {
+    if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
+      cairo_rectangle (cr,
+		       search->allocation.x,
+		       search->allocation.y,
+		       search->allocation.width,
+		       search->allocation.height);
+      cairo_fill (cr);
+    }
   }
 
   cairo_destroy (cr);
+}
+
+static void show_help ()
+{
+  fprintf (stderr, "Usage: xwinmosaic [OPTIONS]\n\
+Actions:\n\
+  -h          Show this help\n\
+  -C          Turns off box colorizing\n\
+  -I          Turns off showing icons\n\
+  -D          Turns off showing desktop number\n\
+\n\
+  -W <int>    Width of the boxes (default: 200)\n\
+  -H <int>    Height of the boxes (default: 40)\n\
+  -i <int>    Size of window icons (default: 16)\n\
+");
 }

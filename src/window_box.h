@@ -28,6 +28,7 @@ struct _WindowBox
   Window xwindow;
   gchar *name;
   gchar *xclass;
+  gboolean show_desktop;
   gint desktop;
 
   gboolean on_box;
@@ -71,6 +72,8 @@ const gchar *window_box_get_xclass (WindowBox *box);
 void window_box_update_name (WindowBox *box);
 void window_box_update_xclass (WindowBox *box);
 void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height);
+void window_box_set_colorize (WindowBox *box, gboolean colorize);
+void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop);
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height);
 G_END_DECLS

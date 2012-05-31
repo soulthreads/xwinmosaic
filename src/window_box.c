@@ -152,6 +152,7 @@ static GObject*	window_box_constructor (GType gtype,
     box->xclass = get_window_class (box->xwindow);
     box->desktop = get_window_desktop (box->xwindow);
   }
+  box->show_desktop = FALSE;
   box->has_icon = FALSE;
   box->colorize = TRUE;
   window_box_create_colors (box);
@@ -394,7 +395,6 @@ static gboolean window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * 
 
 void window_box_clicked (WindowBox *box)
 {
-  g_print ("Window box is clicked\n");
   g_signal_emit (box, box_signals [CLICKED], 0);
 }
 
@@ -436,7 +436,7 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
   cairo_text_extents_t extents;
 
   /* Shall we draw the desktop number */
-  if (box->is_window) {
+  if (box->is_window && box->show_desktop) {
     gchar desk [4] = { 0 };
     sprintf (desk, "%d", box->desktop+1);
     if (has_focus)
@@ -644,7 +644,7 @@ static void window_box_create_colors (WindowBox *box)
   g_return_if_fail (WINDOW_IS_BOX (box));
 
   gchar *source = (box->is_window) ? box->xclass : box->name;
-  if (source) {
+  if (box->colorize && source) {
     gdouble h, s, l;
     gulong crc = get_crc16 (source, strlen (source));
     guchar pre_h = ((crc >> 8) & 0xFF);
@@ -659,7 +659,7 @@ static void window_box_create_colors (WindowBox *box)
     box->g = hue2rgb (p, q, h);
     box->b = hue2rgb (p, q, h - 1.0/3.0);
   } else {
-    box->r = box->g = box->b = 0.5;
+    box->r = box->g = box->b = 0.6;
   }
 }
 
@@ -682,6 +682,21 @@ void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
   box->icon_context = cairo_create (box->icon_surface);
   gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
   cairo_paint (box->icon_context);
+}
+
+void window_box_set_colorize (WindowBox *box, gboolean colorize)
+{
+  g_return_if_fail (WINDOW_IS_BOX (box));
+
+  box->colorize = colorize;
+  window_box_create_colors (box);
+}
+
+void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop)
+{
+  g_return_if_fail (WINDOW_IS_BOX (box));
+
+  box->show_desktop = show_desktop;
 }
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)
