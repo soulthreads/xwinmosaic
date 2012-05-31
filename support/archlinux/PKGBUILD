@@ -8,7 +8,7 @@ url="http://github.com/soulthreads/xwinmosaic"
 arch=('i686' 'x86_64')
 license=('BSD')
 depends=('gtk2')
-makedepends=('cmake')
+makedepends=('cmake' 'git')
 options=(!libtool strip)
 
 _gitroot="git://github.com/soulthreads/xwinmosaic.git"
