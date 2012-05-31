@@ -127,7 +127,6 @@ int main (int argc, char **argv)
   width = rect.width;
   height = rect.height;
   gtk_window_set_default_size (GTK_WINDOW (window), width, height);
-
   gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
   gtk_window_set_decorated (GTK_WINDOW (window), False);
   gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -177,7 +176,7 @@ int main (int argc, char **argv)
   XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
 		  32, PropModeReplace, (unsigned char *)&desk, 1);
 
-    gtk_main ();
+  gtk_main ();
 
   XFree (wins);
 
@@ -244,7 +243,6 @@ static void draw_mosaic (GtkLayout *where,
       focus_on = rsize-1;
     gtk_widget_grab_focus (widgets[focus_on]);
   }
-  window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
   draw_mask (window_shape_bitmap, widgets, rsize);
   gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
 }
