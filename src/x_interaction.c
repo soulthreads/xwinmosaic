@@ -91,18 +91,19 @@ int wm_supports_ewmh ()
 
 char* get_window_name (Window win)
 {
-  char *net_wm_visible_name = (char *) property (win, a_NET_WM_VISIBLE_NAME, a_UTF8_STRING, NULL);
-  if (net_wm_visible_name)
+  int length = 0;
+  char *net_wm_visible_name = (char *) property (win, a_NET_WM_VISIBLE_NAME, a_UTF8_STRING, &length);
+  if (net_wm_visible_name && length)
     return net_wm_visible_name;
   XFree (net_wm_visible_name);
 
-  char *net_wm_name = (char *) property (win, a_NET_WM_NAME, a_UTF8_STRING, NULL);
-  if (net_wm_name)
+  char *net_wm_name = (char *) property (win, a_NET_WM_NAME, a_UTF8_STRING, &length);
+  if (net_wm_name && length)
       return net_wm_name;
   XFree (net_wm_name);
 
- char *wm_name = (char *) property (win, a_WM_NAME, XA_STRING, NULL);
-  if (wm_name)
+ char *wm_name = (char *) property (win, a_WM_NAME, XA_STRING, &length);
+  if (wm_name && length)
     return wm_name;
   XFree (wm_name);
 

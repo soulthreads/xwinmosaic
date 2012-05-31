@@ -166,21 +166,18 @@ int main (int argc, char **argv)
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
   myown_window = GDK_WINDOW_XID (gdk_window);
 
-  update_window_list ();
-  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0, options.box_width, options.box_height);
-
-  // Window wil be shown on all desktops (and so hidden in windows list)
-  unsigned int desk = 0xFFFFFFFF; // -1
-  XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
-		  32, PropModeReplace, (unsigned char *)&desk, 1);
-
   // Get PropertyNotify events from root window.
   XSelectInput (gdk_x11_get_default_xdisplay (),
 		gdk_x11_get_default_root_xwindow (),
 		PropertyChangeMask);
   gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
 
-  gtk_main ();
+  // Window wil be shown on all desktops (and so hidden in windows list)
+  unsigned int desk = 0xFFFFFFFF; // -1
+  XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
+		  32, PropModeReplace, (unsigned char *)&desk, 1);
+
+    gtk_main ();
 
   XFree (wins);
 
