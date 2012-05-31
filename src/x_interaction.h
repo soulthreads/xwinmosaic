@@ -35,4 +35,6 @@ int get_window_desktop (Window win);
 Window* sorted_windows_list (Window *active_win, int *nitems);
 void switch_to_window (Window win);
 
+GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height);
+
 #endif /* X_INTERACTION_H */

@@ -41,9 +41,9 @@ void* property (Window win, Atom prop, Atom type, int *nitems)
   int format_ret;
   unsigned long items_ret;
   unsigned long after_ret;
-  unsigned char *prop_data = 0;
+  unsigned char *prop_data = NULL;
 
-  if (Success == XGetWindowProperty (dpy, win, prop, 0, 0x7fffffff,
+  if (Success == XGetWindowProperty (dpy, win, prop, 0, 0xffffffff,
 				    False, type, &type_ret, &format_ret,
 				    &items_ret, &after_ret, &prop_data))
     if (nitems)
@@ -214,4 +214,75 @@ void switch_to_window (Window win)
     climsg (root_window, a_NET_CURRENT_DESKTOP, desktop, CurrentTime, 0, 0, 0);
     climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
   }
+}
+
+GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
+{
+  GdkPixbuf *pixmap = NULL;
+
+  /* get the _NET_WM_ICON property */
+  gulong nitems;
+  gulong *data = (gulong *) property (win, a_NET_WM_ICON, XA_CARDINAL, &nitems);
+  if (data) {
+    gulong *pdata = data;
+    gulong *pdata_end = data + nitems;
+    gulong *bicon = NULL;
+    gulong bwidth = 0;
+    gulong bheight = 0;
+
+    while ((pdata+2) < pdata_end) {
+      gulong w = pdata [0];
+      gulong h = pdata [1];
+      gulong size = w * h;
+      pdata += 2;
+
+      if (pdata + size > pdata_end)
+	break;
+
+      bicon = pdata;
+      bwidth = w;
+      bheight = h;
+
+      if ((w >= req_width) && (h >= req_height))
+	break;
+
+      pdata += size;
+    }
+
+    if (bicon != NULL) {
+      gulong len = bwidth * bheight;
+      guchar *pixdata = g_new (guchar, len * 4);
+
+      guchar *p = pixdata;
+      for (int i = 0; i < len; p += 4, i++) {
+	guint argb = bicon [i];
+	guint rgba = (argb << 8) | (argb >> 24);
+	p [0] = (rgba >> 24) & 0xff;
+	p [1] = (rgba >> 16) & 0xff;
+	p [2] = (rgba >>  8) & 0xff;
+	p [3] = (rgba >>  0) & 0xff;
+      }
+
+      GdkPixbuf *pre_pixmap = gdk_pixbuf_new_from_data
+	(pixdata,
+	 GDK_COLORSPACE_RGB,
+	 TRUE, 8,
+	 bwidth, bheight, bwidth * 4,
+	 (GdkPixbufDestroyNotify) g_free,
+	  NULL);
+
+      if (bwidth > req_width || bheight > req_height) {
+	pixmap = gdk_pixbuf_scale_simple (pre_pixmap,
+					  req_width,
+					  req_height,
+					  GDK_INTERP_BILINEAR);
+	g_object_unref (pre_pixmap);
+      } else {
+	pixmap = pre_pixmap;
+      }
+    }
+  }
+  XFree (data);
+
+  return pixmap;
 }

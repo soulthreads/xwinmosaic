@@ -33,7 +33,13 @@ struct _WindowBox
   gboolean on_box;
   gboolean box_down;
 
+  gboolean colorize;
   gdouble r, g, b;
+
+  gboolean has_icon;
+  GdkPixbuf *icon_pixbuf;
+  cairo_t *icon_context;
+  cairo_surface_t *icon_surface;
 
   guint x, y, width, height;
 };
@@ -64,6 +70,7 @@ void window_box_set_xclass (WindowBox *box, const gchar *xclass);
 const gchar *window_box_get_xclass (WindowBox *box);
 void window_box_update_name (WindowBox *box);
 void window_box_update_xclass (WindowBox *box);
+void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height);
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height);
 G_END_DECLS

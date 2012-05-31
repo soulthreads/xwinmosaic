@@ -12,6 +12,8 @@
 guint box_width = 200;
 guint box_height = 40;
 
+guint icon_size = 20;
+
 GtkWidget *window;
 Window active_window; // For displaying it first in windows list.
 Window *wins;
@@ -222,6 +224,7 @@ void update_window_list ()
     boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
       boxes[i] = window_box_new_with_xwindow (wins[i]);
+      window_box_setup_icon (WINDOW_BOX(boxes[i]), icon_size, icon_size);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), &(WINDOW_BOX(boxes [i])->xwindow));
     }
@@ -300,6 +303,15 @@ GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
 	    window_box_update_name (WINDOW_BOX (boxes[i]));
+	    break;
+	  }
+      }
+      if (atom == a_NET_WM_ICON) {
+	// Search for appropriate widget to update icon.
+	for (int i = 0; i < wsize; i++)
+	  if (wins [i] == win) {
+	    window_box_setup_icon (WINDOW_BOX (boxes[i]), icon_size, icon_size);
+	    break;
 	  }
       }
     }

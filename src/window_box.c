@@ -131,6 +131,9 @@ window_box_init (WindowBox *box)
 
   box->name = NULL;
   box->xclass = NULL;
+  box->icon_pixbuf = NULL;
+  box->icon_surface = NULL;
+  box->icon_context = NULL;
 }
 
 static GObject*	window_box_constructor (GType gtype,
@@ -149,6 +152,8 @@ static GObject*	window_box_constructor (GType gtype,
     box->xclass = get_window_class (box->xwindow);
     box->desktop = get_window_desktop (box->xwindow);
   }
+  box->has_icon = FALSE;
+  box->colorize = TRUE;
   window_box_create_colors (box);
   box->on_box = FALSE;
   box->box_down = FALSE;
@@ -175,6 +180,15 @@ window_box_dispose (GObject *gobject)
     box->name = NULL;
     g_free (box->xclass);
     box->xclass = NULL;
+    if (box->icon_context) {
+      cairo_destroy (box->icon_context);
+      cairo_surface_destroy (box->icon_surface);
+      box->icon_context = NULL;
+      box->icon_surface = NULL;
+    }
+    if (box->icon_pixbuf)
+      g_object_unref (box->icon_pixbuf);
+    box->icon_pixbuf = NULL;
   }
   G_OBJECT_CLASS (window_box_parent_class)->dispose (gobject);
 }
@@ -438,6 +452,7 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
     cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
     cairo_show_text (cr, desk);
   }
+
   if (has_focus)
     cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
   else
@@ -447,10 +462,32 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, 10);
   cairo_text_extents (cr, box->name, &extents);
-  if (width-5 > extents.width)
-    cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-  else
-    cairo_move_to (cr, 5, (height + extents.height)/2);
+
+
+  if (box->has_icon) {
+    if (box->icon_surface) {
+      guint iwidth = gdk_pixbuf_get_width (box->icon_pixbuf);
+      guint iheight = gdk_pixbuf_get_height (box->icon_pixbuf);
+      cairo_save (cr);
+      cairo_set_source_surface (cr, box->icon_surface, 5, (height-iheight)/2);
+      cairo_rectangle (cr, 0, 0,
+		       iwidth+5,
+		       (height+iheight)/2);
+      cairo_clip (cr);
+      cairo_paint (cr);
+      cairo_restore (cr);
+
+      if ((width-extents.width)/2 > iwidth+5)
+	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+      else
+	cairo_move_to (cr, 10+iwidth, (height + extents.height)/2);
+    }
+  } else {
+    if (width-5 > extents.width)
+      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+    else
+      cairo_move_to (cr, 5, (height + extents.height)/2);
+  }
   cairo_show_text (cr, box->name);
 }
 
@@ -614,7 +651,7 @@ static void window_box_create_colors (WindowBox *box)
     guchar pre_s = ((crc << 0) & 0xFF);
     h = pre_h / 255.0;
     s = pre_s / 255.0;
-    l = 0.5;
+    l = 0.6;
 
     gdouble q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
     gdouble p = 2.0 * l - q;
@@ -624,6 +661,27 @@ static void window_box_create_colors (WindowBox *box)
   } else {
     box->r = box->g = box->b = 0.5;
   }
+}
+
+void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
+{
+  g_return_if_fail (WINDOW_IS_BOX (box));
+
+  if (box->icon_pixbuf)
+    g_object_unref (box->icon_pixbuf);
+  if (box->icon_surface)
+    cairo_surface_destroy (box->icon_surface);
+  if (box->icon_context)
+    cairo_destroy (box->icon_context);
+
+  box->has_icon = TRUE;
+  box->icon_pixbuf = get_window_icon (box->xwindow, req_width, req_height);
+  box->icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+						  gdk_pixbuf_get_width (box->icon_pixbuf),
+						  gdk_pixbuf_get_height (box->icon_pixbuf));
+  box->icon_context = cairo_create (box->icon_surface);
+  gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
+  cairo_paint (box->icon_context);
 }
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)
