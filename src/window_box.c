@@ -691,17 +691,26 @@ void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
     cairo_destroy (box->icon_context);
 
   box->icon_pixbuf = get_window_icon (box->xwindow, req_width, req_height);
-  if (box->icon_pixbuf) {
-    box->has_icon = TRUE;
-    box->icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-						    gdk_pixbuf_get_width (box->icon_pixbuf),
-						    gdk_pixbuf_get_height (box->icon_pixbuf));
-    box->icon_context = cairo_create (box->icon_surface);
-    gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
-    cairo_paint (box->icon_context);
-  } else {
-    box->has_icon = FALSE;
+  if (!box->icon_pixbuf) {
+    // Try to load fallback icon.
+    GtkIconTheme *theme = gtk_icon_theme_get_default ();
+    box->icon_pixbuf = gtk_icon_theme_load_icon (theme, "application-x-executable", req_width,
+						 GTK_ICON_LOOKUP_USE_BUILTIN |
+						 GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+						 NULL);
   }
+  if (!box->icon_pixbuf) {
+    box->has_icon = FALSE;
+    return;
+  }
+
+  box->has_icon = TRUE;
+  box->icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+						  gdk_pixbuf_get_width (box->icon_pixbuf),
+						  gdk_pixbuf_get_height (box->icon_pixbuf));
+  box->icon_context = cairo_create (box->icon_surface);
+  gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
+  cairo_paint (box->icon_context);
 }
 
 void window_box_set_colorize (WindowBox *box, gboolean colorize)
