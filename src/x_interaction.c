@@ -160,7 +160,7 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 
     // active window may not update it's user time.
     int sort_from = 0;
-    if (active_win)
+    if (active_win != NULL)
       for (int i = 0; i < size; i++)
 	if (win_list [i] == *active_win) {
 	  win_list [i] = win_list [0];
@@ -170,7 +170,7 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 	}
 
     if (sort_from == 0) // Active window does not exist anymore.
-      *active_win = win_list [0];
+      active_win = win_list;
 
     unsigned int *time_list = (unsigned int *)malloc (size * sizeof (unsigned int));
     for (int i = 0; i < size; i++) {
