@@ -18,8 +18,10 @@ void atoms_init ()
 
   a_NET_SUPPORTING_WM_CHECK = XInternAtom (dpy, "_NET_SUPPORTING_WM_CHECK", 0);
   a_NET_CLIENT_LIST = XInternAtom (dpy, "_NET_CLIENT_LIST", 0);
+  a_NET_DESKTOP_VIEWPORT = XInternAtom (dpy, "_NET_DESKTOP_VIEWPORT", 0);
   a_NET_CURRENT_DESKTOP = XInternAtom (dpy, "_NET_CURRENT_DESKTOP", 0);
   a_NET_ACTIVE_WINDOW = XInternAtom (dpy, "_NET_ACTIVE_WINDOW", 0);
+  a_NET_WORKAREA = XInternAtom (dpy, "_NET_WORKAREA", 0);
 
   a_NET_WM_DESKTOP = XInternAtom (dpy, "_NET_WM_DESKTOP", 0);
   a_NET_WM_NAME = XInternAtom (dpy, "_NET_WM_NAME", 0);

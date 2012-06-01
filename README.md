@@ -29,6 +29,8 @@ Start typing to search for required window.
 		-i <int>          Size of window icons (default: 16)
 		-f "font name"    Which font to use for displaying widgets. (default: Sans)
 		-s <int>          Font size (default: 10)
+		-o <int>          Set color hue offset (from 0 to 255)
+
 
 ### Dependencies:
 

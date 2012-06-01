@@ -158,6 +158,7 @@ static GObject*	window_box_constructor (GType gtype,
   box->show_desktop = FALSE;
   box->has_icon = FALSE;
   box->colorize = TRUE;
+  box->color_offset = 0;
   window_box_create_colors (box);
   box->on_box = FALSE;
   box->box_down = FALSE;
@@ -662,7 +663,7 @@ static void window_box_create_colors (WindowBox *box)
   if (box->colorize && source) {
     gdouble h, s, l;
     gulong crc = get_crc16 (source, strlen (source));
-    guchar pre_h = ((crc >> 8) & 0xFF);
+    guchar pre_h = (((crc >> 8) & 0xFF) + box->color_offset) % 256;
     guchar pre_s = ((crc << 0) & 0xFF);
     h = pre_h / 255.0;
     s = 0.5 + pre_s / 512.0;
@@ -735,4 +736,12 @@ void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)
   box->y = y;
   box->width = width;
   box->height = height;
+}
+
+void window_box_set_color_offset (WindowBox *box, guchar color_offset)
+{
+  g_return_if_fail (WINDOW_IS_BOX (box));
+
+  box->color_offset = color_offset;
+  window_box_create_colors (box);
 }

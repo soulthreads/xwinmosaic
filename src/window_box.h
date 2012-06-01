@@ -36,6 +36,7 @@ struct _WindowBox
 
   gboolean colorize;
   gdouble r, g, b;
+  guchar color_offset;
 
   gboolean has_icon;
   GdkPixbuf *icon_pixbuf;
@@ -79,6 +80,7 @@ void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height);
 void window_box_set_colorize (WindowBox *box, gboolean colorize);
 void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop);
 void window_box_set_font (WindowBox *box, const gchar *font, guint size);
+void window_box_set_color_offset (WindowBox *box, guchar color_offset);
 
 void window_box_set_inner (WindowBox *box, int x, int y, int width, int height);
 G_END_DECLS

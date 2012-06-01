@@ -37,6 +37,7 @@ static struct {
   guint font_size;
   gboolean read_stdin;
   gboolean screenshot;
+  guchar color_offset;
 } options;
 
 static GdkRectangle current_monitor_size ();
@@ -68,7 +69,8 @@ int main (int argc, char **argv)
   options.font_size = 10;
   options.read_stdin = FALSE;
   options.screenshot = FALSE;
-  while ((opt = getopt (argc, argv, "hrCIDSW:H:i:f:s:")) != -1) {
+  options.color_offset = 0;
+  while ((opt = getopt (argc, argv, "hrCIDSW:H:i:f:s:o:")) != -1) {
     switch (opt) {
     case 'h':
       show_help ();
@@ -102,6 +104,9 @@ int main (int argc, char **argv)
       break;
     case 's':
       options.font_size = atoi (optarg);
+      break;
+    case 'o':
+      options.color_offset = atoi (optarg);
       break;
     default:
       show_help ();
@@ -337,6 +342,7 @@ static void update_box_list ()
       }
       window_box_set_font (WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
       window_box_set_colorize (WINDOW_BOX (boxes[i]), options.colorize);
+      window_box_set_color_offset (WINDOW_BOX (boxes[i]), options.color_offset);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), NULL);
     }
@@ -556,6 +562,7 @@ Options:\n\
   -i <int>          Size of window icons (default: 16)\n\
   -f \"font name\"    Which font to use for displaying widgets. (default: Sans)\n\
   -s <int>          Font size (default: 10)\n\
+  -o <int>          Set color hue offset (from 0 to 255)\n\
 \nTip: start typing to search for required window.\n\
 ");
 }
@@ -577,16 +584,13 @@ static void read_stdin ()
 
 static GdkPixbuf* get_screenshot ()
 {
-  GdkPixbuf *screenshot;
-  GdkWindow *root_window;
-  gint x_orig, y_orig;
+  GdkWindow *root_window = gdk_get_default_root_window ();
+  gint x, y;
   gint swidth, sheight;
-  root_window = gdk_get_default_root_window ();
+
   gdk_drawable_get_size (root_window, &swidth, &sheight);
-  gdk_window_get_origin (root_window, &x_orig, &y_orig);
+  gdk_window_get_origin (root_window, &x, &y);
 
-  screenshot = gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
-					     x_orig, y_orig, 0, 0, swidth, sheight);
-
-  return screenshot;
+  return gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
+				       x, y, 0, 0, swidth, sheight);
 }
