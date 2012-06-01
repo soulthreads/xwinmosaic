@@ -208,11 +208,10 @@ int main (int argc, char **argv)
 		  gdk_x11_get_default_root_xwindow (),
 		  PropertyChangeMask);
     gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
-  } else {
-    update_box_list ();
-    draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
-		 options.box_width, options.box_height);
   }
+  update_box_list ();
+  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
+	       options.box_width, options.box_height);
 
   // Window wil be shown on all desktops (and so hidden in windows list)
   unsigned int desk = 0xFFFFFFFF; // -1
