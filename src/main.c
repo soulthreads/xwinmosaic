@@ -13,7 +13,7 @@
 
 static GtkWidget *window;
 static Window myown_window;
-static Window active_window; // For displaying it first in windows list.
+static Window *active_window; // For displaying it first in windows list.
 static Window *wins;
 static gchar **in_items; // If we read from stdin.
 static int wsize = 0;
@@ -127,10 +127,10 @@ int main (int argc, char **argv)
       return 1;
     }
 
-    active_window = *((Window *) property (gdk_x11_get_default_root_xwindow (),
-					   a_NET_ACTIVE_WINDOW,
-					   XA_WINDOW,
-					   NULL));
+    active_window = (Window *) property (gdk_x11_get_default_root_xwindow (),
+					 a_NET_ACTIVE_WINDOW,
+					 XA_WINDOW,
+					 NULL);
   }
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -289,7 +289,7 @@ static void update_box_list ()
       free (boxes);
       XFree (wins);
     }
-    wins = sorted_windows_list (&myown_window, &active_window, &wsize);
+    wins = sorted_windows_list (&myown_window, active_window, &wsize);
     if (wins) {
       // Get PropertyNotify events from each relevant window.
       for (int i = 0; i < wsize; i++)
