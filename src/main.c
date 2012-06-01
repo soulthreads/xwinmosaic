@@ -16,14 +16,14 @@ static Window myown_window;
 static Window active_window; // For displaying it first in windows list.
 static Window *wins;
 static gchar **in_items; // If we read from stdin.
-static gint wsize = 0;
+static int wsize = 0;
 static GtkWidget **boxes;
 static GtkWidget *layout;
 static GtkWidget *search;
 static Window *filtered_wins;
 static GtkWidget **filtered_boxes;
-static gint filtered_size;
-static gint width, height;
+static int filtered_size;
+static int width, height;
 static GdkDrawable *window_shape_bitmap;
 
 static struct {
@@ -191,7 +191,7 @@ int main (int argc, char **argv)
   }
 
   // Window wil be shown on all desktops (and so hidden in windows list)
-  guint desk = 0xFFFFFFFF; // -1
+  unsigned int desk = 0xFFFFFFFF; // -1
   XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
 		  32, PropModeReplace, (unsigned char *)&desk, 1);
 
