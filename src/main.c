@@ -322,8 +322,16 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 {
   switch (event->keyval) {
   case GDK_KEY_Escape:
-    gtk_main_quit ();
+  {
+    int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
+    if (text_length > 0) {
+      gtk_editable_delete_text (GTK_EDITABLE (search), 0, -1);
+      gtk_widget_hide (search);
+    } else {
+      gtk_main_quit ();
+    }
     break;
+  }
   case GDK_KEY_Return:
   case GDK_KEY_Left:
   case GDK_KEY_Up:
