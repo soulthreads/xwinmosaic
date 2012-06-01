@@ -81,7 +81,7 @@ window_box_class_init (WindowBoxClass *klass)
     g_param_spec_boolean ("is-window",
 			  "Is window",
 			  "If set, the box stores XWindow information",
-			  TRUE,
+			  FALSE,
 			  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
   obj_properties[PROP_XWINDOW] =
@@ -172,7 +172,12 @@ GtkWidget* window_box_new (void)
 
 GtkWidget* window_box_new_with_xwindow (Window win)
 {
-  return g_object_new (WINDOW_TYPE_BOX, "xwindow", win, NULL);
+  return g_object_new (WINDOW_TYPE_BOX, "is-window", TRUE, "xwindow", win, NULL);
+}
+
+GtkWidget* window_box_new_with_name (gchar *name)
+{
+  return g_object_new (WINDOW_TYPE_BOX, "is-window", FALSE, "name", name, NULL);
 }
 
 static void
@@ -516,12 +521,14 @@ window_box_set_xwindow (WindowBox *box, guint window)
 {
   g_return_if_fail (WINDOW_IS_BOX (box));
 
-  box->xwindow = window;
+  if (box->is_window) {
+    box->xwindow = window;
 
-  g_object_notify (G_OBJECT (box), "xwindow");
-  box->desktop = get_window_desktop (box->xwindow);
-  window_box_update_name (box);
-  window_box_update_xclass (box);
+    g_object_notify (G_OBJECT (box), "xwindow");
+    box->desktop = get_window_desktop (box->xwindow);
+    window_box_update_name (box);
+    window_box_update_xclass (box);
+  }
 }
 
 guint

@@ -15,14 +15,15 @@ static GtkWidget *window;
 static Window myown_window;
 static Window active_window; // For displaying it first in windows list.
 static Window *wins;
-static int wsize;
+static gchar **in_items; // If we read from stdin.
+static gint wsize;
 static GtkWidget **boxes;
 static GtkWidget *layout;
 static GtkWidget *search;
 static Window *filtered_wins;
 static GtkWidget **filtered_boxes;
-static int filtered_size;
-static int width, height;
+static gint filtered_size;
+static gint width, height;
 static GdkDrawable *window_shape_bitmap;
 
 static struct {
@@ -34,6 +35,7 @@ static struct {
   guint icon_size;
   gchar *font_name;
   guint font_size;
+  gboolean read_stdin;
 } options;
 
 static GdkRectangle current_monitor_size ();
@@ -42,12 +44,13 @@ static void draw_mosaic (GtkLayout *where,
 		  int focus_on,
 		  int rwidth, int rheight);
 static void on_rect_click (GtkWidget *widget, gpointer data);
-static void update_window_list ();
+static void update_box_list ();
 static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data);
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
 static void refilter (GtkEditable *editable, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
 static void show_help ();
+static void read_stdin ();
 
 int main (int argc, char **argv)
 {
@@ -61,11 +64,15 @@ int main (int argc, char **argv)
   options.show_desktop = TRUE;
   options.icon_size = 16;
   options.font_size = 10;
-  while ((opt = getopt (argc, argv, "hCIDW:H:i:f:s:")) != -1) {
+  options.read_stdin = FALSE;
+  while ((opt = getopt (argc, argv, "hrCIDW:H:i:f:s:")) != -1) {
     switch (opt) {
     case 'h':
       show_help ();
       return 0;
+    case 'r':
+      options.read_stdin = TRUE;
+      break;
     case 'C':
       options.colorize = FALSE;
       break;
@@ -95,30 +102,36 @@ int main (int argc, char **argv)
       return 1;
     }
   }
-  if (!options.font_name)
-    options.font_name = g_strdup ("Sans");
 
   atoms_init ();
 
-  // Checks whether WM supports EWMH specifications.
-  if (!wm_supports_ewmh ()) {
-    GtkWidget *dialog = gtk_message_dialog_new
-      (NULL,
-       GTK_DIALOG_MODAL,
-       GTK_MESSAGE_ERROR,
-       GTK_BUTTONS_CLOSE,
-       "Error: your WM does not support EWMH specifications.");
+  if (!options.font_name)
+    options.font_name = g_strdup ("Sans");
+  if (options.read_stdin) {
+    options.show_icons = FALSE;
+    options.show_desktop = FALSE;
+    read_stdin ();
+  } else {
+    // Checks whether WM supports EWMH specifications.
+    if (!wm_supports_ewmh ()) {
+      GtkWidget *dialog = gtk_message_dialog_new
+	(NULL,
+	 GTK_DIALOG_MODAL,
+	 GTK_MESSAGE_ERROR,
+	 GTK_BUTTONS_CLOSE,
+	 "Error: your WM does not support EWMH specifications.");
 
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    g_signal_connect_swapped (dialog, "response",
-			      G_CALLBACK (gtk_main_quit), NULL);
-    return 1;
+      gtk_dialog_run (GTK_DIALOG (dialog));
+      g_signal_connect_swapped (dialog, "response",
+				G_CALLBACK (gtk_main_quit), NULL);
+      return 1;
+    }
+
+    active_window = *((Window *) property (gdk_x11_get_default_root_xwindow (),
+					   a_NET_ACTIVE_WINDOW,
+					   XA_WINDOW,
+					   NULL));
   }
-
-  active_window = *((Window *) property (gdk_x11_get_default_root_xwindow (),
-					 a_NET_ACTIVE_WINDOW,
-					 XA_WINDOW,
-					 NULL));
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
@@ -156,7 +169,7 @@ int main (int argc, char **argv)
 			   G_CALLBACK(gtk_main_quit), NULL);
 
   window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
-  draw_mask (window_shape_bitmap, boxes, wsize);
+  draw_mask (window_shape_bitmap, NULL, 0);
   gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
 
   gtk_widget_show_all (window);
@@ -165,20 +178,27 @@ int main (int argc, char **argv)
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
   myown_window = GDK_WINDOW_XID (gdk_window);
 
-  // Get PropertyNotify events from root window.
-  XSelectInput (gdk_x11_get_default_xdisplay (),
-		gdk_x11_get_default_root_xwindow (),
-		PropertyChangeMask);
-  gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
+  if (!options.read_stdin) {
+    // Get PropertyNotify events from root window.
+    XSelectInput (gdk_x11_get_default_xdisplay (),
+		  gdk_x11_get_default_root_xwindow (),
+		  PropertyChangeMask);
+    gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
+  } else {
+    update_box_list ();
+    draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
+		 options.box_width, options.box_height);
+  }
 
   // Window wil be shown on all desktops (and so hidden in windows list)
-  unsigned int desk = 0xFFFFFFFF; // -1
+  guint desk = 0xFFFFFFFF; // -1
   XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
 		  32, PropModeReplace, (unsigned char *)&desk, 1);
 
   gtk_main ();
 
-  XFree (wins);
+  if (!options.read_stdin)
+    XFree (wins);
 
   return 0;
 }
@@ -249,38 +269,51 @@ static void draw_mosaic (GtkLayout *where,
 
 static void on_rect_click (GtkWidget *widget, gpointer data)
 {
-  Window *win = (Window *) data;
-  switch_to_window (*win);
+  WindowBox *box = WINDOW_BOX (widget);
+  if (!options.read_stdin) {
+    Window win = box->xwindow;
+    switch_to_window (win);
+  } else {
+    puts (box->name);
+  }
   gtk_main_quit ();
 }
 
-static void update_window_list ()
+static void update_box_list ()
 {
-  if (wsize) {
-    for (int i = 0; i < wsize; i++) {
-      gtk_widget_destroy (boxes[i]);
+  if (!options.read_stdin) {
+    if (wsize) {
+      for (int i = 0; i < wsize; i++) {
+	gtk_widget_destroy (boxes[i]);
+      }
+      free (boxes);
+      XFree (wins);
     }
-    free (boxes);
-    XFree (wins);
+    wins = sorted_windows_list (&myown_window, &active_window, &wsize);
+    if (wins) {
+      // Get PropertyNotify events from each relevant window.
+      for (int i = 0; i < wsize; i++)
+	XSelectInput (gdk_x11_get_default_xdisplay (),
+		      wins[i],
+		      PropertyChangeMask);
+    }
   }
-  wins = sorted_windows_list (&myown_window, &active_window, &wsize);
-  if (wins) {
-    // Get PropertyNotify events from each relevant window.
-    for (int i = 0; i < wsize; i++)
-      XSelectInput (gdk_x11_get_default_xdisplay (),
-		    wins[i],
-		    PropertyChangeMask);
 
+  if (wsize) {
     boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
-      boxes[i] = window_box_new_with_xwindow (wins[i]);
+      if (!options.read_stdin) {
+	boxes[i] = window_box_new_with_xwindow (wins[i]);
+	window_box_set_show_desktop (WINDOW_BOX (boxes[i]), options.show_desktop);
+	if (options.show_icons)
+	  window_box_setup_icon (WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
+      } else {
+	boxes[i] = window_box_new_with_name (in_items[i]);
+      }
       window_box_set_font (WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
       window_box_set_colorize (WINDOW_BOX (boxes[i]), options.colorize);
-      window_box_set_show_desktop (WINDOW_BOX (boxes[i]), options.show_desktop);
-      if (options.show_icons)
-	window_box_setup_icon (WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
-			G_CALLBACK (on_rect_click), &(WINDOW_BOX(boxes [i])->xwindow));
+			G_CALLBACK (on_rect_click), NULL);
     }
   }
 }
@@ -343,7 +376,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	      break;
 	    }
 	}
-	update_window_list ();
+	update_box_list ();
 	if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
 	  refilter (GTK_EDITABLE (search), NULL);
 	  draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, focus_on,
@@ -379,7 +412,8 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 static void refilter (GtkEditable *entry, gpointer data)
 {
   if (filtered_size) {
-    XFree (filtered_wins);
+    if (!options.read_stdin)
+      XFree (filtered_wins);
     free (filtered_boxes);
   }
   filtered_size = 0;
@@ -390,10 +424,12 @@ static void refilter (GtkEditable *entry, gpointer data)
     for (int i = 0; i < wsize; i++)
       gtk_widget_hide (boxes [i]);
 
-    filtered_wins = (Window *) malloc (wsize * sizeof (Window));
+    if (!options.read_stdin)
+      filtered_wins = (Window *) malloc (wsize * sizeof (Window));
+
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
-      char *wname = get_window_name (wins[i]);
+      const char *wname = window_box_get_name (WINDOW_BOX(boxes[i]));
       gchar *wname_cmp = g_utf8_casefold (wname, -1);
       int wn_size = strlen (wname_cmp);
       gchar *p1 = search_for;
@@ -416,12 +452,12 @@ static void refilter (GtkEditable *entry, gpointer data)
 	p1 = g_utf8_find_next_char (p1, NULL);
       }
       if (found) {
-	filtered_wins [filtered_size] = wins [i];
+	if (!options.read_stdin)
+	  filtered_wins [filtered_size] = wins [i];
 	filtered_boxes [filtered_size] = boxes [i];
 	filtered_size++;
       }
       g_free (wname_cmp);
-      free (wname);
     }
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
 		 options.box_width, options.box_height);
@@ -475,6 +511,7 @@ static void show_help ()
 Usage: xwinmosaic [OPTIONS]\n\
 Options:\n\
   -h                Show this help\n\
+  -r                Read items from stdin (and print selected item to stdout)\n\
   -C                Turns off box colorizing\n\
   -I                Turns off showing icons\n\
   -D                Turns off showing desktop number\n\
@@ -486,4 +523,19 @@ Options:\n\
   -s <int>          Font size (default: 10)\n\
 \nTip: start typing to search for required window.\n\
 ");
+}
+
+static void read_stdin ()
+{
+  char buffer [BUFSIZ];
+  char *p;
+  in_items = calloc (1, sizeof (char *));
+  wsize = 0;
+  while (fgets (buffer, BUFSIZ, stdin)) {
+    in_items = realloc (in_items, (wsize+1) * sizeof (char *));
+    if ((p = strchr (buffer, '\n')))
+      *p = '\0';
+    in_items [wsize] = g_strdup (buffer);
+    wsize++;
+  }
 }

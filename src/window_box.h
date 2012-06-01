@@ -64,6 +64,7 @@ struct _WindowBoxClass
 GType window_box_get_type (void);
 GtkWidget* window_box_new (void);
 GtkWidget* window_box_new_with_xwindow (Window win);
+GtkWidget* window_box_new_with_name (gchar *name);
 void window_box_set_is_window (WindowBox *box, gboolean is_window);
 gboolean window_box_get_is_window (WindowBox *box);
 void window_box_set_xwindow (WindowBox *box, guint window);

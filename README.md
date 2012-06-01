@@ -16,6 +16,7 @@ Start typing to search for required window.
 	xwinmosaic [OPTIONS]
 	Options:
 		-h                Show this help
+		-r                Read items from stdin (and print selected item to stdout)
 		-C                Turns off box colorizing
 		-I                Turns off showing icons
 		-D                Turns off showing desktop number
