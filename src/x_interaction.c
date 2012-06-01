@@ -132,6 +132,23 @@ int get_window_desktop (Window win)
   return result;
 }
 
+static gboolean show_window (Window win)
+{
+  int desktop = get_window_desktop (win);
+
+  int num = 0;
+  gboolean type_ok = FALSE;
+  Atom *type = (Atom *) property (win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num);
+  for (int i = 0; i < num; i++)
+    if (*type == a_NET_WM_WINDOW_TYPE_NORMAL ||
+	*type == a_NET_WM_WINDOW_TYPE_DIALOG) {
+      type_ok = TRUE;
+      break;
+    }
+
+  return ((desktop != -1) && type_ok);
+}
+
 // Returns a list of windows (except panels and other windows with desktop=-1)
 Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 {
@@ -143,14 +160,14 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
     int size = 0;
     // Do not show panels and all-desktop applications in list.
     for (int i = 0; i < pre_size; i++)
-      if ((get_window_desktop (pre_win_list[i]) != -1) && (pre_win_list[i] != *myown))
+      if ((show_window (pre_win_list[i])) && (pre_win_list[i] != *myown))
 	size++;
 
     Window *win_list = (Window *) malloc (size * sizeof (Window));
     // That's actually kinda stupid…
     int offset = 0;
     for (int i = 0; i < pre_size; i++) {
-      if ((get_window_desktop (pre_win_list[i]) == -1) || (pre_win_list[i] == *myown)) {
+      if (!(show_window (pre_win_list [i])) || (pre_win_list[i] == *myown)) {
 	offset++;
 	continue;
       }
