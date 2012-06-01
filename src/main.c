@@ -16,7 +16,7 @@ static Window myown_window;
 static Window active_window; // For displaying it first in windows list.
 static Window *wins;
 static gchar **in_items; // If we read from stdin.
-static gint wsize;
+static gint wsize = 0;
 static GtkWidget **boxes;
 static GtkWidget *layout;
 static GtkWidget *search;
@@ -429,7 +429,7 @@ static void refilter (GtkEditable *entry, gpointer data)
 
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
-      const char *wname = window_box_get_name (WINDOW_BOX(boxes[i]));
+      gchar *wname = g_strdup (window_box_get_name (WINDOW_BOX(boxes[i])));
       gchar *wname_cmp = g_utf8_casefold (wname, -1);
       int wn_size = strlen (wname_cmp);
       gchar *p1 = search_for;
@@ -457,6 +457,7 @@ static void refilter (GtkEditable *entry, gpointer data)
 	filtered_boxes [filtered_size] = boxes [i];
 	filtered_size++;
       }
+      g_free (wname);
       g_free (wname_cmp);
     }
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,

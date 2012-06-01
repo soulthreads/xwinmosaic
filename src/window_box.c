@@ -187,7 +187,8 @@ window_box_dispose (GObject *gobject)
   if (box->name) {
     g_free (box->name);
     box->name = NULL;
-    g_free (box->xclass);
+    if (box->xclass)
+      g_free (box->xclass);
     box->xclass = NULL;
 
     if (box->icon_context) {
