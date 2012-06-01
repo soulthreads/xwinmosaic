@@ -665,7 +665,7 @@ static void window_box_create_colors (WindowBox *box)
     guchar pre_h = ((crc >> 8) & 0xFF);
     guchar pre_s = ((crc << 0) & 0xFF);
     h = pre_h / 255.0;
-    s = pre_s / 255.0;
+    s = 0.5 + pre_s / 512.0;
     l = 0.6;
 
     gdouble q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
@@ -688,7 +688,6 @@ void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
     cairo_surface_destroy (box->icon_surface);
   if (box->icon_context)
     cairo_destroy (box->icon_context);
-
 
   box->icon_pixbuf = get_window_icon (box->xwindow, req_width, req_height);
   if (box->icon_pixbuf) {
