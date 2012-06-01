@@ -29,8 +29,20 @@ void atoms_init ()
 
 
   a_NET_WM_WINDOW_TYPE = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE", 0);
-  a_NET_WM_WINDOW_TYPE_NORMAL = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_NORMAL", 0);
+  a_NET_WM_WINDOW_TYPE_DESKTOP = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DESKTOP", 0);
+  a_NET_WM_WINDOW_TYPE_DOCK = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DOCK", 0);
+  a_NET_WM_WINDOW_TYPE_TOOLBAR = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_TOOLBAR", 0);
+  a_NET_WM_WINDOW_TYPE_MENU = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_MENU", 0);
+  a_NET_WM_WINDOW_TYPE_UTILITY = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_UTILITY", 0);
+  a_NET_WM_WINDOW_TYPE_SPLASH = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_SPLASH", 0);
   a_NET_WM_WINDOW_TYPE_DIALOG = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DIALOG", 0);
+  a_NET_WM_WINDOW_TYPE_DROPDOWN_MENU = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU", 0);
+  a_NET_WM_WINDOW_TYPE_POPUP_MENU = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_POPUP_MENU", 0);
+  a_NET_WM_WINDOW_TYPE_TOOLTIP = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_TOOLTIP", 0);
+  a_NET_WM_WINDOW_TYPE_NOTIFICATION = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", 0);
+  a_NET_WM_WINDOW_TYPE_COMBO = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_COMBO", 0);
+  a_NET_WM_WINDOW_TYPE_DND = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DND", 0);
+  a_NET_WM_WINDOW_TYPE_NORMAL = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_NORMAL", 0);
 }
 
 // Get property for a window.
@@ -137,12 +149,22 @@ static gboolean show_window (Window win)
   int desktop = get_window_desktop (win);
 
   int num = 0;
-  gboolean type_ok = FALSE;
+  gboolean type_ok = TRUE;
   Atom *type = (Atom *) property (win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num);
   for (int i = 0; i < num; i++)
-    if (*type == a_NET_WM_WINDOW_TYPE_NORMAL ||
-	*type == a_NET_WM_WINDOW_TYPE_DIALOG) {
-      type_ok = TRUE;
+    if (*type == a_NET_WM_WINDOW_TYPE_DESKTOP ||
+	*type == a_NET_WM_WINDOW_TYPE_DOCK ||
+	*type == a_NET_WM_WINDOW_TYPE_TOOLBAR ||
+	*type == a_NET_WM_WINDOW_TYPE_MENU ||
+	*type == a_NET_WM_WINDOW_TYPE_UTILITY ||
+	*type == a_NET_WM_WINDOW_TYPE_SPLASH ||
+	*type == a_NET_WM_WINDOW_TYPE_DROPDOWN_MENU ||
+	*type == a_NET_WM_WINDOW_TYPE_POPUP_MENU ||
+	*type == a_NET_WM_WINDOW_TYPE_TOOLTIP ||
+	*type == a_NET_WM_WINDOW_TYPE_NOTIFICATION ||
+	*type == a_NET_WM_WINDOW_TYPE_COMBO ||
+	*type == a_NET_WM_WINDOW_TYPE_DND) {
+      type_ok = FALSE;
       break;
     }
 
