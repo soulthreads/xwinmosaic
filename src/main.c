@@ -169,7 +169,7 @@ int main (int argc, char **argv)
 			   G_CALLBACK(gtk_main_quit), NULL);
 
   window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
-  draw_mask (window_shape_bitmap, NULL, 0);
+  draw_mask (window_shape_bitmap, boxes, 0);
   gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
 
   gtk_widget_show_all (window);
@@ -437,7 +437,7 @@ static void refilter (GtkEditable *entry, gpointer data)
 
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
-      gchar *wname = g_strdup (window_box_get_name (WINDOW_BOX(boxes[i])));
+      const gchar *wname = window_box_get_name (WINDOW_BOX(boxes[i]));
       gchar *wname_cmp = g_utf8_casefold (wname, -1);
       int wn_size = strlen (wname_cmp);
       gchar *p1 = search_for;
@@ -465,7 +465,6 @@ static void refilter (GtkEditable *entry, gpointer data)
 	filtered_boxes [filtered_size] = boxes [i];
 	filtered_size++;
       }
-      g_free (wname);
       g_free (wname_cmp);
     }
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
