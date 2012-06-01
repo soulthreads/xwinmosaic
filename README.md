@@ -20,6 +20,9 @@ Start typing to search for required window.
 		-C                Turns off box colorizing
 		-I                Turns off showing icons
 		-D                Turns off showing desktop number
+		-S                Get screenshot and set it as a background
+                                    (for WMs that do not support XShape)
+
 
 		-W <int>          Width of the boxes (default: 200)
 		-H <int>          Height of the boxes (default: 40)

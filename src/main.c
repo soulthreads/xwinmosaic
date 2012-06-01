@@ -36,6 +36,7 @@ static struct {
   gchar *font_name;
   guint font_size;
   gboolean read_stdin;
+  gboolean screenshot;
 } options;
 
 static GdkRectangle current_monitor_size ();
@@ -51,6 +52,7 @@ static void refilter (GtkEditable *editable, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
 static void show_help ();
 static void read_stdin ();
+static GdkPixbuf* get_screenshot ();
 
 int main (int argc, char **argv)
 {
@@ -65,7 +67,8 @@ int main (int argc, char **argv)
   options.icon_size = 16;
   options.font_size = 10;
   options.read_stdin = FALSE;
-  while ((opt = getopt (argc, argv, "hrCIDW:H:i:f:s:")) != -1) {
+  options.screenshot = FALSE;
+  while ((opt = getopt (argc, argv, "hrCIDSW:H:i:f:s:")) != -1) {
     switch (opt) {
     case 'h':
       show_help ();
@@ -81,6 +84,9 @@ int main (int argc, char **argv)
       break;
     case 'D':
       options.show_desktop = FALSE;
+      break;
+    case 'S':
+      options.screenshot = TRUE;
       break;
     case 'W':
       options.box_width = atoi (optarg);
@@ -133,6 +139,7 @@ int main (int argc, char **argv)
 					 NULL);
   }
 
+
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
 
@@ -153,6 +160,20 @@ int main (int argc, char **argv)
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
 
+  if (options.screenshot) {
+    GdkPixbuf *screenshot;
+    GdkPixmap *background = NULL;
+    GtkStyle *style = NULL;
+    screenshot = get_screenshot ();
+
+    gdk_pixbuf_render_pixmap_and_mask (screenshot, &background, NULL, 0);
+    style = gtk_style_new ();
+    style->bg_pixmap [0] = background;
+
+    gtk_widget_set_style (window, style);
+    gtk_widget_set_style (layout, style);
+  }
+
   search = gtk_entry_new ();
   gtk_entry_set_width_chars (GTK_ENTRY (search), 20);
   gtk_widget_set_can_focus (search, FALSE);
@@ -168,9 +189,11 @@ int main (int argc, char **argv)
   g_signal_connect_swapped(G_OBJECT (window), "destroy",
 			   G_CALLBACK(gtk_main_quit), NULL);
 
-  window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
-  draw_mask (window_shape_bitmap, boxes, 0);
-  gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+  if (!options.screenshot) {
+    window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
+    draw_mask (window_shape_bitmap, boxes, 0);
+    gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+  }
 
   gtk_widget_show_all (window);
   gtk_widget_hide (search);
@@ -264,8 +287,10 @@ static void draw_mosaic (GtkLayout *where,
       focus_on = rsize-1;
     gtk_widget_grab_focus (widgets[focus_on]);
   }
-  draw_mask (window_shape_bitmap, widgets, rsize);
-  gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+  if (!options.screenshot) {
+    draw_mask (window_shape_bitmap, widgets, rsize);
+    gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+  }
 }
 
 static void on_rect_click (GtkWidget *widget, gpointer data)
@@ -524,6 +549,8 @@ Options:\n\
   -C                Turns off box colorizing\n\
   -I                Turns off showing icons\n\
   -D                Turns off showing desktop number\n\
+  -S                Get screenshot and set it as a background\n\
+                      (for WMs that do not support XShape)\n\
 \n\
   -W <int>          Width of the boxes (default: 200)\n\
   -H <int>          Height of the boxes (default: 40)\n\
@@ -547,4 +574,20 @@ static void read_stdin ()
     in_items [wsize] = g_strdup (buffer);
     wsize++;
   }
+}
+
+static GdkPixbuf* get_screenshot ()
+{
+  GdkPixbuf *screenshot;
+  GdkWindow *root_window;
+  gint x_orig, y_orig;
+  gint swidth, sheight;
+  root_window = gdk_get_default_root_window ();
+  gdk_drawable_get_size (root_window, &swidth, &sheight);
+  gdk_window_get_origin (root_window, &x_orig, &y_orig);
+
+  screenshot = gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
+					     x_orig, y_orig, 0, 0, swidth, sheight);
+
+  return screenshot;
 }
