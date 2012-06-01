@@ -142,14 +142,14 @@ int main (int argc, char **argv)
   gtk_window_set_default_size (GTK_WINDOW (window), width, height);
   gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
   gtk_window_set_decorated (GTK_WINDOW (window), False);
-  gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU);
   gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), True);
   gtk_window_set_skip_pager_hint (GTK_WINDOW (window), True);
-/**/
+/*
   gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE);
   g_signal_connect (G_OBJECT (window), "focus-out-event",
 		    G_CALLBACK (gtk_main_quit), NULL);
-/**/
+*/
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
 
@@ -174,6 +174,7 @@ int main (int argc, char **argv)
 
   gtk_widget_show_all (window);
   gtk_widget_hide (search);
+  gtk_window_present (GTK_WINDOW (window));
 
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
   myown_window = GDK_WINDOW_XID (gdk_window);

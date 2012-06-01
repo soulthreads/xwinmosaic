@@ -434,10 +434,15 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
     cairo_set_source_rgb (cr, box->r, box->g, box->b);
   cairo_rectangle (cr, 0, 0, width, height);
   cairo_fill_preserve (cr);
-  if (has_focus)
+
+  // Draw border
+  if (has_focus) {
+//    cairo_set_source_rgb (cr, box->b, box->g, box->r);
     cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-  else
-    cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+    cairo_set_line_width (cr, 4);
+    cairo_stroke_preserve (cr);
+  }
+  cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
   cairo_set_line_width (cr, 1);
   cairo_stroke (cr);
 
