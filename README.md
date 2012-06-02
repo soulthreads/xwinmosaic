@@ -47,6 +47,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 
 	cd xwinmosaic
 	mkdir build
+	cd build
 	cmake ..         # or, if you wish to install it, cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 	make
 	./src/xwinmosaic # or sudo make install, if you trust me. :)
