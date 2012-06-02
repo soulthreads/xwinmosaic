@@ -38,12 +38,15 @@ static struct {
   guchar color_offset;
   gint screenshot_offset_x;
   gint screenshot_offset_y;
+  gboolean vim_mode;
 } options;
 
 static GOptionEntry entries [] =
 {
   { "read-stdin", 'r', 0, G_OPTION_ARG_NONE, &options.read_stdin,
     "Read items from stdin (and print selected item to stdout)", NULL },
+  { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
+    "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
     "Turn off box colorizing", NULL },
   { "no-icons", 'I', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.show_icons,
@@ -341,9 +344,10 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   case GDK_KEY_Escape:
   {
     int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
-    if (text_length > 0) {
-      gtk_editable_delete_text (GTK_EDITABLE (search), 0, -1);
+    if (text_length > 0 || gtk_widget_get_visible (search)) {
       gtk_widget_hide (search);
+      gtk_editable_delete_text (GTK_EDITABLE (search), 0, -1);
+      g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
     } else {
       gtk_main_quit ();
     }
@@ -361,15 +365,58 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
     if (text_length > 0)
       gtk_editable_delete_text (GTK_EDITABLE (search), text_length - 1, -1);
-    if (text_length == 1 || text_length == 0)
+    if (text_length == 1 || text_length == 0) {
       gtk_widget_hide (search);
+      g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
+    }
     break;
   }
   default:
   {
     // Ignore Ctrl key.
     if (event->state & GDK_CONTROL_MASK) {
-      return FALSE;
+      if (!options.vim_mode) {
+	switch (event->keyval) {
+	case GDK_n:
+	  gtk_widget_child_focus (layout, GTK_DIR_DOWN);
+	  break;
+	case GDK_p:
+	  gtk_widget_child_focus (layout, GTK_DIR_UP);
+	  break;
+	case GDK_f:
+	  gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
+	  break;
+	case GDK_b:
+	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
+	  break;
+	default:
+	  return FALSE;
+	}
+	return TRUE;
+      }
+    }
+
+    if (options.vim_mode && !gtk_widget_get_visible (search)) {
+      switch (event->keyval) {
+      case GDK_h:
+	gtk_widget_child_focus (layout, GTK_DIR_LEFT);
+	break;
+      case GDK_j:
+	gtk_widget_child_focus (layout, GTK_DIR_DOWN);
+	break;
+      case GDK_k:
+	gtk_widget_child_focus (layout, GTK_DIR_UP);
+	break;
+      case GDK_l:
+	gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
+	break;
+      case GDK_KEY_slash:
+	gtk_widget_show (search);
+	draw_mask (window_shape_bitmap, boxes, wsize);
+	gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+	break;
+      }
+      return TRUE;
     }
 
     char *key = event->string;
@@ -522,7 +569,8 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
 
   // show search entry if it is active.
   if (search) {
-    if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
+    if (gtk_entry_get_text_length (GTK_ENTRY (search)) ||
+	(options.vim_mode && gtk_widget_get_visible (search))) {
       cairo_rectangle (cr,
 		       search->allocation.x,
 		       search->allocation.y,
@@ -562,12 +610,15 @@ static GdkPixbuf* get_screenshot ()
   return gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
 				       x + options.screenshot_offset_x,
 				       y + options.screenshot_offset_y,
-				       0, 0, swidth, sheight);
+				       0, 0,
+				       swidth - options.screenshot_offset_x,
+				       sheight - options.screenshot_offset_y);
 }
 
 static void read_config ()
 {
   // Set default options.
+  options.vim_mode = FALSE;
   options.box_width = 200;
   options.box_height = 40;
   options.colorize = TRUE;
@@ -594,6 +645,8 @@ static void read_config ()
 
   const gchar *group = "default";
   if (g_key_file_has_group (config, group)) {
+    if (g_key_file_has_key (config, group, "vim_mode", &error))
+      options.vim_mode = g_key_file_get_boolean (config, group, "vim_mode", &error);
     if (g_key_file_has_key (config, group, "box_width", &error))
       options.box_width = g_key_file_get_integer (config, group, "box_width", &error);
     if (g_key_file_has_key (config, group, "box_height", &error))
@@ -633,6 +686,7 @@ static void write_default_config ()
     if ((config = fopen (filename, "w")) != NULL) {
       fprintf (config,
 	       "[default]\n\
+vim_mode = %s\n\
 box_width = %d\n\
 box_height = %d\n\
 colorize = %s\n\
@@ -646,6 +700,7 @@ screenshot = %s\n\
 screenshot_offset_x = %d\n\
 screenshot_offset_y = %d\n\
 ",
+	       (options.vim_mode) ? "true" : "false",
 	       options.box_width,
 	       options.box_height,
 	       (options.colorize) ? "true" : "false",

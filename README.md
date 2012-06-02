@@ -8,7 +8,7 @@ Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-con
 
 ![xwinmosaic's screenshot](http://i.imgur.com/zubWi.png "Screenshot")
 
-Use arrow keys or mouse to navigate through windows.
+Use arrow keys (also `C-n`, `C-p`, `C-f`, `C-b` in default mode, `hjkl` in vim mode) or mouse to navigate through windows.
 Start typing to search for required window.
 
 Config file is created automatically on first program run and stored in `~/.config/xwinmosaic/config`.
@@ -24,6 +24,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 
     Application Options:
       -r, --read-stdin                Read items from stdin (and print selected item to stdout)
+      -V, --vim-mode                  Turn on vim-like navigation (hjkl, search on /)
       -C, --no-colors                 Turn off box colorizing
       -I, --no-icons                  Turn off showing icons
       -D, --no-desktops               Turn off showing desktop number
