@@ -36,6 +36,8 @@ static struct {
   gboolean read_stdin;
   gboolean screenshot;
   guchar color_offset;
+  gint screenshot_offset_x;
+  gint screenshot_offset_y;
 } options;
 
 static GOptionEntry entries [] =
@@ -79,26 +81,18 @@ static void refilter (GtkEditable *editable, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
 static void read_stdin ();
 static GdkPixbuf* get_screenshot ();
+static void read_config ();
+static void write_default_config ();
 
 int main (int argc, char **argv)
 {
   gtk_init (&argc, &argv);
 
-  // Set default options.
-  options.box_width = 200;
-  options.box_height = 40;
-  options.colorize = TRUE;
-  options.show_icons = TRUE;
-  options.show_desktop = TRUE;
-  options.icon_size = 16;
-  options.font_size = 10;
-  options.read_stdin = FALSE;
-  options.screenshot = FALSE;
-  options.color_offset = 0;
+  read_config ();
 
+  // Read options from command-line arguments.
   GError *error = NULL;
   GOptionContext *context;
-
   context = g_option_context_new (" - show X11 windows as colour mosaic");
   g_option_context_add_main_entries (context, entries, NULL);
   g_option_context_add_group (context, gtk_get_option_group (TRUE));
@@ -106,11 +100,10 @@ int main (int argc, char **argv)
     g_print ("option parsing failed: %s\n", error->message);
     exit (1);
   }
+  g_option_context_free (context);
 
   atoms_init ();
 
-  if (!options.font_name)
-    options.font_name = g_strdup ("Sans");
   if (options.read_stdin) {
     options.show_icons = FALSE;
     options.show_desktop = FALSE;
@@ -567,5 +560,108 @@ static GdkPixbuf* get_screenshot ()
   gdk_window_get_origin (root_window, &x, &y);
 
   return gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
-				       x, y, 0, 0, swidth, sheight);
+				       x + options.screenshot_offset_x,
+				       y + options.screenshot_offset_y,
+				       0, 0, swidth, sheight);
+}
+
+static void read_config ()
+{
+  // Set default options.
+  options.box_width = 200;
+  options.box_height = 40;
+  options.colorize = TRUE;
+  options.color_offset = 0;
+  options.show_icons = TRUE;
+  options.show_desktop = TRUE;
+  options.icon_size = 16;
+  options.font_name = g_strdup ("Sans");
+  options.font_size = 10;
+  options.read_stdin = FALSE;
+  options.screenshot = FALSE;
+  options.screenshot_offset_x = 0;
+  options.screenshot_offset_y = 0;
+
+  gchar *filename = g_strjoin ("/", g_get_user_config_dir (), "xwinmosaic/config", NULL);
+
+  GError *error = NULL;
+  GKeyFile *config = g_key_file_new ();
+
+  if (!g_key_file_load_from_file (config, filename, 0, &error)) {
+    write_default_config ();
+    return;
+  }
+
+  const gchar *group = "default";
+  if (g_key_file_has_group (config, group)) {
+    if (g_key_file_has_key (config, group, "box_width", &error))
+      options.box_width = g_key_file_get_integer (config, group, "box_width", &error);
+    if (g_key_file_has_key (config, group, "box_height", &error))
+      options.box_height = g_key_file_get_integer (config, group, "box_height", &error);
+    if (g_key_file_has_key (config, group, "colorize", &error))
+      options.colorize = g_key_file_get_boolean (config, group, "colorize", &error);
+    if (g_key_file_has_key (config, group, "color_offset", &error))
+      options.color_offset = g_key_file_get_integer (config, group, "color_offset", &error);
+    if (g_key_file_has_key (config, group, "show_icons", &error))
+      options.show_icons = g_key_file_get_boolean (config, group, "show_icons", &error);
+    if (g_key_file_has_key (config, group, "show_desktop", &error))
+      options.show_desktop = g_key_file_get_boolean (config, group, "show_desktop", &error);
+    if (g_key_file_has_key (config, group, "icon_size", &error))
+      options.icon_size = g_key_file_get_integer (config, group, "icon_size", &error);
+    if (g_key_file_has_key (config, group, "font_name", &error))
+      options.font_name = g_key_file_get_string (config, group, "font_name", &error);
+    if (g_key_file_has_key (config, group, "font_size", &error))
+      options.font_size = g_key_file_get_integer (config, group, "font_size", &error);
+    if (g_key_file_has_key (config, group, "screenshot", &error))
+      options.screenshot = g_key_file_get_boolean (config, group, "screenshot", &error);
+    if (g_key_file_has_key (config, group, "screenshot_offset_x", &error))
+      options.screenshot_offset_x = g_key_file_get_integer (config, group, "screenshot_offset_x", &error);
+    if (g_key_file_has_key (config, group, "screenshot_offset_y", &error))
+      options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
+  }
+
+  g_key_file_unref (config);
+}
+
+static void write_default_config ()
+{
+  gchar *confdir = g_strjoin ("/", g_get_user_config_dir (), "xwinmosaic", NULL);
+  gchar *filename = g_strjoin ("/", g_get_user_config_dir (), "xwinmosaic/config", NULL);
+
+  if (g_mkdir_with_parents (confdir, 0755) != -1) {
+    FILE *config;
+    if ((config = fopen (filename, "w")) != NULL) {
+      fprintf (config,
+	       "[default]\n\
+box_width = %d\n\
+box_height = %d\n\
+colorize = %s\n\
+color_offset = %d\n\
+show_icons = %s\n\
+show_desktop = %s\n\
+icon_size = %d\n\
+font_name = %s\n\
+font_size = %d\n\
+screenshot = %s\n\
+screenshot_offset_x = %d\n\
+screenshot_offset_y = %d\n\
+",
+	       options.box_width,
+	       options.box_height,
+	       (options.colorize) ? "true" : "false",
+	       options.color_offset,
+	       (options.show_icons) ? "true" : "false",
+	       (options.show_desktop) ? "true" : "false",
+	       options.icon_size,
+	       options.font_name,
+	       options.font_size,
+	       (options.screenshot) ? "true" : "false",
+	       options.screenshot_offset_x,
+	       options.screenshot_offset_y);
+
+      fclose (config);
+      }
+  }
+
+  g_print ("created new config in %s\n", confdir);
 }
