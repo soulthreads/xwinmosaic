@@ -6,31 +6,33 @@ X11 window switcher that draws windows list as colour mosaic
 
 Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html), but written in C + GTK+2, uses nice-looking colours and has some set of helpful features.
 
-![xwinmosaic's screenshot](http://i.imgur.com/UoMDO.png "Screenshot")
+![xwinmosaic's screenshot](http://i.imgur.com/zubWi.png "Screenshot")
 
 Use arrow keys or mouse to navigate through windows.
 Start typing to search for required window.
 
 ### Usage:
+    Usage:
+      xwinmosaic [OPTION...]  - show X11 windows as colour mosaic
 
-	xwinmosaic [OPTIONS]
-	Options:
-		-h                Show this help
-		-r                Read items from stdin (and print selected item to stdout)
-		-C                Turns off box colorizing
-		-I                Turns off showing icons
-		-D                Turns off showing desktop number
-		-S                Get screenshot and set it as a background
-                                    (for WMs that do not support XShape)
+    Help Options:
+      -h, --help                      Show help options
+      --help-all                      Show all help options
+      --help-gtk                      Show GTK+ Options
 
-
-		-W <int>          Width of the boxes (default: 200)
-		-H <int>          Height of the boxes (default: 40)
-		-i <int>          Size of window icons (default: 16)
-		-f "font name"    Which font to use for displaying widgets. (default: Sans)
-		-s <int>          Font size (default: 10)
-		-o <int>          Set color hue offset (from 0 to 255)
-
+    Application Options:
+      -r, --read-stdin                Read items from stdin (and print selected item to stdout)
+      -C, --no-colors                 Turn off box colorizing
+      -I, --no-icons                  Turn off showing icons
+      -D, --no-desktops               Turn off showing desktop number
+      -S, --screenshot                Get screenshot and set it as a background (for WMs that do not support XShape)
+      -W, --box-width=<int>           Width of the boxes (default: 200)
+      -H, --box-height=<int>          Height of the boxes (default: 40)
+      -i, --icon-size=<int>           Size of window icons (default: 16)
+      -f, --font-name="font name"     Which font to use for displaying widgets. (default: Sans)
+      -s, --font-size=<int>           Font size (default: 10)
+      -o, --hue-offset=<int>          Set color hue offset (from 0 to 255)
+      --display=DISPLAY               X display to use
 
 ### Dependencies:
 

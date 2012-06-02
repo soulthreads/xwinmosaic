@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <getopt.h>
 #include <inttypes.h>
 #include <string.h>
 #include <X11/Xlib.h>
@@ -40,6 +38,34 @@ static struct {
   guchar color_offset;
 } options;
 
+static GOptionEntry entries [] =
+{
+  { "read-stdin", 'r', 0, G_OPTION_ARG_NONE, &options.read_stdin,
+    "Read items from stdin (and print selected item to stdout)", NULL },
+  { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
+    "Turn off box colorizing", NULL },
+  { "no-icons", 'I', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.show_icons,
+    "Turn off showing icons", NULL },
+  { "no-desktops", 'D', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.show_desktop,
+    "Turn off showing desktop number", NULL },
+  { "screenshot", 'S', 0, G_OPTION_ARG_NONE, &options.screenshot,
+    "Get screenshot and set it as a background (for WMs that do not support XShape)", NULL },
+
+  { "box-width", 'W', 0, G_OPTION_ARG_INT, &options.box_width,
+    "Width of the boxes (default: 200)", "<int>" },
+  { "box-height", 'H', 0, G_OPTION_ARG_INT, &options.box_height,
+    "Height of the boxes (default: 40)", "<int>" },
+  { "icon-size", 'i', 0, G_OPTION_ARG_INT, &options.icon_size,
+    "Size of window icons (default: 16)", "<int>" },
+  { "font-name", 'f', 0, G_OPTION_ARG_STRING, &options.font_name,
+    "Which font to use for displaying widgets. (default: Sans)", "\"font name\"" },
+  { "font-size", 's', 0, G_OPTION_ARG_INT, &options.font_size,
+    "Font size (default: 10)", "<int>" },
+  { "hue-offset", 'o', 0, G_OPTION_ARG_INT, &options.color_offset,
+    "Set color hue offset (from 0 to 255)", "<int>" },
+  { NULL }
+};
+
 static GdkRectangle current_monitor_size ();
 static void draw_mosaic (GtkLayout *where,
 		  GtkWidget **widgets, int rsize,
@@ -51,7 +77,6 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
 static void refilter (GtkEditable *editable, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size);
-static void show_help ();
 static void read_stdin ();
 static GdkPixbuf* get_screenshot ();
 
@@ -59,7 +84,7 @@ int main (int argc, char **argv)
 {
   gtk_init (&argc, &argv);
 
-  int opt;
+  // Set default options.
   options.box_width = 200;
   options.box_height = 40;
   options.colorize = TRUE;
@@ -70,48 +95,16 @@ int main (int argc, char **argv)
   options.read_stdin = FALSE;
   options.screenshot = FALSE;
   options.color_offset = 0;
-  while ((opt = getopt (argc, argv, "hrCIDSW:H:i:f:s:o:")) != -1) {
-    switch (opt) {
-    case 'h':
-      show_help ();
-      return 0;
-    case 'r':
-      options.read_stdin = TRUE;
-      break;
-    case 'C':
-      options.colorize = FALSE;
-      break;
-    case 'I':
-      options.show_icons = FALSE;
-      break;
-    case 'D':
-      options.show_desktop = FALSE;
-      break;
-    case 'S':
-      options.screenshot = TRUE;
-      break;
-    case 'W':
-      options.box_width = atoi (optarg);
-      break;
-    case 'H':
-      options.box_height = atoi (optarg);
-      break;
-    case 'i':
-      options.icon_size = atoi (optarg);
-      break;
-    case 'f':
-      options.font_name = g_strdup (optarg);
-      break;
-    case 's':
-      options.font_size = atoi (optarg);
-      break;
-    case 'o':
-      options.color_offset = atoi (optarg);
-      break;
-    default:
-      show_help ();
-      return 1;
-    }
+
+  GError *error = NULL;
+  GOptionContext *context;
+
+  context = g_option_context_new (" - show X11 windows as colour mosaic");
+  g_option_context_add_main_entries (context, entries, NULL);
+  g_option_context_add_group (context, gtk_get_option_group (TRUE));
+  if (!g_option_context_parse (context, &argc, &argv, &error)) {
+    g_print ("option parsing failed: %s\n", error->message);
+    exit (1);
   }
 
   atoms_init ();
@@ -547,29 +540,6 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
   }
 
   cairo_destroy (cr);
-}
-
-static void show_help ()
-{
-  fprintf (stderr, "\
-Usage: xwinmosaic [OPTIONS]\n\
-Options:\n\
-  -h                Show this help\n\
-  -r                Read items from stdin (and print selected item to stdout)\n\
-  -C                Turns off box colorizing\n\
-  -I                Turns off showing icons\n\
-  -D                Turns off showing desktop number\n\
-  -S                Get screenshot and set it as a background\n\
-                      (for WMs that do not support XShape)\n\
-\n\
-  -W <int>          Width of the boxes (default: 200)\n\
-  -H <int>          Height of the boxes (default: 40)\n\
-  -i <int>          Size of window icons (default: 16)\n\
-  -f \"font name\"    Which font to use for displaying widgets. (default: Sans)\n\
-  -s <int>          Font size (default: 10)\n\
-  -o <int>          Set color hue offset (from 0 to 255)\n\
-\nTip: start typing to search for required window.\n\
-");
 }
 
 static void read_stdin ()
