@@ -11,6 +11,8 @@ Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-con
 Use arrow keys or mouse to navigate through windows.
 Start typing to search for required window.
 
+Config file is created automatically on first program run and stored in `~/.config/xwinmosaic/config`.
+
 ### Usage:
     Usage:
       xwinmosaic [OPTION...]  - show X11 windows as colour mosaic
