@@ -381,6 +381,11 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   }
   default:
   {
+    // Ignore Ctrl key.
+    if (event->state & GDK_CONTROL_MASK) {
+      return FALSE;
+    }
+
     char *key = event->string;
     if (strlen(key)) {
       int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
