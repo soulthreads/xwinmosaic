@@ -412,8 +412,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	break;
       case GDK_KEY_slash:
 	gtk_widget_show (search);
-	draw_mask (window_shape_bitmap, boxes, wsize);
-	gtk_widget_shape_combine_mask (window, window_shape_bitmap, 0, 0);
+	g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
 	break;
       }
       return TRUE;
