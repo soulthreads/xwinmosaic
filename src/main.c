@@ -500,11 +500,12 @@ static void refilter (GtkEditable *entry, gpointer data)
   }
   filtered_size = 0;
 
+  for (int i = 0; i < wsize; i++)
+      gtk_widget_hide (boxes [i]);
+
   gchar *search_for = g_utf8_casefold (GTK_ENTRY(entry)->text, -1);
   int s_size = strlen (search_for);
   if (s_size) {
-    for (int i = 0; i < wsize; i++)
-      gtk_widget_hide (boxes [i]);
 
     if (!options.read_stdin)
       filtered_wins = (Window *) malloc (wsize * sizeof (Window));
