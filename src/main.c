@@ -672,7 +672,7 @@ static void read_config ()
       options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
   }
 
-  g_key_file_unref (config);
+  g_key_file_free (config);
 }
 
 static void write_default_config ()
