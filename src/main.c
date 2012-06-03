@@ -544,6 +544,9 @@ static void refilter (GtkEditable *entry, gpointer data)
     }
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
 		 options.box_width, options.box_height);
+    // Stupid thing to show search entry at top level..
+    gtk_widget_hide (search);
+    gtk_widget_show (search);
   } else {
     draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
 		 options.box_width, options.box_height);
