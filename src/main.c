@@ -241,39 +241,45 @@ static void draw_mosaic (GtkLayout *where,
   int cur_y = (height - rheight)/2;
   if (rsize) {
     int i = 0;
+    int offset = 0;
+    int max_offset = (width*2) / rwidth + (height*2) / rheight;
+    int side = 0;
 
-    if (gtk_widget_get_parent (widgets[i]))
-      gtk_layout_move (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
-    else
-      gtk_layout_put (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
-    gtk_widget_set_size_request (widgets[i], rwidth, rheight);
-    window_box_set_inner (WINDOW_BOX (widgets[i]), cur_x, cur_y, rwidth, rheight);
-    gtk_widget_show (widgets[i++]);
-    int side = 1;
     while (i < rsize) {
-      cur_x = (width - rwidth)/2;
-      cur_y -= rheight;
-
-      for (int j = 0; j < side * 4; j++) {
+      int j = 0;
+      do {
 	if (i == rsize)
 	  break;
-	if (gtk_widget_get_parent (widgets[i]))
-	  gtk_layout_move (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
-	else
-	  gtk_layout_put (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
-	gtk_widget_set_size_request (widgets[i], rwidth, rheight);
-	window_box_set_inner (WINDOW_BOX (widgets[i]), cur_x, cur_y, rwidth, rheight);
-	gtk_widget_show (widgets[i++]);
-	if (j % (side * 4) < side || j % (side * 4) >= side * 3)
-	  cur_x += rwidth;
-	else
-	  cur_x -= rwidth;
-	if (j % (side * 4) < side * 2)
-	  cur_y += rheight;
-	else
-	  cur_y -= rheight;
-      }
+	if (cur_x > 0 && cur_x+rwidth < width && cur_y > 0 && cur_y+rheight < height) {
+	  offset = 0;
+	  if (gtk_widget_get_parent (widgets[i]))
+	    gtk_layout_move (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
+	  else
+	    gtk_layout_put (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
+	  gtk_widget_set_size_request (widgets[i], rwidth, rheight);
+	  window_box_set_inner (WINDOW_BOX (widgets[i]), cur_x, cur_y, rwidth, rheight);
+	  gtk_widget_show (widgets[i]);
+	  i++;
+	} else {
+	  offset++;
+	}
+	if (side) {
+	  if (j % (side * 4) < side || j % (side * 4) >= side * 3)
+	    cur_x += rwidth;
+	  else
+	    cur_x -= rwidth;
+	  if (j % (side * 4) < side * 2)
+	    cur_y += rheight;
+	  else
+	    cur_y -= rheight;
+	}
+	j++;
+      } while (j < side * 4);
+      if (offset >= max_offset)
+	break;
       side++;
+      cur_x = (width - rwidth)/2;
+      cur_y -= rheight;
     }
     if (focus_on >= rsize)
       // If some window was killed and focus was on the last element
