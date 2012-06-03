@@ -6,3 +6,4 @@ set (CMAKE_C_FLAGS_RELEASE "-O3")
 set (CMAKE_C_FLAGS_DEBUG "-g")
 
 add_subdirectory (src)
+add_subdirectory (support)

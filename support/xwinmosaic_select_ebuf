@@ -18,7 +18,7 @@ emacs_sw ()
 
 items=$(emacs_ls)
 
-sel=$(echo "$items" | grep -v ^$ | sort -u | xwinmosaic -r)
+sel=$(echo "$items" | grep -v ^$ | xwinmosaic -r)
 test -z "$sel" && exit 0 # 1?
 
 emacs_sw $sel
