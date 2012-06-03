@@ -15,7 +15,7 @@ EGIT_REPO_URI="git://github.com/soulthreads/xwinmosaic.git"
 LICENSE="BSD-2"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
-IUSE="debug"
+IUSE="debug scripts"
 
 RDEPEND="x11-libs/libX11
 	=x11-libs/gtk+-2*"
@@ -26,4 +26,12 @@ DOCS="README.md"
 
 src_unpack() {
     git-2_src_unpack
+}
+
+src_configure() {
+    local mycmakeargs=(
+	$(cmake-utils_use_with scripts SCRIPTS)
+    )
+
+    cmake-utils_src_configure
 }

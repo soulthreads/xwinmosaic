@@ -27,7 +27,7 @@ build() {
   msg "Starting make..."
   rm -rf "$srcdir/$_gitname-build"
   mkdir "$srcdir/$_gitname-build"
-  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr "$srcdir/$_gitname"
+  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DWITH_SCRIPTS=ON "$srcdir/$_gitname"
   make || return 1
   make DESTDIR="$pkgdir" install
 }
