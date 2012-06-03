@@ -39,6 +39,9 @@ static struct {
   gint screenshot_offset_x;
   gint screenshot_offset_y;
   gboolean vim_mode;
+  gboolean at_pointer;
+  gint center_x;
+  gint center_y;
 } options;
 
 static GOptionEntry entries [] =
@@ -55,6 +58,8 @@ static GOptionEntry entries [] =
     "Turn off showing desktop number", NULL },
   { "screenshot", 'S', 0, G_OPTION_ARG_NONE, &options.screenshot,
     "Get screenshot and set it as a background (for WMs that do not support XShape)", NULL },
+  { "at-pointer", 'P', 0, G_OPTION_ARG_NONE, &options.at_pointer,
+    "Place center of mosaic at pointer position.", NULL },
 
   { "box-width", 'W', 0, G_OPTION_ARG_INT, &options.box_width,
     "Width of the boxes (default: 200)", "<int>" },
@@ -140,6 +145,22 @@ int main (int argc, char **argv)
   GdkRectangle rect = current_monitor_size ();
   width = rect.width;
   height = rect.height;
+
+  if (options.at_pointer) {
+    gdk_display_get_pointer (gdk_display_get_default (), NULL, &options.center_x, &options.center_y, NULL);
+    if (options.center_x < options.box_width/2)
+      options.center_x = options.box_width/2 + 1;
+    else if (options.center_x > width - options.box_width/2)
+      options.center_x = width - options.box_width/2 - 1;
+    if (options.center_y < options.box_height/2)
+      options.center_y = options.box_height/2 + 1;
+    else if (options.center_y > height - options.box_height/2)
+      options.center_y = height - options.box_height/2 - 1;
+  } else {
+    options.center_x = width/2;
+    options.center_y = height/2;
+  }
+
   gtk_window_set_default_size (GTK_WINDOW (window), width, height);
   gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
   gtk_window_set_decorated (GTK_WINDOW (window), False);
@@ -237,8 +258,8 @@ static void draw_mosaic (GtkLayout *where,
 		  int focus_on,
 		  int rwidth, int rheight)
 {
-  int cur_x = (width - rwidth)/2;
-  int cur_y = (height - rheight)/2;
+  int cur_x = options.center_x - rwidth/2;
+  int cur_y = options.center_y - rheight/2;
   if (rsize) {
     int i = 0;
     int offset = 0;
@@ -278,7 +299,7 @@ static void draw_mosaic (GtkLayout *where,
       if (offset >= max_offset)
 	break;
       side++;
-      cur_x = (width - rwidth)/2;
+      cur_x = options.center_x - rwidth/2;
       cur_y -= rheight;
     }
     if (focus_on >= rsize)
@@ -680,6 +701,8 @@ static void read_config ()
       options.screenshot_offset_x = g_key_file_get_integer (config, group, "screenshot_offset_x", &error);
     if (g_key_file_has_key (config, group, "screenshot_offset_y", &error))
       options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
+    if (g_key_file_has_key (config, group, "at_pointer", &error))
+      options.screenshot = g_key_file_get_boolean (config, group, "at_pointer", &error);
   }
 
   g_key_file_free (config);
@@ -708,6 +731,7 @@ font_size = %d\n\
 screenshot = %s\n\
 screenshot_offset_x = %d\n\
 screenshot_offset_y = %d\n\
+at_pointer = %s\n\
 ",
 	       (options.vim_mode) ? "true" : "false",
 	       options.box_width,
@@ -721,7 +745,8 @@ screenshot_offset_y = %d\n\
 	       options.font_size,
 	       (options.screenshot) ? "true" : "false",
 	       options.screenshot_offset_x,
-	       options.screenshot_offset_y);
+	       options.screenshot_offset_y,
+	       (options.at_pointer) ? "true" : "false");
 
       fclose (config);
       }

@@ -29,6 +29,7 @@ Config file is created automatically on first program run and stored in `~/.conf
       -I, --no-icons                  Turn off showing icons
       -D, --no-desktops               Turn off showing desktop number
       -S, --screenshot                Get screenshot and set it as a background (for WMs that do not support XShape)
+      -P, --at-pointer                Place center of mosaic at pointer position.
       -W, --box-width=<int>           Width of the boxes (default: 200)
       -H, --box-height=<int>          Height of the boxes (default: 40)
       -i, --icon-size=<int>           Size of window icons (default: 16)
