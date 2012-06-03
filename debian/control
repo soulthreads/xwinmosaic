@@ -1,0 +1,17 @@
+Source: xwinmosaic
+Section: x11
+Priority: extra
+Maintainer: Anton S. Lobashev <soulthreads@linuxoids.net>
+Build-Depends: debhelper (>= 8.0.0), cmake, libx11-dev, libglib2.0-0, libgtk2.0-dev
+Standards-Version: 3.9.2
+Homepage: http://github.com/soulthreads/xwinmosaic
+#Vcs-Git: git://git.debian.org/collab-maint/xwinmosaic.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/xwinmosaic.git;a=summary
+
+Package: xwinmosaic
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: X11 window switcher with fancy look
+ X11 window switcher that draws windows list as colour mosaic.
+ Inspired by XMonad.Actions.GridSelect, but written in C + GTK+2,
+ uses nice-looking colours and has some set of helpful features.
