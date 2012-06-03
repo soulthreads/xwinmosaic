@@ -702,7 +702,7 @@ static void read_config ()
     if (g_key_file_has_key (config, group, "screenshot_offset_y", &error))
       options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
     if (g_key_file_has_key (config, group, "at_pointer", &error))
-      options.screenshot = g_key_file_get_boolean (config, group, "at_pointer", &error);
+      options.at_pointer = g_key_file_get_boolean (config, group, "at_pointer", &error);
   }
 
   g_key_file_free (config);
