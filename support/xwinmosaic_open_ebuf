@@ -1,9 +1,4 @@
 #!/bin/sh
-FONT="Monospace"
-SIZE=12
-WIDTH=150
-HEIGHT=30
-XWINMOSAIC="xwinmosaic -r -f $FONT -s $SIZE -W $WIDTH -H $HEIGHT"
 
 emacs_ls ()
 {
@@ -23,7 +18,7 @@ emacs_sw ()
 
 items=$(emacs_ls)
 
-sel=$(echo "$items" | grep -v ^$ | sort -u | $XWINMOSAIC)
+sel=$(echo "$items" | grep -v ^$ | sort -u | xwinmosaic -r)
 test -z "$sel" && exit 0 # 1?
 
 emacs_sw $sel
