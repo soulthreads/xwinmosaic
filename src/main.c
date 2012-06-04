@@ -560,23 +560,34 @@ static void refilter (GtkEditable *entry, gpointer data)
     gint p3size = 0;
 
     for (int i = 0; i < wsize; i++) {
-      const gchar *wname = window_box_get_name (WINDOW_BOX(boxes[i]));
-      gchar *wname_cmp = g_utf8_casefold (wname, -1);
-      int wn_size = strlen (wname_cmp);
+      gchar *wname_cmp = NULL;
+      gchar *wclass_cmp = NULL;
+      int wn_size = 0;
+      int wc_size = 0;
+
+      wname_cmp = g_utf8_casefold (window_box_get_name (WINDOW_BOX (boxes[i])), -1);
+      wn_size = strlen (wname_cmp);
+      if (!options.read_stdin) {
+	wclass_cmp = g_utf8_casefold (window_box_get_xclass (WINDOW_BOX (boxes[i])), -1);
+	wc_size = strlen (wclass_cmp);
+      }
       gboolean found = FALSE;
       if (g_str_has_prefix (wname_cmp, search_for)) {
 	found = TRUE;
 	priority1 [p1size++] = boxes [i];
       }
-      if (!found && g_strstr_len (wname_cmp, wn_size, search_for) != NULL) {
+      if (!found && ((g_strstr_len (wname_cmp, wn_size, search_for) != NULL) ||
+		     (!options.read_stdin && g_str_has_prefix (wclass_cmp, search_for)))) {
 	found = TRUE;
 	priority2 [p2size++] = boxes [i];
       }
-      if (!found && search_by_letters (wname_cmp, wn_size, search_for, s_size)) {
+      if (!found && ((search_by_letters (wname_cmp, wn_size, search_for, s_size)) ||
+	  (!options.read_stdin && g_strstr_len (wclass_cmp, wc_size, search_for) != NULL))) {
 	found = TRUE;
 	priority3 [p3size++] = boxes [i];
       }
       g_free (wname_cmp);
+      g_free (wclass_cmp);
     }
     for (int i = 0; i < p1size; i++)
       filtered_boxes [filtered_size++] = priority1 [i];
