@@ -625,6 +625,13 @@ static void refilter (GtkEditable *entry, gpointer data)
     draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
 		 options.box_width, options.box_height);
   }
+
+  if (gtk_widget_get_visible (search)) {
+    // Stupid thing to show search entry at top level..
+    gtk_widget_hide (search);
+    gtk_widget_show (search);
+  }
+
   g_free (search_for);
 }
 
@@ -652,11 +659,6 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
 
   // show search entry if it is active.
   if (search) {
-    if (gtk_widget_get_visible (search)) {
-      // Stupid thing to show search entry at top level..
-      gtk_widget_hide (search);
-      gtk_widget_show (search);
-    }
     if (gtk_entry_get_text_length (GTK_ENTRY (search)) ||
 	(options.vim_mode && gtk_widget_get_visible (search))) {
       cairo_rectangle (cr,
