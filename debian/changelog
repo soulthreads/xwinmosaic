@@ -1,4 +1,14 @@
-xwinmosaic (0.2+git20120603-1) unstable; urgency=low
+xwinmosaic (0.3+git20120604-1) precise; urgency=low
+
+  * Emacs/vim-like navigation
+  * Better widgets placing
+  * Ability to place center of mosaic at pointer position
+  * Many bugfixes
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Mon, 04 Jun 2012 11:53:00 +0400
+
+
+xwinmosaic (0.2+git20120603-1) precise; urgency=low
 
   * Initial release
 
