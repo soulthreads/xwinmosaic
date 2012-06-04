@@ -418,7 +418,6 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
       WindowBox* box = WINDOW_BOX (gtk_window_get_focus(GTK_WINDOW (window)));
       gtk_entry_set_text(GTK_ENTRY (search), box->name);
       gtk_widget_show(search);
-      puts(box->name);
     }
     break;
   case GDK_KEY_BackSpace:
