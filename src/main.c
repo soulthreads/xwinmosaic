@@ -810,5 +810,5 @@ at_pointer = %s\n\
       }
   }
 
-  g_print ("created new config in %s\n", confdir);
+  g_printerr ("created new config in %s\n", confdir);
 }
