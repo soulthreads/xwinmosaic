@@ -33,7 +33,7 @@ static struct {
   gchar *font_name;
   guint font_size;
   gboolean read_stdin;
-  gboolean launcher_mode;
+  gboolean permissive;
   gboolean screenshot;
   guchar color_offset;
   gint screenshot_offset_x;
@@ -48,8 +48,8 @@ static GOptionEntry entries [] =
 {
   { "read-stdin", 'r', 0, G_OPTION_ARG_NONE, &options.read_stdin,
     "Read items from stdin (and print selected item to stdout)", NULL },
-  { "launcher-mode", 'L', 0, G_OPTION_ARG_NONE, &options.launcher_mode,
-    "Let xwinmosaic act like dmenu", NULL},
+  { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
+    "Lets search entry text to be used as individual item.", NULL},
   { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
     "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
@@ -93,7 +93,6 @@ static void read_stdin ();
 static GdkPixbuf* get_screenshot ();
 static void read_config ();
 static void write_default_config ();
-static void launch(gchar* command);
 
 int main (int argc, char **argv)
 {
@@ -108,7 +107,7 @@ int main (int argc, char **argv)
   g_option_context_add_main_entries (context, entries, NULL);
   g_option_context_add_group (context, gtk_get_option_group (TRUE));
   if (!g_option_context_parse (context, &argc, &argv, &error)) {
-    g_print ("option parsing failed: %s\n", error->message);
+    g_printerr ("option parsing failed: %s\n", error->message);
     exit (1);
   }
   g_option_context_free (context);
@@ -118,11 +117,6 @@ int main (int argc, char **argv)
   if (options.read_stdin) {
     options.show_icons = FALSE;
     options.show_desktop = FALSE;
-    read_stdin ();
-  } else if(options.launcher_mode) {
-    options.show_icons = FALSE;
-    options.show_desktop = FALSE;
-    options.read_stdin = TRUE;
     read_stdin ();
   } else {
     // Checks whether WM supports EWMH specifications.
@@ -225,7 +219,7 @@ int main (int argc, char **argv)
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
   myown_window = GDK_WINDOW_XID (gdk_window);
 
-  if ((!options.read_stdin)&&(!options.launcher_mode)) {
+  if (!options.read_stdin) {
     // Get PropertyNotify events from root window.
     XSelectInput (gdk_x11_get_default_xdisplay (),
 		  gdk_x11_get_default_root_xwindow (),
@@ -243,7 +237,7 @@ int main (int argc, char **argv)
 
   gtk_main ();
 
-  if ((!options.read_stdin)&&(!options.launcher_mode))
+  if (!options.read_stdin)
     XFree (wins);
 
   return 0;
@@ -324,20 +318,11 @@ static void draw_mosaic (GtkLayout *where,
 static void on_rect_click (GtkWidget *widget, gpointer data)
 {
   WindowBox *box = WINDOW_BOX (widget);
-  if ((!options.read_stdin)&&(!options.launcher_mode)) {
+  if (!options.read_stdin) {
     Window win = box->xwindow;
     switch_to_window (win);
   } else {
-    if(options.read_stdin) puts(box->name);
-    if(options.launcher_mode)
-      {
-        gchar* searchbox = (gchar*)gtk_entry_get_text(GTK_ENTRY (search));
-        if(g_strcmp0(searchbox, box->name))
-          {
-            launch(box->name);
-          }
-        else launch(searchbox);
-      }
+    puts (box->name);
   }
   gtk_main_quit ();
 }
@@ -399,14 +384,14 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     break;
   }
   case GDK_KEY_Return:
-    {
-      if(gtk_entry_get_text_length(GTK_ENTRY (search))&&(!filtered_size)&&options.launcher_mode)
-        {
-          launch( (gchar*)gtk_entry_get_text(GTK_ENTRY (search)));
-          gtk_main_quit();
-        }
+  {
+    if(gtk_entry_get_text_length (GTK_ENTRY (search)) && !filtered_size &&
+       options.read_stdin && options.permissive) {
+      puts (GTK_ENTRY (search)->text);
+      gtk_main_quit();
     }
     break;
+  }
   case GDK_KEY_Left:
   case GDK_KEY_Up:
   case GDK_KEY_Right:
@@ -414,10 +399,10 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   case GDK_KEY_Tab:
     break;
   case GDK_KEY_End:
-    if(options.launcher_mode){
-      WindowBox* box = WINDOW_BOX (gtk_window_get_focus(GTK_WINDOW (window)));
-      gtk_entry_set_text(GTK_ENTRY (search), box->name);
-      gtk_widget_show(search);
+    if (options.permissive) {
+      WindowBox* box = WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
+      gtk_entry_set_text (GTK_ENTRY (search), box->name);
+      gtk_widget_show (search);
     }
     break;
   case GDK_KEY_BackSpace:
@@ -827,9 +812,3 @@ at_pointer = %s\n\
 
   g_print ("created new config in %s\n", confdir);
 }
-
-static void launch(gchar* command) {
-  //stub!
-  puts(command);
-}
-

@@ -24,6 +24,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 
     Application Options:
       -r, --read-stdin                Read items from stdin (and print selected item to stdout)
+      -p, --permissive                Lets search entry text to be used as individual item.
       -V, --vim-mode                  Turn on vim-like navigation (hjkl, search on /)
       -C, --no-colors                 Turn off box colorizing
       -I, --no-icons                  Turn off showing icons
