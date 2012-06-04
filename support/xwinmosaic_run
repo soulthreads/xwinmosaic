@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec `(for x in $(echo $PATH|sed s/:/\ /g); do /bin/ls -1 $x; done) | xwinmosaic -r` & exit
+exec `(for x in $(echo $PATH|sed s/:/\ /g); do /bin/ls -1 $x; done) | xwinmosaic -rp` & exit
