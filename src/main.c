@@ -392,7 +392,8 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     if (text_length > 0)
       gtk_editable_delete_text (GTK_EDITABLE (search), text_length - 1, -1);
     if (text_length == 1 || text_length == 0) {
-      gtk_widget_hide (search);
+      if (!options.vim_mode)
+	gtk_widget_hide (search);
       g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
     }
     break;
@@ -437,8 +438,8 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	break;
       case GDK_KEY_slash:
-	g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
 	gtk_widget_show (search);
+	g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
 	break;
       }
       return TRUE;
@@ -590,9 +591,6 @@ static void refilter (GtkEditable *entry, gpointer data)
 
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
 		 options.box_width, options.box_height);
-    // Stupid thing to show search entry at top level..
-    gtk_widget_hide (search);
-    gtk_widget_show (search);
   } else {
     draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
 		 options.box_width, options.box_height);
@@ -624,6 +622,11 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
 
   // show search entry if it is active.
   if (search) {
+    if (gtk_widget_get_visible (search)) {
+      // Stupid thing to show search entry at top level..
+      gtk_widget_hide (search);
+      gtk_widget_show (search);
+    }
     if (gtk_entry_get_text_length (GTK_ENTRY (search)) ||
 	(options.vim_mode && gtk_widget_get_visible (search))) {
       cairo_rectangle (cr,
