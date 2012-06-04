@@ -153,12 +153,12 @@ int main (int argc, char **argv)
 
     gint monitors = gdk_screen_get_n_monitors (gdk_screen_get_default ());
     if (monitors > 1) {
-      gint xm = 0, ym = 0;
+      guint xm = 0, ym = 0;
       gint current_monitor = gdk_screen_get_monitor_at_point (gdk_screen_get_default (),
 							      options.center_x, options.center_y);
       for (int i = 0; i < current_monitor; i++) {
 	GdkRectangle mon_rect;
-	gdk_screen_get_monitor_geometry (gdk_screen_get_default (), i, &rect);
+	gdk_screen_get_monitor_geometry (gdk_screen_get_default (), i, &mon_rect);
 	xm += mon_rect.width;
 	ym += mon_rect.height;
       }
