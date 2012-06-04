@@ -150,6 +150,24 @@ int main (int argc, char **argv)
 
   if (options.at_pointer) {
     gdk_display_get_pointer (gdk_display_get_default (), NULL, &options.center_x, &options.center_y, NULL);
+
+    gint monitors = gdk_screen_get_n_monitors (gdk_screen_get_default ());
+    if (monitors > 1) {
+      gint xm = 0, ym = 0;
+      gint current_monitor = gdk_screen_get_monitor_at_point (gdk_screen_get_default (),
+							      options.center_x, options.center_y);
+      for (int i = 0; i < current_monitor; i++) {
+	GdkRectangle mon_rect;
+	gdk_screen_get_monitor_geometry (gdk_screen_get_default (), i, &rect);
+	xm += mon_rect.width;
+	ym += mon_rect.height;
+      }
+      if (xm && ym) {
+	options.center_x %= xm;
+	options.center_y %= ym;
+      }
+    }
+
     if (options.center_x < options.box_width/2)
       options.center_x = options.box_width/2 + 1;
     else if (options.center_x > width - options.box_width/2)
@@ -246,9 +264,9 @@ int main (int argc, char **argv)
 static GdkRectangle current_monitor_size ()
 {
   // Where is the pointer now?
-  int x, y;
+  gint x, y;
   gdk_display_get_pointer (gdk_display_get_default (), NULL, &x, &y, NULL);
-  int monitor = gdk_screen_get_monitor_at_point (gdk_screen_get_default (), x, y);
+  gint monitor = gdk_screen_get_monitor_at_point (gdk_screen_get_default (), x, y);
   GdkRectangle rect;
   gdk_screen_get_monitor_geometry (gdk_screen_get_default (), monitor, &rect);
 
