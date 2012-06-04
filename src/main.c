@@ -18,7 +18,6 @@ static int wsize = 0;
 static GtkWidget **boxes;
 static GtkWidget *layout;
 static GtkWidget *search;
-static Window *filtered_wins;
 static GtkWidget **filtered_boxes;
 static int filtered_size;
 static int width, height;
@@ -512,11 +511,34 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
   return GDK_FILTER_CONTINUE;
 }
 
+static gboolean search_by_letters (const gchar *source, gint s_len, const gchar *letters, gint l_len)
+{
+  gboolean found = FALSE;
+  const gchar *p1 = letters;
+  const gchar *p2 = source;
+  while (p1 < letters + l_len) {
+    gunichar c1 = g_utf8_get_char (p1);
+    found = FALSE;
+    while (p2 < source + s_len) {
+      gunichar c2 = g_utf8_get_char (p2);
+      if (c1 == c2) {
+	found = TRUE;
+	p2 = g_utf8_find_next_char (p2, NULL);
+	break;
+      }
+      p2 = g_utf8_find_next_char (p2, NULL);
+    }
+    if (!found)
+      break;
+    p1 = g_utf8_find_next_char (p1, NULL);
+  }
+
+  return found;
+}
+
 static void refilter (GtkEditable *entry, gpointer data)
 {
   if (filtered_size) {
-    if (!options.read_stdin)
-      XFree (filtered_wins);
     free (filtered_boxes);
   }
   filtered_size = 0;
@@ -527,42 +549,45 @@ static void refilter (GtkEditable *entry, gpointer data)
   gchar *search_for = g_utf8_casefold (GTK_ENTRY(entry)->text, -1);
   int s_size = strlen (search_for);
   if (s_size) {
-
-    if (!options.read_stdin)
-      filtered_wins = (Window *) malloc (wsize * sizeof (Window));
-
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
+
+    GtkWidget **priority1 = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
+    GtkWidget **priority2 = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
+    GtkWidget **priority3 = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
+    gint p1size = 0;
+    gint p2size = 0;
+    gint p3size = 0;
+
     for (int i = 0; i < wsize; i++) {
       const gchar *wname = window_box_get_name (WINDOW_BOX(boxes[i]));
       gchar *wname_cmp = g_utf8_casefold (wname, -1);
       int wn_size = strlen (wname_cmp);
-      gchar *p1 = search_for;
-      gchar *p2 = wname_cmp;
       gboolean found = FALSE;
-      while (p1 < search_for + s_size) {
-	gunichar c1 = g_utf8_get_char (p1);
-	found = FALSE;
-	while (p2 < wname_cmp + wn_size) {
-	  gunichar c2 = g_utf8_get_char (p2);
-	  if (c1 == c2) {
-	    found = TRUE;
-	    p2 = g_utf8_find_next_char (p2, NULL);
-	    break;
-	  }
-	  p2 = g_utf8_find_next_char (p2, NULL);
-	}
-	if (!found)
-	  break;
-	p1 = g_utf8_find_next_char (p1, NULL);
+      if (g_str_has_prefix (wname_cmp, search_for)) {
+	found = TRUE;
+	priority1 [p1size++] = boxes [i];
       }
-      if (found) {
-	if (!options.read_stdin)
-	  filtered_wins [filtered_size] = wins [i];
-	filtered_boxes [filtered_size] = boxes [i];
-	filtered_size++;
+      if (!found && g_strstr_len (wname_cmp, wn_size, search_for) != NULL) {
+	found = TRUE;
+	priority2 [p2size++] = boxes [i];
+      }
+      if (!found && search_by_letters (wname_cmp, wn_size, search_for, s_size)) {
+	found = TRUE;
+	priority3 [p3size++] = boxes [i];
       }
       g_free (wname_cmp);
     }
+    for (int i = 0; i < p1size; i++)
+      filtered_boxes [filtered_size++] = priority1 [i];
+    for (int i = 0; i < p2size; i++)
+      filtered_boxes [filtered_size++] = priority2 [i];
+    for (int i = 0; i < p3size; i++)
+      filtered_boxes [filtered_size++] = priority3 [i];
+
+    free (priority1);
+    free (priority2);
+    free (priority3);
+
     draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, 0,
 		 options.box_width, options.box_height);
     // Stupid thing to show search entry at top level..
