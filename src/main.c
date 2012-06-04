@@ -438,8 +438,8 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	break;
       case GDK_KEY_slash:
-	gtk_widget_show (search);
 	g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
+	gtk_widget_show (search);
 	break;
       }
       return TRUE;
