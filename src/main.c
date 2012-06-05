@@ -728,10 +728,14 @@ static void read_stdin ()
 {
   char buffer [BUFSIZ];
   char *p;
+  int current_size = 1;
   in_items = calloc (1, sizeof (char *));
   wsize = 0;
   while (fgets (buffer, BUFSIZ, stdin)) {
-    in_items = realloc (in_items, (wsize+1) * sizeof (char *));
+    if (wsize == current_size) {
+      current_size *= 2;
+      in_items = realloc (in_items, current_size * sizeof (char *));
+    }
     if ((p = strchr (buffer, '\n')))
       *p = '\0';
     in_items [wsize] = g_strdup (buffer);
