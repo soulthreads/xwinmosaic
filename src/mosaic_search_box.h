@@ -28,12 +28,16 @@ struct _MosaicSearchBox
 struct _MosaicSearchBoxClass
 {
   MosaicBoxClass parent_class;
+
+  void (* changed) (MosaicSearchBox *box);
 };
 
 GType mosaic_search_box_get_type (void);
 GtkWidget *mosaic_search_box_new (void);
-void mosaic_search_box_set_name (MosaicSearchBox *box, const gchar *name);
-const gchar *mosaic_search_box_get_name (MosaicSearchBox *box);
+void mosaic_search_box_set_text (MosaicSearchBox *box, const gchar *text);
+const gchar *mosaic_search_box_get_text (MosaicSearchBox *box);
+void mosaic_search_box_append_text (MosaicSearchBox *box, const gchar *text);
+void mosaic_search_box_remove_symbols (MosaicSearchBox *box, guint size);
 
 G_END_DECLS
 

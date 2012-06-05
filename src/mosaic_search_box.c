@@ -1,8 +1,13 @@
 #include "mosaic_search_box.h"
 
 enum {
+  CHANGED,
+  LAST_SIGNAL
+};
+
+enum {
   PROP_0,
-  PROP_NAME,
+  PROP_TEXT,
   N_PROPERTIES
 };
 
@@ -21,6 +26,7 @@ static void mosaic_search_box_get_property (GObject *gobject,
 static gboolean mosaic_search_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint height);
 
+static guint search_box_signals[LAST_SIGNAL] = { 0 };
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
 
 G_DEFINE_TYPE (MosaicSearchBox, mosaic_search_box, MOSAIC_TYPE_BOX);
@@ -40,16 +46,25 @@ mosaic_search_box_class_init (MosaicSearchBoxClass *klass)
 
   widget_class->expose_event = mosaic_search_box_expose_event;
 
-  obj_properties[PROP_NAME] =
-    g_param_spec_string ("name",
-			 "Name in the box",
-			 "Name displayed in the box",
+  obj_properties[PROP_TEXT] =
+    g_param_spec_string ("text",
+			 "Text in the search entry",
+			 "Text, displayed in search entry",
 			 NULL,
 			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
 				     N_PROPERTIES,
 				     obj_properties);
+  search_box_signals [CHANGED] =
+    g_signal_new ("changed",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+		  G_STRUCT_OFFSET (MosaicSearchBoxClass, changed),
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE, 0);
+
 }
 
 static void
@@ -70,6 +85,7 @@ static GObject*	mosaic_search_box_constructor (GType gtype,
 
   box = MOSAIC_SEARCH_BOX (obj);
 
+  MOSAIC_BOX (box)->name = g_strdup("\0");
   box->cursor = '|';
 
   return obj;
@@ -88,8 +104,8 @@ static void mosaic_search_box_set_property (GObject *gobject,
   MosaicSearchBox *box = MOSAIC_SEARCH_BOX (gobject);
 
   switch (prop_id) {
-  case PROP_NAME:
-    mosaic_search_box_set_name (box, g_value_get_string (value));
+  case PROP_TEXT:
+    mosaic_search_box_set_text (box, g_value_get_string (value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -105,7 +121,7 @@ static void mosaic_search_box_get_property (GObject *gobject,
   MosaicSearchBox *box = MOSAIC_SEARCH_BOX (gobject);
 
   switch (prop_id) {
-  case PROP_NAME:
+  case PROP_TEXT:
     g_value_set_string (value, MOSAIC_BOX(box)->name);
     break;
   default:
@@ -141,15 +157,34 @@ mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint hei
 }
 
 void
-mosaic_search_box_set_name (MosaicSearchBox *box, const gchar *name)
+mosaic_search_box_set_text (MosaicSearchBox *box, const gchar *text)
 {
-  mosaic_box_set_name (MOSAIC_BOX (box), name);
+  mosaic_box_set_name (MOSAIC_BOX (box), text);
+  g_signal_emit (box, search_box_signals [CHANGED], 0);
 }
 
 const gchar *
-mosaic_search_box_get_name (MosaicSearchBox *box)
+mosaic_search_box_get_text (MosaicSearchBox *box)
 {
   g_return_val_if_fail (MOSAIC_IS_SEARCH_BOX (box), NULL);
 
   return MOSAIC_BOX (box)->name;
+}
+
+void mosaic_search_box_append_text (MosaicSearchBox *box, const gchar *text)
+{
+  gchar *new_text = g_strjoin (NULL, mosaic_search_box_get_text (box), text, NULL);
+  mosaic_search_box_set_text (box, new_text);
+  g_free (new_text);
+}
+
+void mosaic_search_box_remove_symbols (MosaicSearchBox *box, guint size)
+{
+  gchar *text = g_strdup (mosaic_search_box_get_text (box));
+  gchar *p = text + strlen (text);
+  for (int i = 0; i < size; i++) {
+    p = g_utf8_find_prev_char (text, p);
+    *p = '\0';
+  }
+  mosaic_search_box_set_text (box, text);
 }

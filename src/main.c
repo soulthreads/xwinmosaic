@@ -8,6 +8,7 @@
 #include <gdk/gdkx.h>
 #include "x_interaction.h"
 #include "mosaic_window_box.h"
+#include "mosaic_search_box.h"
 
 static GtkWidget *window;
 static Window myown_window;
@@ -93,7 +94,7 @@ static void on_rect_click (GtkWidget *widget, gpointer data);
 static void update_box_list ();
 static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data);
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
-static void refilter (GtkEditable *editable, gpointer data);
+static void refilter (MosaicSearchBox *search_box, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, guint size);
 static void read_stdin ();
 static GdkPixbuf* get_screenshot ();
@@ -215,8 +216,8 @@ int main (int argc, char **argv)
     gtk_widget_set_style (layout, style);
   }
 
-  search = gtk_entry_new ();
-  gtk_entry_set_width_chars (GTK_ENTRY (search), 20);
+  search = mosaic_search_box_new ();
+  mosaic_box_set_font (MOSAIC_BOX (search), options.font_name, options.font_size);
   gtk_widget_set_can_focus (search, FALSE);
   GtkRequisition s_req;
   gtk_widget_size_request (search, &s_req);
@@ -414,10 +415,10 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   switch (event->keyval) {
   case GDK_KEY_Escape:
   {
-    int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
+    int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
     if (text_length > 0 || gtk_widget_get_visible (search)) {
       gtk_widget_hide (search);
-      gtk_editable_delete_text (GTK_EDITABLE (search), 0, -1);
+      mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
       g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
     } else {
       gtk_main_quit ();
@@ -426,9 +427,9 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   }
   case GDK_KEY_Return:
   {
-    if(gtk_entry_get_text_length (GTK_ENTRY (search)) && !filtered_size &&
+    if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
        options.read_stdin && options.permissive) {
-      puts (gtk_entry_get_text (GTK_ENTRY (search)));
+      puts (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
       gtk_main_quit();
     }
     break;
@@ -442,15 +443,16 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   case GDK_KEY_End:
     if (options.permissive) {
       MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
-      gtk_entry_set_text (GTK_ENTRY (search), mosaic_window_box_get_name (box));
+      mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), mosaic_window_box_get_name (box));
       gtk_widget_show (search);
     }
     break;
   case GDK_KEY_BackSpace:
   {
-    int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
-    if (text_length > 0)
-      gtk_editable_delete_text (GTK_EDITABLE (search), text_length - 1, -1);
+    int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
+    if (text_length > 0) {
+      mosaic_search_box_remove_symbols (MOSAIC_SEARCH_BOX (search), 1);
+    }
     if (text_length == 1 || text_length == 0) {
       if (!options.vim_mode)
 	gtk_widget_hide (search);
@@ -507,8 +509,8 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 
     char *key = event->string;
     if (strlen(key)) {
-      int text_length = gtk_entry_get_text_length (GTK_ENTRY (search));
-      gtk_editable_insert_text (GTK_EDITABLE (search), key, strlen (key), &text_length);
+      mosaic_search_box_append_text (MOSAIC_SEARCH_BOX (search), key);
+      int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
       if (text_length)
 	gtk_widget_show (search);
       return TRUE;
@@ -540,8 +542,8 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	    }
 	}
 	update_box_list ();
-	if (gtk_entry_get_text_length (GTK_ENTRY (search))) {
-	  refilter (GTK_EDITABLE (search), NULL);
+	if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)))) {
+	  refilter (MOSAIC_SEARCH_BOX (search), NULL);
 	  draw_mosaic (GTK_LAYOUT (layout), filtered_boxes, filtered_size, focus_on,
 		       options.box_width, options.box_height);
 	} else {
@@ -597,7 +599,7 @@ static gboolean search_by_letters (const gchar *source, gint s_len, const gchar 
   return found;
 }
 
-static void refilter (GtkEditable *entry, gpointer data)
+static void refilter (MosaicSearchBox *search_box, gpointer data)
 {
   if (filtered_size) {
     free (filtered_boxes);
@@ -607,7 +609,7 @@ static void refilter (GtkEditable *entry, gpointer data)
   for (int i = 0; i < wsize; i++)
       gtk_widget_hide (boxes [i]);
 
-  gchar *search_for = g_utf8_casefold (gtk_entry_get_text (GTK_ENTRY(entry)), -1);
+  gchar *search_for = g_utf8_casefold (mosaic_search_box_get_text (search_box), -1);
   int s_size = strlen (search_for);
   if (s_size) {
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
@@ -699,7 +701,7 @@ static void draw_mask (GdkDrawable *bitmap, guint size)
 
   // show search entry if it is active.
   if (search) {
-    if (gtk_entry_get_text_length (GTK_ENTRY (search)) ||
+    if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) ||
 	(options.vim_mode && gtk_widget_get_visible (search))) {
       GtkAllocation alloc;
       gtk_widget_get_allocation (search, &alloc);
