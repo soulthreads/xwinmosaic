@@ -1,3 +1,9 @@
+xwinmosaic (0.3.2+git20120605-1) precise; urgency=low
+
+  * Better search widget, improved performance, bugfixes.
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Tue, 05 Jun 2012 23:37:16 +0400
+
 xwinmosaic (0.3.1+git20120605-1) precise; urgency=low
 
   * Bugfix release, improved scripts, better multi-monitor support
