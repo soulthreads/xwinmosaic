@@ -29,6 +29,7 @@ typedef struct {
 } rect;
 
 static rect *box_rects;
+static guint boxes_drawn;
 
 static struct {
   guint box_width;
@@ -285,6 +286,7 @@ static void draw_mosaic (GtkLayout *where,
 		  int focus_on,
 		  int rwidth, int rheight)
 {
+  boxes_drawn = 0;
   int cur_x = options.center_x - rwidth/2;
   int cur_y = options.center_y - rheight/2;
   if (rsize) {
@@ -309,6 +311,7 @@ static void draw_mosaic (GtkLayout *where,
 	  if (!options.screenshot) {
 	    box_rects[i].x = cur_x;
 	    box_rects[i].y = cur_y;
+	    boxes_drawn++;
 	  }
 	  i++;
 	} else {
@@ -692,7 +695,7 @@ static void draw_mask (GdkDrawable *bitmap, guint size)
 
   cairo_set_source_rgb (cr, 1, 1, 1);
   // Show each mosaic_window_box.
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < boxes_drawn; i++) {
     cairo_rectangle (cr,
 		     box_rects[i].x, box_rects[i].y,
 		     box_rects[i].width, box_rects[i].height);
