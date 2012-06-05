@@ -337,10 +337,10 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
 {
   WindowBox *box = WINDOW_BOX (widget);
   if (!options.read_stdin) {
-    Window win = box->xwindow;
+    Window win = window_box_get_xwindow (box);
     switch_to_window (win);
   } else {
-    puts (box->name);
+    puts (window_box_get_name (box));
   }
   gtk_main_quit ();
 }
@@ -405,7 +405,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   {
     if(gtk_entry_get_text_length (GTK_ENTRY (search)) && !filtered_size &&
        options.read_stdin && options.permissive) {
-      puts (GTK_ENTRY (search)->text);
+      puts (gtk_entry_get_text (GTK_ENTRY (search)));
       gtk_main_quit();
     }
     break;
@@ -419,7 +419,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   case GDK_KEY_End:
     if (options.permissive) {
       WindowBox* box = WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
-      gtk_entry_set_text (GTK_ENTRY (search), box->name);
+      gtk_entry_set_text (GTK_ENTRY (search), window_box_get_name (box));
       gtk_widget_show (search);
     }
     break;
@@ -584,7 +584,7 @@ static void refilter (GtkEditable *entry, gpointer data)
   for (int i = 0; i < wsize; i++)
       gtk_widget_hide (boxes [i]);
 
-  gchar *search_for = g_utf8_casefold (GTK_ENTRY(entry)->text, -1);
+  gchar *search_for = g_utf8_casefold (gtk_entry_get_text (GTK_ENTRY(entry)), -1);
   int s_size = strlen (search_for);
   if (s_size) {
     filtered_boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
@@ -679,11 +679,13 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
   if (search) {
     if (gtk_entry_get_text_length (GTK_ENTRY (search)) ||
 	(options.vim_mode && gtk_widget_get_visible (search))) {
+      GtkAllocation alloc;
+      gtk_widget_get_allocation (search, &alloc);
       cairo_rectangle (cr,
-		       search->allocation.x,
-		       search->allocation.y,
-		       search->allocation.width,
-		       search->allocation.height);
+		       alloc.x,
+		       alloc.y,
+		       alloc.width,
+		       alloc.height);
       cairo_fill (cr);
     }
   }

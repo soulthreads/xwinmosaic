@@ -296,13 +296,13 @@ static void window_box_realize (GtkWidget *widget)
   widget->style = gtk_style_attach (widget->style, widget->window);
 }
 
-static void window_box_size_request (GtkWidget * widget, GtkRequisition * requisition)
+static void window_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
   requisition->width = BOX_DEFAULT_WIDTH;
   requisition->height = BOX_DEFAULT_HEIGHT;
 }
 
-static void window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation)
+static void window_box_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
   g_return_if_fail (WINDOW_IS_BOX (widget));
   g_return_if_fail (allocation != NULL);
