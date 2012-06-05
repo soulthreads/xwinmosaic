@@ -6,7 +6,7 @@ set (LIB_PATHS ${DEPS_LIBRARY_DIRS})
 link_directories (${LIB_PATHS})
 add_definitions (${CFLAGS})
 
-add_executable (xwinmosaic x_interaction.c mosaic_window_box.c main.c)
+add_executable (xwinmosaic x_interaction.c mosaic_box.c mosaic_window_box.c main.c)
 
 target_link_libraries (xwinmosaic ${DEPS_LIBRARIES})
 

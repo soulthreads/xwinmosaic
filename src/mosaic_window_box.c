@@ -1,8 +1,5 @@
 #include "mosaic_window_box.h"
 
-#define BOX_DEFAULT_WIDTH 200
-#define BOX_DEFAULT_HEIGHT 40
-
 enum {
   CLICKED,
   LAST_SIGNAL
@@ -18,17 +15,17 @@ enum {
 };
 
 static GObject*	mosaic_window_box_constructor (GType gtype,
-					guint n_properties,
-					GObjectConstructParam *properties);
+					       guint n_properties,
+					       GObjectConstructParam *properties);
 static void mosaic_window_box_dispose (GObject *gobject);
 static void mosaic_window_box_set_property (GObject *gobject,
-				     guint prop_id,
-				     const GValue *value,
-				     GParamSpec *pspec);
+					    guint prop_id,
+					    const GValue *value,
+					    GParamSpec *pspec);
 static void mosaic_window_box_get_property (GObject *gobject,
-				     guint prop_id,
-				     GValue *value,
-				     GParamSpec *pspec);
+					    guint prop_id,
+					    GValue *value,
+					    GParamSpec *pspec);
 static void mosaic_window_box_realize (GtkWidget *widget);
 static void mosaic_window_box_size_request (GtkWidget * widget, GtkRequisition * requisition);
 static void mosaic_window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation);
@@ -43,7 +40,6 @@ static gboolean mosaic_window_box_leave_notify (GtkWidget *widget, GdkEventCross
 static void mosaic_window_box_clicked (MosaicWindowBox *box);
 
 static gboolean mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
-//static gboolean mosaic_window_box_configure_event (GtkWidget *widget, GdkEventConfigure *event);
 static void mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height);
 
 static void mosaic_window_box_create_colors (MosaicWindowBox *box);

@@ -5,6 +5,7 @@
 #include <cairo.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
+#include "mosaic_box.h"
 #include "x_interaction.h"
 
 G_BEGIN_DECLS
@@ -57,7 +58,6 @@ struct _MosaicWindowBoxClass
   void (* enter)    (MosaicWindowBox *box);
   void (* leave)    (MosaicWindowBox *box);
   void (* activate) (MosaicWindowBox *box);
-
 };
 
 GType mosaic_window_box_get_type (void);
