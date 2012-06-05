@@ -1,5 +1,7 @@
 #include "mosaic_search_box.h"
 
+#define BOX_DEFAULT_WIDTH 200
+
 enum {
   CHANGED,
   LAST_SIGNAL
@@ -25,6 +27,7 @@ static void mosaic_search_box_get_property (GObject *gobject,
 
 static gboolean mosaic_search_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint height);
+static void mosaic_search_box_size_request (GtkWidget *widget, GtkRequisition *requisition);
 
 static guint search_box_signals[LAST_SIGNAL] = { 0 };
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
@@ -45,6 +48,7 @@ mosaic_search_box_class_init (MosaicSearchBoxClass *klass)
   gobject_class->get_property = mosaic_search_box_get_property;
 
   widget_class->expose_event = mosaic_search_box_expose_event;
+  widget_class->size_request = mosaic_search_box_size_request;
 
   obj_properties[PROP_TEXT] =
     g_param_spec_string ("text",
@@ -154,6 +158,12 @@ mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint hei
   cairo_fill (cr);
 
   mosaic_box_paint (MOSAIC_BOX (box), cr, width, height, 0, TRUE);
+}
+
+static void mosaic_search_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
+{
+  requisition->width = BOX_DEFAULT_WIDTH;
+  requisition->height = MOSAIC_BOX (widget)->font_size * 2;
 }
 
 void

@@ -27,8 +27,8 @@ static void mosaic_box_get_property (GObject *gobject,
 					    GValue *value,
 					    GParamSpec *pspec);
 static void mosaic_box_realize (GtkWidget *widget);
-static void mosaic_box_size_request (GtkWidget * widget, GtkRequisition * requisition);
-static void mosaic_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation);
+static void mosaic_box_size_request (GtkWidget *widget, GtkRequisition *requisition);
+static void mosaic_box_size_allocate (GtkWidget *widget,GtkAllocation *allocation);
 
 static gboolean mosaic_box_button_press (GtkWidget *widget, GdkEventButton *event);
 static gboolean mosaic_box_button_release (GtkWidget *widget, GdkEventButton *event);
@@ -351,7 +351,7 @@ mosaic_box_get_name (MosaicBox *box)
   return box->name;
 }
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gint xoffset, gboolean ralign)
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gint xoffset, gboolean textbox)
 {
   gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
 
@@ -369,16 +369,23 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gin
 
   cairo_text_extents (cr, box->name, &extents);
 
-  if (xoffset > 0) {
-    if ((width-extents.width)/2 > xoffset+5)
-      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-    else
-      cairo_move_to (cr, xoffset+5, (height + extents.height)/2);
+  if (!textbox) {
+    if (xoffset > 0) {
+      if ((width-extents.width)/2 > xoffset+5)
+	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+      else
+	cairo_move_to (cr, xoffset+5, (height + extents.height)/2);
+    } else {
+      if (width-5 > extents.width)
+	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+      else
+	cairo_move_to (cr, 5, (height + extents.height)/2);
+    }
   } else {
-    if (width-5 > extents.width)
-      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+    if ((width-extents.width) < xoffset+5)
+      cairo_move_to (cr, width-extents.width-5, height*0.7);
     else
-      cairo_move_to (cr, 5, (height + extents.height)/2);
+      cairo_move_to (cr, xoffset+5, height*0.7);
   }
   cairo_show_text (cr, box->name);
 
