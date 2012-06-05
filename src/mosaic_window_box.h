@@ -45,8 +45,6 @@ struct _MosaicWindowBox
 
   gchar *font_name;
   guint font_size;
-
-  guint x, y, width, height;
 };
 
 struct _MosaicWindowBoxClass
@@ -82,7 +80,6 @@ void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_des
 void mosaic_window_box_set_font (MosaicWindowBox *box, const gchar *font, guint size);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
 
-void mosaic_window_box_set_inner (MosaicWindowBox *box, int x, int y, int width, int height);
 G_END_DECLS
 
 #endif /* MOSAIC_WINDOW_BOX_H */

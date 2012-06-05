@@ -37,12 +37,13 @@ static gboolean mosaic_window_box_button_press (GtkWidget *widget, GdkEventButto
 static gboolean mosaic_window_box_button_release (GtkWidget *widget, GdkEventButton *event);
 static gboolean mosaic_window_box_key_press (GtkWidget *widget, GdkEventKey *event);
 static gboolean mosaic_window_box_key_release (GtkWidget *widget, GdkEventKey *event);
-static gboolean mosaic_window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * event);
-static gboolean mosaic_window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * event);
+static gboolean mosaic_window_box_enter_notify (GtkWidget *widget, GdkEventCrossing *event);
+static gboolean mosaic_window_box_leave_notify (GtkWidget *widget, GdkEventCrossing *event);
 
 static void mosaic_window_box_clicked (MosaicWindowBox *box);
 
-static gboolean mosaic_window_box_expose (GtkWidget *box, GdkEventExpose *event);
+static gboolean mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
+//static gboolean mosaic_window_box_configure_event (GtkWidget *widget, GdkEventConfigure *event);
 static void mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height);
 
 static void mosaic_window_box_create_colors (MosaicWindowBox *box);
@@ -69,7 +70,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
   widget_class->realize = mosaic_window_box_realize;
   widget_class->size_request = mosaic_window_box_size_request;
   widget_class->size_allocate = mosaic_window_box_size_allocate;
-  widget_class->expose_event = mosaic_window_box_expose;
+  widget_class->expose_event = mosaic_window_box_expose_event;
   widget_class->button_press_event = mosaic_window_box_button_press;
   widget_class->button_release_event = mosaic_window_box_button_release;
   widget_class->key_press_event = mosaic_window_box_key_press;
@@ -307,6 +308,8 @@ static void mosaic_window_box_size_allocate (GtkWidget *widget, GtkAllocation *a
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (widget));
   g_return_if_fail (allocation != NULL);
 
+  GTK_WIDGET_CLASS (mosaic_window_box_parent_class)->size_allocate (widget, allocation);
+
   widget->allocation = *allocation;
   if (gtk_widget_get_realized (widget)) {
     gdk_window_move_resize (widget->window,
@@ -408,17 +411,17 @@ void mosaic_window_box_clicked (MosaicWindowBox *box)
 }
 
 static gboolean
-mosaic_window_box_expose (GtkWidget *box, GdkEventExpose *event)
+mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
-  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), FALSE);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (widget), FALSE);
 
   cairo_t *cr;
-  cr = gdk_cairo_create (box->window);
+  cr = gdk_cairo_create (widget->window);
   cairo_rectangle (cr,
 		   event->area.x, event->area.y,
 		   event->area.width, event->area.height);
   cairo_clip (cr);
-  mosaic_window_box_paint (MOSAIC_WINDOW_BOX (box), cr, box->allocation.width, box->allocation.height);
+  mosaic_window_box_paint (MOSAIC_WINDOW_BOX (widget), cr, widget->allocation.width, widget->allocation.height);
   cairo_destroy (cr);
   return FALSE;
 }
@@ -438,7 +441,6 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
 
   // Draw border
   if (has_focus) {
-//    cairo_set_source_rgb (cr, box->b, box->g, box->r);
     cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
     cairo_set_line_width (cr, 4);
     cairo_stroke_preserve (cr);
@@ -737,14 +739,6 @@ void mosaic_window_box_set_font (MosaicWindowBox *box, const gchar *font, guint 
 
   box->font_name = g_strdup (font);
   box->font_size = size;
-}
-
-void mosaic_window_box_set_inner (MosaicWindowBox *box, int x, int y, int width, int height)
-{
-  box->x = x;
-  box->y = y;
-  box->width = width;
-  box->height = height;
 }
 
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset)
