@@ -16,6 +16,8 @@ enum {
 static GObject*	mosaic_search_box_constructor (GType gtype,
 					       guint n_properties,
 					       GObjectConstructParam *properties);
+static void mosaic_search_box_dispose (GObject *gobject);
+
 static void mosaic_search_box_set_property (GObject *gobject,
 					    guint prop_id,
 					    const GValue *value,
@@ -44,6 +46,7 @@ mosaic_search_box_class_init (MosaicSearchBoxClass *klass)
   widget_class = GTK_WIDGET_CLASS (klass);
 
   gobject_class->constructor = mosaic_search_box_constructor;
+  gobject_class->dispose = mosaic_search_box_dispose;
   gobject_class->set_property = mosaic_search_box_set_property;
   gobject_class->get_property = mosaic_search_box_get_property;
 
@@ -90,7 +93,7 @@ static GObject*	mosaic_search_box_constructor (GType gtype,
   box = MOSAIC_SEARCH_BOX (obj);
 
   MOSAIC_BOX (box)->name = g_strdup("\0");
-  box->cursor = '|';
+  box->cursor = g_strdup ("|");
 
   return obj;
 }
@@ -98,6 +101,18 @@ static GObject*	mosaic_search_box_constructor (GType gtype,
 GtkWidget* mosaic_search_box_new (void)
 {
   return g_object_new (MOSAIC_TYPE_SEARCH_BOX, NULL);
+}
+
+static void
+mosaic_search_box_dispose (GObject *gobject)
+{
+  MosaicSearchBox *box = MOSAIC_SEARCH_BOX (gobject);
+
+  if (box->cursor)
+    g_free (box->cursor);
+  box->cursor = NULL;
+
+  G_OBJECT_CLASS (mosaic_search_box_parent_class)->dispose (gobject);
 }
 
 static void mosaic_search_box_set_property (GObject *gobject,
@@ -157,7 +172,9 @@ mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint hei
   cairo_rectangle (cr, 0, 0, width, height);
   cairo_fill (cr);
 
-  mosaic_box_paint (MOSAIC_BOX (box), cr, width, height, 0, TRUE);
+  gchar *text = g_strjoin (NULL, MOSAIC_BOX (box)->name, box->cursor, NULL);
+  mosaic_box_paint (MOSAIC_BOX (box), cr, text, width, height, 0, TRUE);
+  g_free (text);
 }
 
 static void mosaic_search_box_size_request (GtkWidget *widget, GtkRequisition *requisition)

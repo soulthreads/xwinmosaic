@@ -22,7 +22,7 @@ struct _MosaicSearchBox
   MosaicBox parent;
 
   /*< private >*/
-  gchar cursor;
+  gchar *cursor;
 };
 
 struct _MosaicSearchBoxClass

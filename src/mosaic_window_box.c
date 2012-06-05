@@ -276,7 +276,7 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
     }
   }
 
-  mosaic_box_paint (MOSAIC_BOX (box), cr, width, height, text_offset, FALSE);
+  mosaic_box_paint (MOSAIC_BOX (box), cr, MOSAIC_BOX (box)->name, width, height, text_offset, FALSE);
 }
 
 void

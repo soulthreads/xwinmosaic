@@ -351,7 +351,8 @@ mosaic_box_get_name (MosaicBox *box)
   return box->name;
 }
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gint xoffset, gboolean textbox)
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gchar *text,
+		       gint width, gint height, gint xoffset, gboolean textbox)
 {
   gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
 
@@ -367,7 +368,7 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gin
 			  CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, box->font_size);
 
-  cairo_text_extents (cr, box->name, &extents);
+  cairo_text_extents (cr, text, &extents);
 
   if (!textbox) {
     if (xoffset > 0) {
@@ -382,12 +383,12 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gin
 	cairo_move_to (cr, 5, (height + extents.height)/2);
     }
   } else {
-    if ((width-extents.width) < xoffset+5)
+    if ((width-extents.width) < xoffset+10)
       cairo_move_to (cr, width-extents.width-5, height*0.7);
     else
       cairo_move_to (cr, xoffset+5, height*0.7);
   }
-  cairo_show_text (cr, box->name);
+  cairo_show_text (cr, text);
 
   // Draw border
   cairo_rectangle (cr, 0, 0, width, height);
