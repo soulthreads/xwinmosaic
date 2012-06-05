@@ -1,5 +1,8 @@
 #include "mosaic_box.h"
 
+#define BOX_DEFAULT_WIDTH 200
+#define BOX_DEFAULT_HEIGHT 40
+
 enum {
   CLICKED,
   LAST_SIGNAL
@@ -348,7 +351,57 @@ mosaic_box_get_name (MosaicBox *box)
   return box->name;
 }
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gboolean ralign)
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gint xoffset, gboolean ralign)
 {
+  gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
 
+  cairo_rectangle (cr, 0, 0, width, height);
+
+  // Draw border
+  if (has_focus) {
+    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+    cairo_set_line_width (cr, 4);
+    cairo_stroke_preserve (cr);
+  }
+  cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+  cairo_set_line_width (cr, 1);
+  cairo_stroke (cr);
+
+  // Draw text
+  cairo_text_extents_t extents;
+
+  if (has_focus)
+    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
+  else
+    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+  cairo_select_font_face (cr, box->font_name,
+			  CAIRO_FONT_SLANT_NORMAL,
+			  CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_set_font_size (cr, box->font_size);
+
+  cairo_text_extents (cr, box->name, &extents);
+
+  if (xoffset > 0) {
+    if ((width-extents.width)/2 > xoffset+5)
+      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+    else
+      cairo_move_to (cr, xoffset+5, (height + extents.height)/2);
+  } else {
+    if (width-5 > extents.width)
+      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
+    else
+      cairo_move_to (cr, 5, (height + extents.height)/2);
+  }
+  cairo_show_text (cr, box->name);
+}
+
+void mosaic_box_set_font (MosaicBox *box, const gchar *font, guint size)
+{
+  g_return_if_fail (MOSAIC_IS_BOX (box));
+
+  if (box->font_name)
+    g_free (box->font_name);
+
+  box->font_name = g_strdup (font);
+  box->font_size = size;
 }

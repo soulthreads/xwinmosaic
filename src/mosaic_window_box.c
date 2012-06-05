@@ -92,7 +92,6 @@ mosaic_window_box_init (MosaicWindowBox *box)
   box->icon_pixbuf = NULL;
   box->icon_surface = NULL;
   box->icon_context = NULL;
-  box->font_name = NULL;
 }
 
 static GObject*	mosaic_window_box_constructor (GType gtype,
@@ -111,8 +110,6 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
     box->xclass = get_window_class (box->xwindow);
     box->desktop = get_window_desktop (box->xwindow);
   }
-  box->font_name = g_strdup ("Sans");
-  box->font_size = 10;
   box->show_desktop = FALSE;
   box->has_icon = FALSE;
   box->colorize = TRUE;
@@ -238,17 +235,7 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
   else
     cairo_set_source_rgb (cr, box->r, box->g, box->b);
   cairo_rectangle (cr, 0, 0, width, height);
-  cairo_fill_preserve (cr);
-
-  // Draw border
-  if (has_focus) {
-    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-    cairo_set_line_width (cr, 4);
-    cairo_stroke_preserve (cr);
-  }
-  cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
-  cairo_set_line_width (cr, 1);
-  cairo_stroke (cr);
+  cairo_fill (cr);
 
   cairo_text_extents_t extents;
 
@@ -270,16 +257,7 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
     cairo_show_text (cr, desk);
   }
 
-  if (has_focus)
-    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-  else
-    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
-  cairo_select_font_face (cr, box->font_name,
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (cr, box->font_size);
-  cairo_text_extents (cr, MOSAIC_BOX(box)->name, &extents);
-
+  gint text_offset = 0;
 
   if (box->has_icon) {
     if (box->icon_pixbuf) {
@@ -294,18 +272,11 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
       cairo_paint (cr);
       cairo_restore (cr);
 
-      if ((width-extents.width)/2 > iwidth+5)
-	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-      else
-	cairo_move_to (cr, 10+iwidth, (height + extents.height)/2);
+      text_offset = iwidth+5;
     }
-  } else {
-    if (width-5 > extents.width)
-      cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-    else
-      cairo_move_to (cr, 5, (height + extents.height)/2);
   }
-  cairo_show_text (cr, MOSAIC_BOX(box)->name);
+
+  mosaic_box_paint (MOSAIC_BOX (box), cr, width, height, text_offset, FALSE);
 }
 
 void
@@ -521,17 +492,6 @@ void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_des
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->show_desktop = show_desktop;
-}
-
-void mosaic_window_box_set_font (MosaicWindowBox *box, const gchar *font, guint size)
-{
-  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
-
-  if (box->font_name)
-    g_free (box->font_name);
-
-  box->font_name = g_strdup (font);
-  box->font_size = size;
 }
 
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset)

@@ -39,15 +39,13 @@ struct _MosaicBoxClass
   void (* clicked)  (MosaicBox *box);
 };
 
-#define BOX_DEFAULT_WIDTH 200
-#define BOX_DEFAULT_HEIGHT 40
-
 GType mosaic_box_get_type (void);
 GtkWidget* mosaic_box_new (void);
 void mosaic_box_set_name (MosaicBox *box, const gchar *name);
 const gchar *mosaic_box_get_name (MosaicBox *box);
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gboolean ralign);
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gint xoffset, gboolean ralign);
+void mosaic_box_set_font (MosaicBox *box, const gchar *font, guint size);
 
 G_END_DECLS
 

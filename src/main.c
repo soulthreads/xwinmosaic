@@ -400,7 +400,7 @@ static void update_box_list ()
       } else {
 	boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
       }
-      mosaic_window_box_set_font (MOSAIC_WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
+      mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font_name, options.font_size);
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
       mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",

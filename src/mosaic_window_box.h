@@ -40,9 +40,6 @@ struct _MosaicWindowBox
   GdkPixbuf *icon_pixbuf;
   cairo_t *icon_context;
   cairo_surface_t *icon_surface;
-
-  gchar *font_name;
-  guint font_size;
 };
 
 struct _MosaicWindowBoxClass
@@ -74,7 +71,6 @@ void mosaic_window_box_update_xclass (MosaicWindowBox *box);
 void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint req_height);
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
 void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop);
-void mosaic_window_box_set_font (MosaicWindowBox *box, const gchar *font, guint size);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
 
 G_END_DECLS
