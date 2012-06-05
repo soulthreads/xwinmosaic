@@ -30,6 +30,7 @@ typedef struct {
 
 static rect *box_rects;
 static guint boxes_drawn;
+static guint maximum_boxes;
 
 static struct {
   guint box_width;
@@ -155,6 +156,8 @@ int main (int argc, char **argv)
   GdkRectangle rect = current_monitor_size ();
   width = rect.width;
   height = rect.height;
+
+  maximum_boxes = (width / options.box_width) * (height / options.box_height);
 
   if (options.at_pointer) {
     gdk_display_get_pointer (gdk_display_get_default (), NULL, &options.center_x, &options.center_y, NULL);
@@ -624,7 +627,7 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
     gint p2size = 0;
     gint p3size = 0;
 
-    for (int i = 0; i < wsize; i++) {
+    for (int i = 0; i < wsize && filtered_size < maximum_boxes; i++) {
       gchar *wname_cmp = NULL;
       gchar *wclass_cmp = NULL;
       int wn_size = 0;
@@ -653,13 +656,16 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
       }
       g_free (wname_cmp);
       g_free (wclass_cmp);
+      if (found)
+	filtered_size++;
     }
+
     for (int i = 0; i < p1size; i++)
-      filtered_boxes [filtered_size++] = priority1 [i];
+      filtered_boxes [i] = priority1 [i];
     for (int i = 0; i < p2size; i++)
-      filtered_boxes [filtered_size++] = priority2 [i];
+      filtered_boxes [p1size+i] = priority2 [i];
     for (int i = 0; i < p3size; i++)
-      filtered_boxes [filtered_size++] = priority3 [i];
+      filtered_boxes [p1size+p2size+i] = priority3 [i];
 
     free (priority1);
     free (priority2);
