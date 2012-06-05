@@ -425,7 +425,6 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     if (text_length > 0 || gtk_widget_get_visible (search)) {
       gtk_widget_hide (search);
       mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
-      g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
     } else {
       gtk_main_quit ();
     }
@@ -462,7 +461,6 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     if (text_length == 1 || text_length == 0) {
       if (!options.vim_mode)
 	gtk_widget_hide (search);
-      g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
     }
     break;
   }
