@@ -464,16 +464,16 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     if (event->state & GDK_CONTROL_MASK) {
       if (!options.vim_mode) {
 	switch (event->keyval) {
-	case GDK_n:
+	case GDK_KEY_n:
 	  gtk_widget_child_focus (layout, GTK_DIR_DOWN);
 	  break;
-	case GDK_p:
+	case GDK_KEY_p:
 	  gtk_widget_child_focus (layout, GTK_DIR_UP);
 	  break;
-	case GDK_f:
+	case GDK_KEY_f:
 	  gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	  break;
-	case GDK_b:
+	case GDK_KEY_b:
 	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	  break;
 	default:
@@ -485,16 +485,16 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 
     if (options.vim_mode && !gtk_widget_get_visible (search)) {
       switch (event->keyval) {
-      case GDK_h:
+      case GDK_KEY_h:
 	gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	break;
-      case GDK_j:
+      case GDK_KEY_j:
 	gtk_widget_child_focus (layout, GTK_DIR_DOWN);
 	break;
-      case GDK_k:
+      case GDK_KEY_k:
 	gtk_widget_child_focus (layout, GTK_DIR_UP);
 	break;
-      case GDK_l:
+      case GDK_KEY_l:
 	gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	break;
       case GDK_KEY_slash:
