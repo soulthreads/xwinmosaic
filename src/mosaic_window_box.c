@@ -1,4 +1,4 @@
-#include "window_box.h"
+#include "mosaic_window_box.h"
 
 #define BOX_DEFAULT_WIDTH 200
 #define BOX_DEFAULT_HEIGHT 40
@@ -17,43 +17,43 @@ enum {
   N_PROPERTIES
 };
 
-static GObject*	window_box_constructor (GType gtype,
+static GObject*	mosaic_window_box_constructor (GType gtype,
 					guint n_properties,
 					GObjectConstructParam *properties);
-static void window_box_dispose (GObject *gobject);
-static void window_box_set_property (GObject *gobject,
+static void mosaic_window_box_dispose (GObject *gobject);
+static void mosaic_window_box_set_property (GObject *gobject,
 				     guint prop_id,
 				     const GValue *value,
 				     GParamSpec *pspec);
-static void window_box_get_property (GObject *gobject,
+static void mosaic_window_box_get_property (GObject *gobject,
 				     guint prop_id,
 				     GValue *value,
 				     GParamSpec *pspec);
-static void window_box_realize (GtkWidget *widget);
-static void window_box_size_request (GtkWidget * widget, GtkRequisition * requisition);
-static void window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation);
+static void mosaic_window_box_realize (GtkWidget *widget);
+static void mosaic_window_box_size_request (GtkWidget * widget, GtkRequisition * requisition);
+static void mosaic_window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation);
 
-static gboolean window_box_button_press (GtkWidget *widget, GdkEventButton *event);
-static gboolean window_box_button_release (GtkWidget *widget, GdkEventButton *event);
-static gboolean window_box_key_press (GtkWidget *widget, GdkEventKey *event);
-static gboolean window_box_key_release (GtkWidget *widget, GdkEventKey *event);
-static gboolean window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * event);
-static gboolean window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * event);
+static gboolean mosaic_window_box_button_press (GtkWidget *widget, GdkEventButton *event);
+static gboolean mosaic_window_box_button_release (GtkWidget *widget, GdkEventButton *event);
+static gboolean mosaic_window_box_key_press (GtkWidget *widget, GdkEventKey *event);
+static gboolean mosaic_window_box_key_release (GtkWidget *widget, GdkEventKey *event);
+static gboolean mosaic_window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * event);
+static gboolean mosaic_window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * event);
 
-static void window_box_clicked (WindowBox *box);
+static void mosaic_window_box_clicked (MosaicWindowBox *box);
 
-static gboolean window_box_expose (GtkWidget *box, GdkEventExpose *event);
-static void window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height);
+static gboolean mosaic_window_box_expose (GtkWidget *box, GdkEventExpose *event);
+static void mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height);
 
-static void window_box_create_colors (WindowBox *box);
+static void mosaic_window_box_create_colors (MosaicWindowBox *box);
 
 static guint box_signals[LAST_SIGNAL] = { 0 };
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
 
-G_DEFINE_TYPE (WindowBox, window_box, GTK_TYPE_DRAWING_AREA);
+G_DEFINE_TYPE (MosaicWindowBox, mosaic_window_box, GTK_TYPE_DRAWING_AREA);
 
 static void
-window_box_class_init (WindowBoxClass *klass)
+mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 {
   GObjectClass *gobject_class;
   GtkWidgetClass *widget_class;
@@ -61,21 +61,21 @@ window_box_class_init (WindowBoxClass *klass)
   gobject_class = G_OBJECT_CLASS (klass);
   widget_class = GTK_WIDGET_CLASS (klass);
 
-  gobject_class->constructor = window_box_constructor;
-  gobject_class->dispose = window_box_dispose;
-  gobject_class->set_property = window_box_set_property;
-  gobject_class->get_property = window_box_get_property;
+  gobject_class->constructor = mosaic_window_box_constructor;
+  gobject_class->dispose = mosaic_window_box_dispose;
+  gobject_class->set_property = mosaic_window_box_set_property;
+  gobject_class->get_property = mosaic_window_box_get_property;
 
-  widget_class->realize = window_box_realize;
-  widget_class->size_request = window_box_size_request;
-  widget_class->size_allocate = window_box_size_allocate;
-  widget_class->expose_event = window_box_expose;
-  widget_class->button_press_event = window_box_button_press;
-  widget_class->button_release_event = window_box_button_release;
-  widget_class->key_press_event = window_box_key_press;
-  widget_class->key_release_event = window_box_key_release;
-  widget_class->enter_notify_event = window_box_enter_notify;
-  widget_class->leave_notify_event = window_box_leave_notify;
+  widget_class->realize = mosaic_window_box_realize;
+  widget_class->size_request = mosaic_window_box_size_request;
+  widget_class->size_allocate = mosaic_window_box_size_allocate;
+  widget_class->expose_event = mosaic_window_box_expose;
+  widget_class->button_press_event = mosaic_window_box_button_press;
+  widget_class->button_release_event = mosaic_window_box_button_release;
+  widget_class->key_press_event = mosaic_window_box_key_press;
+  widget_class->key_release_event = mosaic_window_box_key_release;
+  widget_class->enter_notify_event = mosaic_window_box_enter_notify;
+  widget_class->leave_notify_event = mosaic_window_box_leave_notify;
 
   obj_properties[PROP_IS_WINDOW] =
     g_param_spec_boolean ("is-window",
@@ -117,14 +117,14 @@ window_box_class_init (WindowBoxClass *klass)
     g_signal_new ("clicked",
 		  G_TYPE_FROM_CLASS (gobject_class),
 		  G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-		  G_STRUCT_OFFSET (WindowBoxClass, clicked),
+		  G_STRUCT_OFFSET (MosaicWindowBoxClass, clicked),
 		  NULL, NULL,
 		  g_cclosure_marshal_VOID__VOID,
 		  G_TYPE_NONE, 0);
 }
 
 static void
-window_box_init (WindowBox *box)
+mosaic_window_box_init (MosaicWindowBox *box)
 {
   gtk_widget_set_can_focus (GTK_WIDGET (box), TRUE);
   gtk_widget_set_receives_default (GTK_WIDGET (box), TRUE);
@@ -137,16 +137,16 @@ window_box_init (WindowBox *box)
   box->font_name = NULL;
 }
 
-static GObject*	window_box_constructor (GType gtype,
+static GObject*	mosaic_window_box_constructor (GType gtype,
 					guint n_properties,
 					GObjectConstructParam *properties)
 {
   GObject *obj;
-  WindowBox *box;
+  MosaicWindowBox *box;
 
-  obj = G_OBJECT_CLASS (window_box_parent_class)->constructor (gtype, n_properties, properties);
+  obj = G_OBJECT_CLASS (mosaic_window_box_parent_class)->constructor (gtype, n_properties, properties);
 
-  box = WINDOW_BOX (obj);
+  box = MOSAIC_WINDOW_BOX (obj);
 
   if (box->is_window) {
     box->name = get_window_name (box->xwindow);
@@ -159,32 +159,32 @@ static GObject*	window_box_constructor (GType gtype,
   box->has_icon = FALSE;
   box->colorize = TRUE;
   box->color_offset = 0;
-  window_box_create_colors (box);
+  mosaic_window_box_create_colors (box);
   box->on_box = FALSE;
   box->box_down = FALSE;
 
   return obj;
 }
 
-GtkWidget* window_box_new (void)
+GtkWidget* mosaic_window_box_new (void)
 {
-  return g_object_new (WINDOW_TYPE_BOX, "is-window", FALSE, NULL);
+  return g_object_new (MOSAIC_TYPE_WINDOW_BOX, "is-window", FALSE, NULL);
 }
 
-GtkWidget* window_box_new_with_xwindow (Window win)
+GtkWidget* mosaic_window_box_new_with_xwindow (Window win)
 {
-  return g_object_new (WINDOW_TYPE_BOX, "is-window", TRUE, "xwindow", win, NULL);
+  return g_object_new (MOSAIC_TYPE_WINDOW_BOX, "is-window", TRUE, "xwindow", win, NULL);
 }
 
-GtkWidget* window_box_new_with_name (gchar *name)
+GtkWidget* mosaic_window_box_new_with_name (gchar *name)
 {
-  return g_object_new (WINDOW_TYPE_BOX, "is-window", FALSE, "name", name, NULL);
+  return g_object_new (MOSAIC_TYPE_WINDOW_BOX, "is-window", FALSE, "name", name, NULL);
 }
 
 static void
-window_box_dispose (GObject *gobject)
+mosaic_window_box_dispose (GObject *gobject)
 {
-  WindowBox *box = WINDOW_BOX (gobject);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
   if (box->name) {
     g_free (box->name);
     box->name = NULL;
@@ -206,28 +206,28 @@ window_box_dispose (GObject *gobject)
       g_free (box->font_name);
     box->font_name = NULL;
   }
-  G_OBJECT_CLASS (window_box_parent_class)->dispose (gobject);
+  G_OBJECT_CLASS (mosaic_window_box_parent_class)->dispose (gobject);
 }
 
-static void window_box_set_property (GObject *gobject,
+static void mosaic_window_box_set_property (GObject *gobject,
 				     guint prop_id,
 				     const GValue *value,
 				     GParamSpec *pspec)
 {
-  WindowBox *box = WINDOW_BOX (gobject);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
 
   switch (prop_id) {
   case PROP_IS_WINDOW:
-    window_box_set_is_window (box, g_value_get_boolean (value));
+    mosaic_window_box_set_is_window (box, g_value_get_boolean (value));
     break;
   case PROP_XWINDOW:
-    window_box_set_xwindow (box, g_value_get_uint (value));
+    mosaic_window_box_set_xwindow (box, g_value_get_uint (value));
     break;
   case PROP_NAME:
-    window_box_set_name (box, g_value_get_string (value));
+    mosaic_window_box_set_name (box, g_value_get_string (value));
     break;
   case PROP_XCLASS:
-    window_box_set_xclass (box, g_value_get_string (value));
+    mosaic_window_box_set_xclass (box, g_value_get_string (value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -235,12 +235,12 @@ static void window_box_set_property (GObject *gobject,
   }
 }
 
-static void window_box_get_property (GObject *gobject,
+static void mosaic_window_box_get_property (GObject *gobject,
 				     guint prop_id,
 				     GValue *value,
 				     GParamSpec *pspec)
 {
-  WindowBox *box = WINDOW_BOX (gobject);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
 
   switch (prop_id) {
   case PROP_IS_WINDOW:
@@ -261,12 +261,12 @@ static void window_box_get_property (GObject *gobject,
   }
 }
 
-static void window_box_realize (GtkWidget *widget)
+static void mosaic_window_box_realize (GtkWidget *widget)
 {
   GdkWindowAttr attributes;
   gint attributes_mask;
 
-  g_return_if_fail (WINDOW_IS_BOX (widget));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (widget));
 
   gtk_widget_set_realized (widget, TRUE);
 
@@ -296,15 +296,15 @@ static void window_box_realize (GtkWidget *widget)
   widget->style = gtk_style_attach (widget->style, widget->window);
 }
 
-static void window_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
+static void mosaic_window_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
   requisition->width = BOX_DEFAULT_WIDTH;
   requisition->height = BOX_DEFAULT_HEIGHT;
 }
 
-static void window_box_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+static void mosaic_window_box_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
-  g_return_if_fail (WINDOW_IS_BOX (widget));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (widget));
   g_return_if_fail (allocation != NULL);
 
   widget->allocation = *allocation;
@@ -315,13 +315,13 @@ static void window_box_size_allocate (GtkWidget *widget, GtkAllocation *allocati
   }
 }
 
-static gboolean window_box_button_press (GtkWidget *widget, GdkEventButton *event)
+static gboolean mosaic_window_box_button_press (GtkWidget *widget, GdkEventButton *event)
 {
-  WindowBox *box;
+  MosaicWindowBox *box;
 
   if (event->type == GDK_BUTTON_PRESS)
   {
-    box = WINDOW_BOX (widget);
+    box = MOSAIC_WINDOW_BOX (widget);
     if (event->button == 1) {
       box->box_down = TRUE;
       gtk_widget_grab_focus (widget);
@@ -331,23 +331,23 @@ static gboolean window_box_button_press (GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
-static gboolean window_box_button_release (GtkWidget *widget, GdkEventButton *event)
+static gboolean mosaic_window_box_button_release (GtkWidget *widget, GdkEventButton *event)
 {
-  WindowBox *box;
+  MosaicWindowBox *box;
 
   if (event->type == GDK_BUTTON_RELEASE)
   {
-    box = WINDOW_BOX (widget);
+    box = MOSAIC_WINDOW_BOX (widget);
     if (event->button == 1 && box->on_box && box->box_down)
-      window_box_clicked (WINDOW_BOX (widget));
+      mosaic_window_box_clicked (MOSAIC_WINDOW_BOX (widget));
     box->box_down = FALSE;
   }
 
   return TRUE;
 }
-static gboolean window_box_key_press (GtkWidget *widget, GdkEventKey *event)
+static gboolean mosaic_window_box_key_press (GtkWidget *widget, GdkEventKey *event)
 {
-  WindowBox *box = WINDOW_BOX (widget);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (widget);
   if (event->keyval == GDK_Return ||
       event->keyval == GDK_KP_Enter ||
       event->keyval == GDK_ISO_Enter)
@@ -357,25 +357,25 @@ static gboolean window_box_key_press (GtkWidget *widget, GdkEventKey *event)
   return FALSE;
 }
 
-static gboolean window_box_key_release (GtkWidget *widget, GdkEventKey *event)
+static gboolean mosaic_window_box_key_release (GtkWidget *widget, GdkEventKey *event)
 {
-  WindowBox *box = WINDOW_BOX (widget);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (widget);
   if ((event->keyval == GDK_Return ||
        event->keyval == GDK_KP_Enter ||
        event->keyval == GDK_ISO_Enter) && box->box_down)
   {
-    window_box_clicked (box);
+    mosaic_window_box_clicked (box);
     box->box_down = FALSE;
   }
   return FALSE;
 }
 
-static gboolean window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * event)
+static gboolean mosaic_window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * event)
 {
-  WindowBox *box;
+  MosaicWindowBox *box;
   GtkWidget *event_widget;
 
-  box = WINDOW_BOX (widget);
+  box = MOSAIC_WINDOW_BOX (widget);
   event_widget = gtk_get_event_widget ((GdkEvent *) event);
 
   if ((event_widget == widget) && (event->detail != GDK_NOTIFY_INFERIOR)) {
@@ -386,12 +386,12 @@ static gboolean window_box_enter_notify (GtkWidget * widget, GdkEventCrossing * 
   return FALSE;
 }
 
-static gboolean window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * event)
+static gboolean mosaic_window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * event)
 {
-  WindowBox *box;
+  MosaicWindowBox *box;
   GtkWidget *event_widget;
 
-  box = WINDOW_BOX (widget);
+  box = MOSAIC_WINDOW_BOX (widget);
   event_widget = gtk_get_event_widget ((GdkEvent *) event);
 
   if ((event_widget == widget) && (event->detail != GDK_NOTIFY_INFERIOR)) {
@@ -402,15 +402,15 @@ static gboolean window_box_leave_notify (GtkWidget * widget, GdkEventCrossing * 
   return FALSE;
 }
 
-void window_box_clicked (WindowBox *box)
+void mosaic_window_box_clicked (MosaicWindowBox *box)
 {
   g_signal_emit (box, box_signals [CLICKED], 0);
 }
 
 static gboolean
-window_box_expose (GtkWidget *box, GdkEventExpose *event)
+mosaic_window_box_expose (GtkWidget *box, GdkEventExpose *event)
 {
-  g_return_val_if_fail (WINDOW_IS_BOX (box), FALSE);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), FALSE);
 
   cairo_t *cr;
   cr = gdk_cairo_create (box->window);
@@ -418,13 +418,13 @@ window_box_expose (GtkWidget *box, GdkEventExpose *event)
 		   event->area.x, event->area.y,
 		   event->area.width, event->area.height);
   cairo_clip (cr);
-  window_box_paint (WINDOW_BOX (box), cr, box->allocation.width, box->allocation.height);
+  mosaic_window_box_paint (MOSAIC_WINDOW_BOX (box), cr, box->allocation.width, box->allocation.height);
   cairo_destroy (cr);
   return FALSE;
 }
 
 static void
-window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
+mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height)
 {
   gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
   if (box->on_box)
@@ -506,9 +506,9 @@ window_box_paint (WindowBox *box, cairo_t *cr, gint width, gint height)
 }
 
 void
-window_box_set_is_window (WindowBox *box, gboolean is_window)
+mosaic_window_box_set_is_window (MosaicWindowBox *box, gboolean is_window)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->is_window = is_window;
 
@@ -516,41 +516,41 @@ window_box_set_is_window (WindowBox *box, gboolean is_window)
 }
 
 gboolean
-window_box_get_is_window (WindowBox *box)
+mosaic_window_box_get_is_window (MosaicWindowBox *box)
 {
-  g_return_val_if_fail (WINDOW_IS_BOX (box), FALSE);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), FALSE);
 
   return box->is_window;
 }
 
 void
-window_box_set_xwindow (WindowBox *box, guint window)
+mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->is_window) {
     box->xwindow = window;
 
     g_object_notify (G_OBJECT (box), "xwindow");
     box->desktop = get_window_desktop (box->xwindow);
-    window_box_update_name (box);
-    window_box_update_xclass (box);
+    mosaic_window_box_update_name (box);
+    mosaic_window_box_update_xclass (box);
   }
 }
 
 guint
-window_box_get_xwindow (WindowBox *box)
+mosaic_window_box_get_xwindow (MosaicWindowBox *box)
 {
-  g_return_val_if_fail (WINDOW_IS_BOX (box), 0);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), 0);
 
   return box->xwindow;
 }
 
 void
-window_box_set_name (WindowBox *box, const gchar *name)
+mosaic_window_box_set_name (MosaicWindowBox *box, const gchar *name)
 {
   gchar *new_name;
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   new_name = g_strdup (name);
   g_free (box->name);
@@ -561,54 +561,54 @@ window_box_set_name (WindowBox *box, const gchar *name)
 }
 
 const gchar *
-window_box_get_name (WindowBox *box)
+mosaic_window_box_get_name (MosaicWindowBox *box)
 {
-  g_return_val_if_fail (WINDOW_IS_BOX (box), NULL);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), NULL);
 
   return box->name;
 }
 
 void
-window_box_set_xclass (WindowBox *box, const gchar *xclass)
+mosaic_window_box_set_xclass (MosaicWindowBox *box, const gchar *xclass)
 {
   gchar *new_xclass;
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   new_xclass = g_strdup (xclass);
   g_free (box->xclass);
   box->xclass = new_xclass;
 
   g_object_notify (G_OBJECT (box), "xclass");
-  window_box_create_colors (box);
+  mosaic_window_box_create_colors (box);
   gtk_widget_queue_draw (GTK_WIDGET (box));
 }
 
 const gchar *
-window_box_get_xclass (WindowBox *box)
+mosaic_window_box_get_xclass (MosaicWindowBox *box)
 {
-  g_return_val_if_fail (WINDOW_IS_BOX (box), NULL);
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), NULL);
 
   return box->xclass;
 }
 
-void window_box_update_name (WindowBox *box)
+void mosaic_window_box_update_name (MosaicWindowBox *box)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->is_window) {
     gchar *wname = get_window_name (box->xwindow);
-    window_box_set_name (box, wname);
+    mosaic_window_box_set_name (box, wname);
     g_free (wname);
   }
 }
 
-void window_box_update_xclass (WindowBox *box)
+void mosaic_window_box_update_xclass (MosaicWindowBox *box)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->is_window) {
     gchar *xclass = get_window_class (box->xwindow);
-    window_box_set_xclass (box, xclass);
+    mosaic_window_box_set_xclass (box, xclass);
     g_free (xclass);
   }
 }
@@ -655,9 +655,9 @@ static gdouble hue2rgb (gdouble p, gdouble q, gdouble t)
   return p;
 }
 
-static void window_box_create_colors (WindowBox *box)
+static void mosaic_window_box_create_colors (MosaicWindowBox *box)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   gchar *source = (box->is_window) ? box->xclass : box->name;
   if (box->colorize && source) {
@@ -679,9 +679,9 @@ static void window_box_create_colors (WindowBox *box)
   }
 }
 
-void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
+void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint req_height)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->icon_pixbuf)
     g_object_unref (box->icon_pixbuf);
@@ -713,24 +713,24 @@ void window_box_setup_icon (WindowBox *box, guint req_width, guint req_height)
   cairo_paint (box->icon_context);
 }
 
-void window_box_set_colorize (WindowBox *box, gboolean colorize)
+void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->colorize = colorize;
-  window_box_create_colors (box);
+  mosaic_window_box_create_colors (box);
 }
 
-void window_box_set_show_desktop (WindowBox *box, gboolean show_desktop)
+void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->show_desktop = show_desktop;
 }
 
-void window_box_set_font (WindowBox *box, const gchar *font, guint size)
+void mosaic_window_box_set_font (MosaicWindowBox *box, const gchar *font, guint size)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->font_name)
     g_free (box->font_name);
@@ -739,7 +739,7 @@ void window_box_set_font (WindowBox *box, const gchar *font, guint size)
   box->font_size = size;
 }
 
-void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)
+void mosaic_window_box_set_inner (MosaicWindowBox *box, int x, int y, int width, int height)
 {
   box->x = x;
   box->y = y;
@@ -747,10 +747,10 @@ void window_box_set_inner (WindowBox *box, int x, int y, int width, int height)
   box->height = height;
 }
 
-void window_box_set_color_offset (WindowBox *box, guchar color_offset)
+void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset)
 {
-  g_return_if_fail (WINDOW_IS_BOX (box));
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->color_offset = color_offset;
-  window_box_create_colors (box);
+  mosaic_window_box_create_colors (box);
 }

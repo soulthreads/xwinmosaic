@@ -7,7 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>
 #include "x_interaction.h"
-#include "window_box.h"
+#include "mosaic_window_box.h"
 
 static GtkWidget *window;
 static Window myown_window;
@@ -298,7 +298,7 @@ static void draw_mosaic (GtkLayout *where,
 	  else
 	    gtk_layout_put (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
 	  gtk_widget_set_size_request (widgets[i], rwidth, rheight);
-	  window_box_set_inner (WINDOW_BOX (widgets[i]), cur_x, cur_y, rwidth, rheight);
+	  mosaic_window_box_set_inner (MOSAIC_WINDOW_BOX (widgets[i]), cur_x, cur_y, rwidth, rheight);
 	  gtk_widget_show (widgets[i]);
 	  i++;
 	} else {
@@ -335,12 +335,12 @@ static void draw_mosaic (GtkLayout *where,
 
 static void on_rect_click (GtkWidget *widget, gpointer data)
 {
-  WindowBox *box = WINDOW_BOX (widget);
+  MosaicWindowBox *box = MOSAIC_WINDOW_BOX (widget);
   if (!options.read_stdin) {
-    Window win = window_box_get_xwindow (box);
+    Window win = mosaic_window_box_get_xwindow (box);
     switch_to_window (win);
   } else {
-    puts (window_box_get_name (box));
+    puts (mosaic_window_box_get_name (box));
   }
   gtk_main_quit ();
 }
@@ -370,16 +370,16 @@ static void update_box_list ()
     boxes = (GtkWidget **) malloc (wsize * sizeof (GtkWidget *));
     for (int i = 0; i < wsize; i++) {
       if (!options.read_stdin) {
-	boxes[i] = window_box_new_with_xwindow (wins[i]);
-	window_box_set_show_desktop (WINDOW_BOX (boxes[i]), options.show_desktop);
+	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
+	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
 	if (options.show_icons)
-	  window_box_setup_icon (WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
+	  mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {
-	boxes[i] = window_box_new_with_name (in_items[i]);
+	boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
       }
-      window_box_set_font (WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
-      window_box_set_colorize (WINDOW_BOX (boxes[i]), options.colorize);
-      window_box_set_color_offset (WINDOW_BOX (boxes[i]), options.color_offset);
+      mosaic_window_box_set_font (MOSAIC_WINDOW_BOX (boxes [i]), options.font_name, options.font_size);
+      mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
+      mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), NULL);
     }
@@ -418,8 +418,8 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     break;
   case GDK_KEY_End:
     if (options.permissive) {
-      WindowBox* box = WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
-      gtk_entry_set_text (GTK_ENTRY (search), window_box_get_name (box));
+      MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
+      gtk_entry_set_text (GTK_ENTRY (search), mosaic_window_box_get_name (box));
       gtk_widget_show (search);
     }
     break;
@@ -531,7 +531,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	// Search for appropriate widget to change label.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    window_box_update_name (WINDOW_BOX (boxes[i]));
+	    mosaic_window_box_update_name (MOSAIC_WINDOW_BOX (boxes[i]));
 	    break;
 	  }
       }
@@ -539,7 +539,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	// Search for appropriate widget to update icon.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    window_box_setup_icon (WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
+	    mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
 	    break;
 	  }
       }
@@ -602,10 +602,10 @@ static void refilter (GtkEditable *entry, gpointer data)
       int wn_size = 0;
       int wc_size = 0;
 
-      wname_cmp = g_utf8_casefold (window_box_get_name (WINDOW_BOX (boxes[i])), -1);
+      wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
       if (!options.read_stdin) {
-	wclass_cmp = g_utf8_casefold (window_box_get_xclass (WINDOW_BOX (boxes[i])), -1);
+	wclass_cmp = g_utf8_casefold (mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i])), -1);
 	wc_size = strlen (wclass_cmp);
       }
       gboolean found = FALSE;
@@ -666,9 +666,9 @@ static void draw_mask (GdkDrawable *bitmap, GtkWidget **wdgts, guint size)
   cairo_restore (cr);
 
   cairo_set_source_rgb (cr, 1, 1, 1);
-  // Show each window_box.
+  // Show each mosaic_window_box.
   for (int i = 0; i < size; i++) {
-    WindowBox *box = WINDOW_BOX (wdgts[i]);
+    MosaicWindowBox *box = MOSAIC_WINDOW_BOX (wdgts[i]);
     cairo_rectangle (cr,
 		     box->x, box->y,
 		     box->width, box->height);
