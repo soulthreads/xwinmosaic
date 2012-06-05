@@ -355,18 +355,6 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gin
 {
   gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
 
-  cairo_rectangle (cr, 0, 0, width, height);
-
-  // Draw border
-  if (has_focus) {
-    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-    cairo_set_line_width (cr, 4);
-    cairo_stroke_preserve (cr);
-  }
-  cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
-  cairo_set_line_width (cr, 1);
-  cairo_stroke (cr);
-
   // Draw text
   cairo_text_extents_t extents;
 
@@ -393,6 +381,17 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height, gin
       cairo_move_to (cr, 5, (height + extents.height)/2);
   }
   cairo_show_text (cr, box->name);
+
+  // Draw border
+  cairo_rectangle (cr, 0, 0, width, height);
+  if (has_focus) {
+    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+    cairo_set_line_width (cr, 4);
+    cairo_stroke_preserve (cr);
+  }
+  cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+  cairo_set_line_width (cr, 1);
+  cairo_stroke (cr);
 }
 
 void mosaic_box_set_font (MosaicBox *box, const gchar *font, guint size)

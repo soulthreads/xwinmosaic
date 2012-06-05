@@ -157,9 +157,9 @@ mosaic_window_box_dispose (GObject *gobject)
 }
 
 static void mosaic_window_box_set_property (GObject *gobject,
-				     guint prop_id,
-				     const GValue *value,
-				     GParamSpec *pspec)
+					    guint prop_id,
+					    const GValue *value,
+					    GParamSpec *pspec)
 {
   MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
 
@@ -183,9 +183,9 @@ static void mosaic_window_box_set_property (GObject *gobject,
 }
 
 static void mosaic_window_box_get_property (GObject *gobject,
-				     guint prop_id,
-				     GValue *value,
-				     GParamSpec *pspec)
+					    guint prop_id,
+					    GValue *value,
+					    GParamSpec *pspec)
 {
   MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
 
