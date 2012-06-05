@@ -21,9 +21,6 @@ static void mosaic_window_box_get_property (GObject *gobject,
 					    guint prop_id,
 					    GValue *value,
 					    GParamSpec *pspec);
-static void mosaic_window_box_realize (GtkWidget *widget);
-static void mosaic_window_box_size_request (GtkWidget * widget, GtkRequisition * requisition);
-static void mosaic_window_box_size_allocate (GtkWidget * widget,GtkAllocation * allocation);
 
 static gboolean mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height);
@@ -48,9 +45,6 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
   gobject_class->set_property = mosaic_window_box_set_property;
   gobject_class->get_property = mosaic_window_box_get_property;
 
-  widget_class->realize = mosaic_window_box_realize;
-  widget_class->size_request = mosaic_window_box_size_request;
-  widget_class->size_allocate = mosaic_window_box_size_allocate;
   widget_class->expose_event = mosaic_window_box_expose_event;
 
   obj_properties[PROP_IS_WINDOW] =
@@ -214,62 +208,6 @@ static void mosaic_window_box_get_property (GObject *gobject,
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
     break;
-  }
-}
-
-static void mosaic_window_box_realize (GtkWidget *widget)
-{
-  GdkWindowAttr attributes;
-  gint attributes_mask;
-
-  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (widget));
-
-  gtk_widget_set_realized (widget, TRUE);
-
-  attributes.window_type = GDK_WINDOW_CHILD;
-  attributes.x = widget->allocation.x;
-  attributes.y = widget->allocation.y;
-  attributes.width = widget->allocation.width;
-  attributes.height = widget->allocation.height;
-  attributes.wclass = GDK_INPUT_OUTPUT;
-  attributes.event_mask = gtk_widget_get_events (widget);
-  attributes.event_mask |= (GDK_EXPOSURE_MASK |
-			    GDK_BUTTON_PRESS_MASK |
-			    GDK_BUTTON_RELEASE_MASK |
-			    GDK_ENTER_NOTIFY_MASK |
-			    GDK_LEAVE_NOTIFY_MASK);
-
-  attributes.visual = gtk_widget_get_visual (widget);
-  attributes.colormap = gtk_widget_get_colormap (widget);
-
-  attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
-
-  widget->window = gdk_window_new (gtk_widget_get_parent_window (widget),
-				   &attributes, attributes_mask);
-
-  gdk_window_set_user_data (widget->window, widget);
-
-  widget->style = gtk_style_attach (widget->style, widget->window);
-}
-
-static void mosaic_window_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
-{
-  requisition->width = BOX_DEFAULT_WIDTH;
-  requisition->height = BOX_DEFAULT_HEIGHT;
-}
-
-static void mosaic_window_box_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
-{
-  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (widget));
-  g_return_if_fail (allocation != NULL);
-
-  GTK_WIDGET_CLASS (mosaic_window_box_parent_class)->size_allocate (widget, allocation);
-
-  widget->allocation = *allocation;
-  if (gtk_widget_get_realized (widget)) {
-    gdk_window_move_resize (widget->window,
-			    allocation->x, allocation->y,
-			    allocation->width, allocation->height);
   }
 }
 
