@@ -554,7 +554,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	// Search for appropriate widget to change label.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    mosaic_window_box_update_name (MOSAIC_WINDOW_BOX (boxes[i]));
+	    mosaic_window_box_update_xwindow_name (MOSAIC_WINDOW_BOX (boxes[i]));
 	    break;
 	  }
       }

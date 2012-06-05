@@ -307,7 +307,7 @@ mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
 
     g_object_notify (G_OBJECT (box), "xwindow");
     box->desktop = get_window_desktop (box->xwindow);
-    mosaic_window_box_update_name (box);
+    mosaic_window_box_update_xwindow_name (box);
     mosaic_window_box_update_xclass (box);
   }
 }
@@ -357,7 +357,7 @@ mosaic_window_box_get_xclass (MosaicWindowBox *box)
   return box->xclass;
 }
 
-void mosaic_window_box_update_name (MosaicWindowBox *box)
+void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 

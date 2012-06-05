@@ -66,7 +66,7 @@ void mosaic_window_box_set_name (MosaicWindowBox *box, const gchar *name);
 const gchar *mosaic_window_box_get_name (MosaicWindowBox *box);
 void mosaic_window_box_set_xclass (MosaicWindowBox *box, const gchar *xclass);
 const gchar *mosaic_window_box_get_xclass (MosaicWindowBox *box);
-void mosaic_window_box_update_name (MosaicWindowBox *box);
+void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box);
 void mosaic_window_box_update_xclass (MosaicWindowBox *box);
 void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint req_height);
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
