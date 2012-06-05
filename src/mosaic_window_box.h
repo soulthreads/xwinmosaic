@@ -22,18 +22,15 @@ typedef struct _MosaicWindowBoxClass MosaicWindowBoxClass;
 
 struct _MosaicWindowBox
 {
-  GtkDrawingArea parent;
+  MosaicBox parent;
 
   /*< private >*/
   gboolean is_window;
   Window xwindow;
-  gchar *name;
+
   gchar *xclass;
   gboolean show_desktop;
   gint desktop;
-
-  gboolean on_box;
-  gboolean box_down;
 
   gboolean colorize;
   gdouble r, g, b;
@@ -50,7 +47,7 @@ struct _MosaicWindowBox
 
 struct _MosaicWindowBoxClass
 {
-  GtkDrawingAreaClass parent_class;
+  MosaicBoxClass parent_class;
 
   void (* pressed)  (MosaicWindowBox *box);
   void (* released) (MosaicWindowBox *box);
