@@ -24,6 +24,7 @@ static int filtered_size;
 static int width, height;
 static GdkDrawable *window_shape_bitmap;
 
+/* for window mask */
 typedef struct {
   gint x, y, width, height;
 } rect;
@@ -31,6 +32,9 @@ typedef struct {
 static rect *box_rects;
 static guint boxes_drawn;
 static guint maximum_boxes;
+
+/* for screenshot mode */
+static gboolean key_pressed;
 
 static struct {
   guint box_width;
@@ -102,6 +106,7 @@ static void read_stdin ();
 static GdkPixbuf* get_screenshot ();
 static void read_config ();
 static void write_default_config ();
+static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer data);
 
 int main (int argc, char **argv)
 {
@@ -201,7 +206,7 @@ int main (int argc, char **argv)
 /**/
   gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE);
   g_signal_connect (G_OBJECT (window), "focus-out-event",
-		    G_CALLBACK (gtk_main_quit), NULL);
+		    G_CALLBACK (on_focus_change), NULL);
 /**/
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
@@ -418,6 +423,7 @@ static void update_box_list ()
 
 static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+  key_pressed = TRUE;
   switch (event->keyval) {
   case GDK_KEY_Escape:
   {
@@ -868,4 +874,14 @@ at_pointer = %s\n\
   }
 
   g_printerr ("created new config in %s\n", confdir);
+}
+
+static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer data)
+{
+  if (event->in == FALSE) { /* focus out */
+    /* workaround for awesome wm and its unexpected focus changes */
+    if (options.screenshot && !key_pressed)
+      return;
+    gtk_main_quit ();
+  }
 }
