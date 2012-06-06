@@ -630,15 +630,22 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 
     for (int i = 0; i < wsize; i++) {
       gchar *wname_cmp = NULL;
-      gchar *wclass_cmp = NULL;
+      gchar *wclass1_cmp = NULL;
+      gchar *wclass2_cmp = NULL;
       int wn_size = 0;
-      int wc_size = 0;
+      int wc1_size = 0;
+      int wc2_size = 0;
 
       wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
       if (!options.read_stdin) {
-	wclass_cmp = g_utf8_casefold (mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i])), -1);
-	wc_size = strlen (wclass_cmp);
+	const gchar *wclass = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	if (wclass) {
+	  wclass1_cmp = g_utf8_casefold (wclass, -1);
+	  wc1_size = strlen (wclass1_cmp);
+	  wclass2_cmp = g_utf8_casefold (wclass+wc1_size+1, -1);
+	  wc2_size = strlen (wclass2_cmp);
+	}
       }
       gboolean found = FALSE;
       if (g_str_has_prefix (wname_cmp, search_for)) {
@@ -646,17 +653,22 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 	priority1 [p1size++] = boxes [i];
       }
       if (!found && ((g_strstr_len (wname_cmp, wn_size, search_for) != NULL) ||
-		     (!options.read_stdin && g_str_has_prefix (wclass_cmp, search_for)))) {
+		     (!options.read_stdin &&
+		      (g_str_has_prefix (wclass1_cmp, search_for) ||
+		       g_str_has_prefix (wclass2_cmp, search_for))))) {
 	found = TRUE;
 	priority2 [p2size++] = boxes [i];
       }
       if (!found && ((search_by_letters (wname_cmp, wn_size, search_for, s_size)) ||
-	  (!options.read_stdin && g_strstr_len (wclass_cmp, wc_size, search_for) != NULL))) {
+		     (!options.read_stdin &&
+		      (g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL ||
+		       g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL)))) {
 	found = TRUE;
 	priority3 [p3size++] = boxes [i];
       }
       g_free (wname_cmp);
-      g_free (wclass_cmp);
+      g_free (wclass1_cmp);
+      g_free (wclass2_cmp);
       if (found)
 	filtered_size++;
     }
