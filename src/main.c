@@ -305,7 +305,7 @@ static void draw_mosaic (GtkLayout *where,
       do {
 	if (i == rsize)
 	  break;
-	if (cur_x > 0 && cur_x+rwidth < width && cur_y > 0 && cur_y+rheight < height) {
+	if (cur_x >= 0 && cur_x+rwidth <= width && cur_y >= 0 && cur_y+rheight <= height) {
 	  offset = 0;
 	  if (gtk_widget_get_parent (widgets[i]))
 	    gtk_layout_move (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
