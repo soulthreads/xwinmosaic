@@ -1,5 +1,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xcomposite.h>
+#include <X11/extensions/Xdamage.h>
 
 #ifndef X_INTERACTION_H
 #define X_INTERACTION_H

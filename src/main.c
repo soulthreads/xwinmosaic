@@ -54,6 +54,7 @@ static struct {
   gboolean at_pointer;
   gint center_x;
   gint center_y;
+  gboolean xcomposite;
 } options;
 
 static GOptionEntry entries [] =
@@ -87,6 +88,8 @@ static GOptionEntry entries [] =
     "Font size (default: 10)", "<int>" },
   { "hue-offset", 'o', 0, G_OPTION_ARG_INT, &options.color_offset,
     "Set color hue offset (from 0 to 255)", "<int>" },
+  { "xcomposite", 'X', 0, G_OPTION_ARG_NONE, &options.xcomposite,
+    "Show window previews in boxes if XComposite is enabled.", NULL },
   { NULL }
 };
 
@@ -126,6 +129,8 @@ int main (int argc, char **argv)
   g_option_context_free (context);
 
   atoms_init ();
+  if (!gdk_display_supports_composite (gdk_display_get_default ()))
+    options.xcomposite = FALSE;
 
   if (options.read_stdin) {
     options.show_icons = FALSE;
@@ -833,6 +838,8 @@ static void read_config ()
       options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
     if (g_key_file_has_key (config, group, "at_pointer", &error))
       options.at_pointer = g_key_file_get_boolean (config, group, "at_pointer", &error);
+    if (g_key_file_has_key (config, group, "xcomposite", &error))
+      options.xcomposite = g_key_file_get_boolean (config, group, "xcomposite", &error);
   }
 
   g_key_file_free (config);
@@ -862,6 +869,7 @@ screenshot = %s\n\
 screenshot_offset_x = %d\n\
 screenshot_offset_y = %d\n\
 at_pointer = %s\n\
+xcomposite = %s\n\
 ",
 	       (options.vim_mode) ? "true" : "false",
 	       options.box_width,
@@ -876,7 +884,8 @@ at_pointer = %s\n\
 	       (options.screenshot) ? "true" : "false",
 	       options.screenshot_offset_x,
 	       options.screenshot_offset_y,
-	       (options.at_pointer) ? "true" : "false");
+	       (options.at_pointer) ? "true" : "false",
+	       (options.xcomposite) ? "true" : "false");
 
       fclose (config);
       }
