@@ -18,26 +18,25 @@ Config file is created automatically on first program run and stored in `~/.conf
       xwinmosaic [OPTION...]  - show X11 windows as colour mosaic
 
     Help Options:
-      -h, --help                      Show help options
-      --help-all                      Show all help options
-      --help-gtk                      Show GTK+ Options
+      -h, --help                   Show help options
+      --help-all                   Show all help options
+      --help-gtk                   Show GTK+ Options
 
     Application Options:
-      -r, --read-stdin                Read items from stdin (and print selected item to stdout)
-      -p, --permissive                Lets search entry text to be used as individual item.
-      -V, --vim-mode                  Turn on vim-like navigation (hjkl, search on /)
-      -C, --no-colors                 Turn off box colorizing
-      -I, --no-icons                  Turn off showing icons
-      -D, --no-desktops               Turn off showing desktop number
-      -S, --screenshot                Get screenshot and set it as a background (for WMs that do not support XShape)
-      -P, --at-pointer                Place center of mosaic at pointer position.
-      -W, --box-width=<int>           Width of the boxes (default: 200)
-      -H, --box-height=<int>          Height of the boxes (default: 40)
-      -i, --icon-size=<int>           Size of window icons (default: 16)
-      -f, --font-name="font name"     Which font to use for displaying widgets. (default: Sans)
-      -s, --font-size=<int>           Font size (default: 10)
-      -o, --hue-offset=<int>          Set color hue offset (from 0 to 255)
-      --display=DISPLAY               X display to use
+      -r, --read-stdin             Read items from stdin (and print selected item to stdout)
+      -p, --permissive             Lets search entry text to be used as individual item.
+      -V, --vim-mode               Turn on vim-like navigation (hjkl, search on /)
+      -C, --no-colors              Turn off box colorizing
+      -I, --no-icons               Turn off showing icons
+      -D, --no-desktops            Turn off showing desktop number
+      -S, --screenshot             Get screenshot and set it as a background (for WMs that do not support XShape)
+      -P, --at-pointer             Place center of mosaic at pointer position.
+      -W, --box-width=<int>        Width of the boxes (default: 200)
+      -H, --box-height=<int>       Height of the boxes (default: 40)
+      -i, --icon-size=<int>        Size of window icons (default: 16)
+      -f, --font="font [size]"     Which font to use for displaying widgets. (default: "Sans 10")
+      -o, --hue-offset=<int>       Set color hue offset (from 0 to 255)
+      --display=DISPLAY            X display to use
 
 ### Dependencies:
 
