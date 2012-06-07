@@ -42,8 +42,7 @@ static struct {
   gboolean show_icons;
   gboolean show_desktop;
   guint icon_size;
-  gchar *font_name;
-  guint font_size;
+  gchar *font;
   gboolean read_stdin;
   gboolean permissive;
   gboolean screenshot;
@@ -82,10 +81,8 @@ static GOptionEntry entries [] =
     "Height of the boxes (default: 40)", "<int>" },
   { "icon-size", 'i', 0, G_OPTION_ARG_INT, &options.icon_size,
     "Size of window icons (default: 16)", "<int>" },
-  { "font-name", 'f', 0, G_OPTION_ARG_STRING, &options.font_name,
-    "Which font to use for displaying widgets. (default: Sans)", "\"font name\"" },
-  { "font-size", 's', 0, G_OPTION_ARG_INT, &options.font_size,
-    "Font size (default: 10)", "<int>" },
+  { "font", 'f', 0, G_OPTION_ARG_STRING, &options.font,
+    "Which font to use for displaying widgets. (default: \"Sans 10\")", "\"font [size]\"" },
   { "hue-offset", 'o', 0, G_OPTION_ARG_INT, &options.color_offset,
     "Set color hue offset (from 0 to 255)", "<int>" },
   { "xcomposite", 'X', 0, G_OPTION_ARG_NONE, &options.xcomposite,
@@ -228,7 +225,7 @@ int main (int argc, char **argv)
   }
 
   search = mosaic_search_box_new ();
-  mosaic_box_set_font (MOSAIC_BOX (search), options.font_name, options.font_size);
+  mosaic_box_set_font (MOSAIC_BOX (search), options.font);
   gtk_widget_set_can_focus (search, FALSE);
   GtkRequisition s_req;
   gtk_widget_size_request (search, &s_req);
@@ -310,7 +307,7 @@ static void draw_mosaic (GtkLayout *where,
       do {
 	if (i == rsize)
 	  break;
-	if (cur_x > 0 && cur_x+rwidth < width && cur_y > 0 && cur_y+rheight < height) {
+	if (cur_x >= 0 && cur_x+rwidth <= width && cur_y >= 0 && cur_y+rheight <= height) {
 	  offset = 0;
 	  if (gtk_widget_get_parent (widgets[i]))
 	    gtk_layout_move (GTK_LAYOUT (where), widgets[i], cur_x, cur_y);
@@ -414,7 +411,7 @@ static void update_box_list ()
       } else {
 	boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
       }
-      mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font_name, options.font_size);
+      mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font);
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
       mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
@@ -791,8 +788,7 @@ static void read_config ()
   options.show_icons = TRUE;
   options.show_desktop = TRUE;
   options.icon_size = 16;
-  options.font_name = g_strdup ("Sans");
-  options.font_size = 10;
+  options.font = g_strdup ("Sans 10");
   options.read_stdin = FALSE;
   options.screenshot = FALSE;
   options.screenshot_offset_x = 0;
@@ -826,10 +822,8 @@ static void read_config ()
       options.show_desktop = g_key_file_get_boolean (config, group, "show_desktop", &error);
     if (g_key_file_has_key (config, group, "icon_size", &error))
       options.icon_size = g_key_file_get_integer (config, group, "icon_size", &error);
-    if (g_key_file_has_key (config, group, "font_name", &error))
-      options.font_name = g_key_file_get_string (config, group, "font_name", &error);
-    if (g_key_file_has_key (config, group, "font_size", &error))
-      options.font_size = g_key_file_get_integer (config, group, "font_size", &error);
+    if (g_key_file_has_key (config, group, "font", &error))
+      options.font = g_key_file_get_string (config, group, "font", &error);
     if (g_key_file_has_key (config, group, "screenshot", &error))
       options.screenshot = g_key_file_get_boolean (config, group, "screenshot", &error);
     if (g_key_file_has_key (config, group, "screenshot_offset_x", &error))
@@ -863,8 +857,7 @@ color_offset = %d\n\
 show_icons = %s\n\
 show_desktop = %s\n\
 icon_size = %d\n\
-font_name = %s\n\
-font_size = %d\n\
+font = %s\n\
 screenshot = %s\n\
 screenshot_offset_x = %d\n\
 screenshot_offset_y = %d\n\
@@ -879,8 +872,7 @@ xcomposite = %s\n\
 	       (options.show_icons) ? "true" : "false",
 	       (options.show_desktop) ? "true" : "false",
 	       options.icon_size,
-	       options.font_name,
-	       options.font_size,
+	       options.font,
 	       (options.screenshot) ? "true" : "false",
 	       options.screenshot_offset_x,
 	       options.screenshot_offset_y,

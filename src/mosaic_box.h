@@ -28,8 +28,7 @@ struct _MosaicBox
   gboolean on_box;
   gboolean box_down;
 
-  gchar *font_name;
-  guint font_size;
+  gchar *font;
 };
 
 struct _MosaicBoxClass
@@ -44,9 +43,8 @@ GtkWidget* mosaic_box_new (void);
 void mosaic_box_set_name (MosaicBox *box, const gchar *name);
 const gchar *mosaic_box_get_name (MosaicBox *box);
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gchar *text,
-		       gint width, gint height, gint xoffset, gboolean textbox);
-void mosaic_box_set_font (MosaicBox *box, const gchar *font, guint size);
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height);
+void mosaic_box_set_font (MosaicBox *box, const gchar *font);
 
 G_END_DECLS
 

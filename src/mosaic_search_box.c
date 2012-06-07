@@ -162,7 +162,7 @@ mosaic_search_box_expose_event (GtkWidget *widget, GdkEventExpose *event)
   cairo_clip (cr);
   mosaic_search_box_paint (MOSAIC_SEARCH_BOX (widget), cr, widget->allocation.width, widget->allocation.height);
   cairo_destroy (cr);
-  return FALSE;
+  return TRUE;
 }
 
 static void
@@ -172,15 +172,49 @@ mosaic_search_box_paint (MosaicSearchBox *box, cairo_t *cr, gint width, gint hei
   cairo_rectangle (cr, 0, 0, width, height);
   cairo_fill (cr);
 
-  gchar *text = g_strjoin (NULL, MOSAIC_BOX (box)->name, box->cursor, NULL);
-  mosaic_box_paint (MOSAIC_BOX (box), cr, text, width, height, 0, TRUE);
-  g_free (text);
+  PangoLayout *pl;
+  PangoFontDescription *pfd;
+  pl = pango_cairo_create_layout (cr);
+  pango_layout_set_text (pl, MOSAIC_BOX (box)->name, -1);
+  pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
+  pango_layout_set_font_description (pl, pfd);
+  pango_font_description_free (pfd);
+
+  int pwidth, pheight;
+  pango_layout_get_pixel_size (pl, &pwidth, &pheight);
+
+  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+
+  if ((width-pwidth) < 10)
+    cairo_move_to (cr, width-pwidth-5, (height-pheight)/2);
+  else
+    cairo_move_to (cr, 5, (height-pheight)/2);
+
+  pango_cairo_show_layout (cr, pl);
+  g_object_unref (pl);
+
+  if ((width-pwidth) < 10)
+    cairo_rectangle (cr, width-4, 5, 2, height-10);
+  else
+    cairo_rectangle (cr, pwidth+6, 5, 2, height-10);
+  cairo_fill (cr);
+
+  mosaic_box_paint (MOSAIC_BOX (box), cr, width, height);
 }
 
 static void mosaic_search_box_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
+  PangoLayout *pl = gtk_widget_create_pango_layout (widget, "|");
+  PangoFontDescription *pfd = pango_font_description_from_string (MOSAIC_BOX (widget)->font);
+  pango_layout_set_font_description (pl, pfd);
+  pango_font_description_free (pfd);
+
+  int pwidth, pheight;
+  pango_layout_get_pixel_size (pl, &pwidth, &pheight);
+
   requisition->width = BOX_DEFAULT_WIDTH;
-  requisition->height = MOSAIC_BOX (widget)->font_size * 2;
+  requisition->height = pheight + 10;
+  g_object_unref (pl);
 }
 
 void

@@ -8,24 +8,10 @@ enum {
   LAST_SIGNAL
 };
 
-enum {
-  PROP_0,
-  PROP_NAME,
-  N_PROPERTIES
-};
-
 static GObject *mosaic_box_constructor (GType gtype,
 					guint n_properties,
 					GObjectConstructParam *properties);
 static void mosaic_box_dispose (GObject *gobject);
-static void mosaic_box_set_property (GObject *gobject,
-					    guint prop_id,
-					    const GValue *value,
-					    GParamSpec *pspec);
-static void mosaic_box_get_property (GObject *gobject,
-					    guint prop_id,
-					    GValue *value,
-					    GParamSpec *pspec);
 static void mosaic_box_realize (GtkWidget *widget);
 static void mosaic_box_size_request (GtkWidget *widget, GtkRequisition *requisition);
 static void mosaic_box_size_allocate (GtkWidget *widget,GtkAllocation *allocation);
@@ -40,7 +26,6 @@ static gboolean mosaic_box_leave_notify (GtkWidget *widget, GdkEventCrossing *ev
 static void mosaic_box_clicked (MosaicBox *box);
 
 static guint box_signals[LAST_SIGNAL] = { 0 };
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
 
 G_DEFINE_TYPE (MosaicBox, mosaic_box, GTK_TYPE_DRAWING_AREA);
 
@@ -55,8 +40,6 @@ mosaic_box_class_init (MosaicBoxClass *klass)
 
   gobject_class->constructor = mosaic_box_constructor;
   gobject_class->dispose = mosaic_box_dispose;
-  gobject_class->set_property = mosaic_box_set_property;
-  gobject_class->get_property = mosaic_box_get_property;
 
   widget_class->realize = mosaic_box_realize;
   widget_class->size_request = mosaic_box_size_request;
@@ -67,17 +50,6 @@ mosaic_box_class_init (MosaicBoxClass *klass)
   widget_class->key_release_event = mosaic_box_key_release;
   widget_class->enter_notify_event = mosaic_box_enter_notify;
   widget_class->leave_notify_event = mosaic_box_leave_notify;
-
-  obj_properties[PROP_NAME] =
-    g_param_spec_string ("name",
-			 "Name in the box",
-			 "Name displayed in the box",
-			 NULL,
-			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-
-  g_object_class_install_properties (gobject_class,
-				     N_PROPERTIES,
-				     obj_properties);
 
   klass->clicked = NULL;
 
@@ -111,8 +83,7 @@ static GObject*	mosaic_box_constructor (GType gtype,
 
   box = MOSAIC_BOX (obj);
 
-  box->font_name = g_strdup ("Sans");
-  box->font_size = 10;
+  box->font = g_strdup ("Sans 10");
   box->on_box = FALSE;
   box->box_down = FALSE;
 
@@ -137,45 +108,11 @@ mosaic_box_dispose (GObject *gobject)
     g_free (box->name);
   box->name = NULL;
 
-  if (box->font_name)
-    g_free (box->font_name);
-  box->font_name = NULL;
+  if (box->font)
+    g_free (box->font);
+  box->font = NULL;
 
   G_OBJECT_CLASS (mosaic_box_parent_class)->dispose (gobject);
-}
-
-static void mosaic_box_set_property (GObject *gobject,
-				     guint prop_id,
-				     const GValue *value,
-				     GParamSpec *pspec)
-{
-  MosaicBox *box = MOSAIC_BOX (gobject);
-
-  switch (prop_id) {
-  case PROP_NAME:
-    mosaic_box_set_name (box, g_value_get_string (value));
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
-    break;
-  }
-}
-
-static void mosaic_box_get_property (GObject *gobject,
-				     guint prop_id,
-				     GValue *value,
-				     GParamSpec *pspec)
-{
-  MosaicBox *box = MOSAIC_BOX (gobject);
-
-  switch (prop_id) {
-  case PROP_NAME:
-    g_value_set_string (value, box->name);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
-    break;
-  }
 }
 
 static void mosaic_box_realize (GtkWidget *widget)
@@ -339,7 +276,6 @@ mosaic_box_set_name (MosaicBox *box, const gchar *name)
   g_free (box->name);
   box->name = new_name;
 
-  g_object_notify (G_OBJECT (box), "name");
   gtk_widget_queue_draw (GTK_WIDGET (box));
 }
 
@@ -351,44 +287,9 @@ mosaic_box_get_name (MosaicBox *box)
   return box->name;
 }
 
-void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gchar *text,
-		       gint width, gint height, gint xoffset, gboolean textbox)
+void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gint width, gint height)
 {
   gboolean has_focus = gtk_widget_has_focus (GTK_WIDGET (box));
-
-  // Draw text
-  cairo_text_extents_t extents;
-
-  if (has_focus)
-    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-  else
-    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
-  cairo_select_font_face (cr, box->font_name,
-			  CAIRO_FONT_SLANT_NORMAL,
-			  CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size (cr, box->font_size);
-
-  cairo_text_extents (cr, text, &extents);
-
-  if (!textbox) {
-    if (xoffset > 0) {
-      if ((width-extents.width)/2 > xoffset+5)
-	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-      else
-	cairo_move_to (cr, xoffset+5, (height + extents.height)/2);
-    } else {
-      if (width-5 > extents.width)
-	cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-      else
-	cairo_move_to (cr, 5, (height + extents.height)/2);
-    }
-  } else {
-    if ((width-extents.width) < xoffset+10)
-      cairo_move_to (cr, width-extents.width-5, height*0.7);
-    else
-      cairo_move_to (cr, xoffset+5, height*0.7);
-  }
-  cairo_show_text (cr, text);
 
   // Draw border
   cairo_rectangle (cr, 0, 0, width, height);
@@ -402,13 +303,12 @@ void mosaic_box_paint (MosaicBox *box, cairo_t *cr, gchar *text,
   cairo_stroke (cr);
 }
 
-void mosaic_box_set_font (MosaicBox *box, const gchar *font, guint size)
+void mosaic_box_set_font (MosaicBox *box, const gchar *font)
 {
   g_return_if_fail (MOSAIC_IS_BOX (box));
 
-  if (box->font_name)
-    g_free (box->font_name);
+  if (box->font)
+    g_free (box->font);
 
-  box->font_name = g_strdup (font);
-  box->font_size = size;
+  box->font = g_strdup (font);
 }

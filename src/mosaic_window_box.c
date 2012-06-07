@@ -221,7 +221,7 @@ mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event)
   cairo_clip (cr);
   mosaic_window_box_paint (MOSAIC_WINDOW_BOX (widget), cr, widget->allocation.width, widget->allocation.height);
   cairo_destroy (cr);
-  return FALSE;
+  return TRUE;
 }
 
 static void
@@ -237,24 +237,32 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
   cairo_rectangle (cr, 0, 0, width, height);
   cairo_fill (cr);
 
-  cairo_text_extents_t extents;
+  PangoLayout *pl;
+  PangoFontDescription *pfd;
+  pl = pango_cairo_create_layout (cr);
 
   /* Shall we draw the desktop number */
   if (box->is_window && box->show_desktop) {
     gchar desk [4] = { 0 };
     sprintf (desk, "%d", box->desktop+1);
+
+    pango_layout_set_text (pl, desk, -1);
+    pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
+    pango_font_description_set_weight (pfd, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_size (pfd, (height-10) * PANGO_SCALE);
+    pango_layout_set_font_description (pl, pfd);
+    pango_font_description_free (pfd);
+
     if (has_focus)
       cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
     else
       cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.5);
 
-    cairo_select_font_face (cr, "Sans",
-			    CAIRO_FONT_SLANT_NORMAL,
-			    CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, height);
-    cairo_text_extents (cr, desk, &extents);
-    cairo_move_to (cr, (width - extents.width)/2, (height + extents.height)/2);
-    cairo_show_text (cr, desk);
+    int pwidth, pheight;
+    pango_layout_get_pixel_size (pl, &pwidth, &pheight);
+
+    cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+    pango_cairo_show_layout (cr, pl);
   }
 
   gint text_offset = 0;
@@ -276,7 +284,36 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
     }
   }
 
-  mosaic_box_paint (MOSAIC_BOX (box), cr, MOSAIC_BOX (box)->name, width, height, text_offset, FALSE);
+  // Draw name.
+  pango_layout_set_text (pl, MOSAIC_BOX (box)->name, -1);
+  pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
+  pango_layout_set_font_description (pl, pfd);
+  pango_font_description_free (pfd);
+
+  int pwidth, pheight;
+  pango_layout_get_pixel_size (pl, &pwidth, &pheight);
+
+  if (has_focus)
+    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
+  else
+    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+
+  if (text_offset > 0) {
+    if ((width-pwidth)/2 > text_offset+5)
+      cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+    else
+      cairo_move_to (cr, text_offset+5, (height - pheight)/2);
+  } else {
+    if (width-5 > pwidth)
+      cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+    else
+      cairo_move_to (cr, 5, (height - pheight)/2);
+  }
+
+  pango_cairo_show_layout (cr, pl);
+  g_object_unref (pl);
+
+  mosaic_box_paint (MOSAIC_BOX (box), cr, width, height);
 }
 
 void
