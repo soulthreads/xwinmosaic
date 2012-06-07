@@ -487,11 +487,9 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	case GDK_KEY_b:
 	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	  break;
-	default:
-	  return FALSE;
 	}
-	return TRUE;
       }
+      return FALSE;
     }
 
     if (options.vim_mode && !gtk_widget_get_visible (search)) {
