@@ -426,7 +426,7 @@ static void update_box_list ()
       mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font);
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
       mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
-      if (options.color_file) {
+      if (options.colorize && options.color_file) {
 	gchar *color = NULL;
 	if (!options.read_stdin) {
 	  const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
