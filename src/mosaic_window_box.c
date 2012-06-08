@@ -542,3 +542,21 @@ void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offs
   box->color_offset = color_offset;
   mosaic_window_box_create_colors (box);
 }
+
+void mosaic_window_box_set_color_from_string (MosaicWindowBox *box, const gchar *color)
+{
+  gchar *scolor = g_strdup (color);
+  g_strstrip (scolor);
+  int parsed = 0x888888;
+  if (g_str_has_prefix (scolor, "#"))
+    parsed = strtol (scolor+1, NULL, 16);
+  guchar r = (parsed >> 16) & 0xff;
+  guchar g = (parsed >> 8) & 0xff;
+  guchar b = (parsed >> 0) & 0xff;
+
+  box->r = r / 255.0;
+  box->g = g / 255.0;
+  box->b = b / 255.0;
+
+  g_free (scolor);
+}

@@ -5,6 +5,7 @@
 #ifndef MOSAIC_WINDOW_BOX_H
 #define MOSAIC_WINDOW_BOX_H
 
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <cairo.h>
 #include <gdk/gdkkeysyms.h>
@@ -76,6 +77,7 @@ void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint 
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
 void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
+void mosaic_window_box_set_color_from_string (MosaicWindowBox *box, const gchar *color);
 
 G_END_DECLS
 

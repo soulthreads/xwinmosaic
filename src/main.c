@@ -39,6 +39,10 @@ static guint boxes_drawn;
 /* for screenshot mode */
 static gboolean key_pressed;
 
+static GKeyFile *color_config;
+static gchar **fallback_colors;
+static gsize fallback_size;
+
 static struct {
   guint box_width;
   guint box_height;
@@ -57,6 +61,7 @@ static struct {
   gboolean at_pointer;
   gint center_x;
   gint center_y;
+  gchar *color_file;
 } options;
 
 static GOptionEntry entries [] =
@@ -88,6 +93,8 @@ static GOptionEntry entries [] =
     "Which font to use for displaying widgets. (default: \"Sans 10\")", "\"font [size]\"" },
   { "hue-offset", 'o', 0, G_OPTION_ARG_INT, &options.color_offset,
     "Set color hue offset (from 0 to 255)", "<int>" },
+  { "color-file", 'F', 0, G_OPTION_ARG_FILENAME, &options.color_file,
+    "Pick colors from file", "<file>" },
   { NULL }
 };
 
@@ -107,6 +114,7 @@ static GdkPixbuf* get_screenshot ();
 static void read_config ();
 static void write_default_config ();
 static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer data);
+static void read_colors ();
 
 int main (int argc, char **argv)
 {
@@ -154,6 +162,8 @@ int main (int argc, char **argv)
 					 NULL);
   }
 
+  if (options.color_file)
+    read_colors ();
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
@@ -403,6 +413,7 @@ static void update_box_list ()
       }
     }
 
+    GError *col_error;
     for (int i = 0; i < wsize; i++) {
       if (!options.read_stdin) {
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
@@ -415,6 +426,25 @@ static void update_box_list ()
       mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font);
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
       mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
+      if (options.color_file) {
+	const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	gchar *class1 = g_strdup (wm_class);
+	gchar *class2 = g_strdup (wm_class+strlen (class1)+1);
+	gchar *color = NULL;
+	if (g_key_file_has_key (color_config, "colors", class1, &col_error))
+	  color = g_key_file_get_string (color_config, "colors", class1, &col_error);
+	else if (g_key_file_has_key (color_config, "colors", class2, &col_error))
+	  color = g_key_file_get_string (color_config, "colors", class2, &col_error);
+	else if (fallback_size)
+	  color = g_strdup (fallback_colors [i % fallback_size]);
+
+	if (color)
+	  mosaic_window_box_set_color_from_string (MOSAIC_WINDOW_BOX (boxes[i]), color);
+
+	g_free (class1);
+	g_free (class2);
+	g_free (color);
+      }
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), NULL);
     }
@@ -831,6 +861,8 @@ static void read_config ()
       options.screenshot_offset_y = g_key_file_get_integer (config, group, "screenshot_offset_y", &error);
     if (g_key_file_has_key (config, group, "at_pointer", &error))
       options.at_pointer = g_key_file_get_boolean (config, group, "at_pointer", &error);
+    if (g_key_file_has_key (config, group, "color_file", &error))
+      options.color_file = g_key_file_get_string (config, group, "color_file", &error);
   }
 
   g_key_file_free (config);
@@ -859,6 +891,7 @@ screenshot = %s\n\
 screenshot_offset_x = %d\n\
 screenshot_offset_y = %d\n\
 at_pointer = %s\n\
+# color_file = /path/to/file\n\
 ",
 	       (options.vim_mode) ? "true" : "false",
 	       options.box_width,
@@ -888,5 +921,25 @@ static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer d
     if (options.screenshot && !key_pressed)
       return;
     gtk_main_quit ();
+  }
+}
+
+static void read_colors ()
+{
+
+  GError *error = NULL;
+  color_config = g_key_file_new ();
+
+  if (!g_key_file_load_from_file (color_config, options.color_file, 0, &error)) {
+    g_printerr ("%s\n", error->message);
+    return;
+  }
+
+  fallback_size = 0;
+
+  const gchar *group = "colors";
+  if (g_key_file_has_group (color_config, group)) {
+    if (g_key_file_has_key (color_config, group, "fallback", &error))
+      fallback_colors = g_key_file_get_string_list (color_config, group, "fallback", &fallback_size, &error);
   }
 }
