@@ -210,6 +210,8 @@ int main (int argc, char **argv)
   gtk_container_add (GTK_CONTAINER (window), layout);
 
   if (options.screenshot) {
+    gtk_window_fullscreen (GTK_WINDOW (window));
+
     GdkPixbuf *screenshot;
     GdkPixmap *background = NULL;
     GtkStyle *style = NULL;
