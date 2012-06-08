@@ -10,5 +10,5 @@ set (CMAKE_C_FLAGS_DEBUG "-g")
 add_subdirectory (src)
 
 if (WITH_SCRIPTS)
-  add_subdirectory (support)
+  add_subdirectory (contrib)
 ENDIF (WITH_SCRIPTS)
