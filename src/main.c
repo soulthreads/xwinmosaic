@@ -427,22 +427,25 @@ static void update_box_list ()
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
       mosaic_window_box_set_color_offset (MOSAIC_WINDOW_BOX (boxes[i]), options.color_offset);
       if (options.color_file) {
-	const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
-	gchar *class1 = g_strdup (wm_class);
-	gchar *class2 = g_strdup (wm_class+strlen (class1)+1);
 	gchar *color = NULL;
-	if (g_key_file_has_key (color_config, "colors", class1, &col_error))
-	  color = g_key_file_get_string (color_config, "colors", class1, &col_error);
-	else if (g_key_file_has_key (color_config, "colors", class2, &col_error))
-	  color = g_key_file_get_string (color_config, "colors", class2, &col_error);
-	else if (fallback_size)
+	if (!options.read_stdin) {
+	  const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	  gchar *class1 = g_strdup (wm_class);
+	  gchar *class2 = g_strdup (wm_class+strlen (class1)+1);
+	  if (g_key_file_has_key (color_config, "colors", class1, &col_error))
+	    color = g_key_file_get_string (color_config, "colors", class1, &col_error);
+	  else if (g_key_file_has_key (color_config, "colors", class2, &col_error))
+	    color = g_key_file_get_string (color_config, "colors", class2, &col_error);
+	  g_free (class1);
+	  g_free (class2);
+	}
+
+	if (!color && fallback_size)
 	  color = g_strdup (fallback_colors [i % fallback_size]);
 
 	if (color)
 	  mosaic_window_box_set_color_from_string (MOSAIC_WINDOW_BOX (boxes[i]), color);
 
-	g_free (class1);
-	g_free (class2);
 	g_free (color);
       }
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",

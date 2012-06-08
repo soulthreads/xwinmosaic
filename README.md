@@ -36,6 +36,7 @@ Config file is created automatically on first program run and stored in `~/.conf
       -i, --icon-size=<int>        Size of window icons (default: 16)
       -f, --font="font [size]"     Which font to use for displaying widgets. (default: "Sans 10")
       -o, --hue-offset=<int>       Set color hue offset (from 0 to 255)
+      -F, --color-file=<file>      Pick colors from file
       --display=DISPLAY            X display to use
 
 ### Dependencies:
@@ -59,3 +60,12 @@ Other distributions/for development:
 	cmake ..         # or cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 	make
 	./src/xwinmosaic # or sudo make install, if you trust me. :)
+
+### Color file format:
+
+	[colors]
+	# Use xprop to determine window class
+	WindowClass1 = #112233
+	WindowClass2 = #445566
+	# For other windows to use. You can omit that line and it will use standard colorizing scheme.
+	fallback = #778899; #AABBCC; #DDEEFF
