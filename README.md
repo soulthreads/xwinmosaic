@@ -50,11 +50,12 @@ Config file is created automatically on first program run and stored in `~/.conf
 * Debian/Ubuntu: https://launchpad.net/~soulthreads/+archive/xwinmosaic/
 * ArchLinux: https://aur.archlinux.org/packages.php?ID=59660
 * Gentoo: https://github.com/soulthreads/xwinmosaic/raw/master/contrib/gentoo/xwinmosaic-9999.ebuild
-* Other distributions/for development:
 
-    cd xwinmosaic
-    mkdir build
-    cd build
-    cmake ..         # or cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
-    make
-    ./src/xwinmosaic # or sudo make install, if you trust me. :)
+Other distributions/for development:
+
+	cd xwinmosaic
+	mkdir build
+	cd build
+	cmake ..         # or cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+	make
+	./src/xwinmosaic # or sudo make install, if you trust me. :)
