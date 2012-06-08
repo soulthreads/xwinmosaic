@@ -500,11 +500,28 @@ void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint 
   box->icon_pixbuf = get_window_icon (box->xwindow, req_width, req_height);
   if (!box->icon_pixbuf) {
     // Try to load fallback icon.
+    gchar *class1 = g_ascii_strdown (box->xclass, -1);
+    gchar *class2 = g_ascii_strdown (box->xclass+strlen (class1)+1, -1);
+
     GtkIconTheme *theme = gtk_icon_theme_get_default ();
-    box->icon_pixbuf = gtk_icon_theme_load_icon (theme, "application-x-executable", req_width,
+    box->icon_pixbuf = gtk_icon_theme_load_icon (theme, class1, req_width,
 						 GTK_ICON_LOOKUP_USE_BUILTIN |
 						 GTK_ICON_LOOKUP_GENERIC_FALLBACK,
 						 NULL);
+
+    if (!box->icon_pixbuf)
+      box->icon_pixbuf = gtk_icon_theme_load_icon (theme, class2, req_width,
+						   GTK_ICON_LOOKUP_USE_BUILTIN |
+						   GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+						   NULL);
+
+    if (!box->icon_pixbuf)
+      box->icon_pixbuf = gtk_icon_theme_load_icon (theme, "application-x-executable", req_width,
+						   GTK_ICON_LOOKUP_USE_BUILTIN |
+						   GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+						   NULL);
+    g_free (class1);
+    g_free (class2);
   }
   if (!box->icon_pixbuf) {
     box->has_icon = FALSE;
