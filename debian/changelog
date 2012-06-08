@@ -1,3 +1,10 @@
+xwinmosaic (0.3.3+git20120608-1) precise; urgency=low
+
+  * Proper fontconfig support
+  * Bugfixes
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Fri, 08 Jun 2012 14:45:40 +0400
+
 xwinmosaic (0.3.2+git20120605-1) precise; urgency=low
 
   * Better search widget, improved performance, bugfixes.
