@@ -1,3 +1,10 @@
+xwinmosaic (0.3.3+git20120609-1) precise; urgency=low
+
+  * Ability to use user-defined colors
+  * Better behaviour and some pack of bugfixes
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Sat, 09 Jun 2012 02:30:17 +0400
+
 xwinmosaic (0.3.3+git20120608-1) precise; urgency=low
 
   * Proper fontconfig support
