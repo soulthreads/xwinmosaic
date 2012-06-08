@@ -21,4 +21,4 @@ items=$(emacs_ls)
 sel=$(echo "$items" | grep -v ^$ | xwinmosaic -r $@)
 test -z "$sel" && exit 0 # 1?
 
-emacs_sw $sel
+emacs_sw "$sel"
