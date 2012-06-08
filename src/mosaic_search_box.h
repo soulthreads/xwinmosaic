@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_seach_box.h - headers for search box widget.
+ */
+
 #ifndef MOSAIC_SEARCH_BOX_H
 #define MOSAIC_SEARCH_BOX_H
 

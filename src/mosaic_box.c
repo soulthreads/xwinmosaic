@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_box.c - common stuff for window_box and search_box.
+ */
+
 #include "mosaic_box.h"
 
 #define BOX_DEFAULT_WIDTH 200

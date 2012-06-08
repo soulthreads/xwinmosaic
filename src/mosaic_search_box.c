@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_seach_box.c - search box widget.
+ */
+
 #include "mosaic_search_box.h"
 
 #define BOX_DEFAULT_WIDTH 200

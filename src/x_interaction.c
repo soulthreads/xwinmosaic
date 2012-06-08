@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * x_interaction.c - layer to talk with X11.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>

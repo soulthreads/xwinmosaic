@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_box.h - headers for mosaic_box class.
+ */
+
 #ifndef MOSAIC_BOX_H
 #define MOSAIC_BOX_H
 

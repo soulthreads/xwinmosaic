@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_window_box.c - window box widget.
+ */
+
 #include "mosaic_window_box.h"
 
 enum {

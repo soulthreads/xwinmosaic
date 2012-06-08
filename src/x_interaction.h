@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * x_interaction.h - layer to talk with X11.
+ */
+
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xcomposite.h>

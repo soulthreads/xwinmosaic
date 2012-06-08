@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * mosaic_window_box.h - headers for window box widget
+ */
+
 #ifndef MOSAIC_WINDOW_BOX_H
 #define MOSAIC_WINDOW_BOX_H
 

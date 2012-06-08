@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Anton S. Lobashev
+ * main.c - main program file
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
