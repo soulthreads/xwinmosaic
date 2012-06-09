@@ -419,7 +419,7 @@ static void update_box_list ()
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
 	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
 	if (options.show_icons)
-	  mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
+	  mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {
 	boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
       }
@@ -605,7 +605,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	// Search for appropriate widget to update icon.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
+	    mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
 	    break;
 	  }
       }

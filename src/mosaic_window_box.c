@@ -28,8 +28,8 @@ static void mosaic_window_box_get_property (GObject *gobject,
 
 static gboolean mosaic_window_box_expose_event (GtkWidget *widget, GdkEventExpose *event);
 static void mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint height);
-
 static void mosaic_window_box_create_colors (MosaicWindowBox *box);
+static void mosaic_window_box_setup_icon (MosaicWindowBox *box, GdkPixbuf *pixbuf);
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
 
@@ -96,6 +96,7 @@ mosaic_window_box_init (MosaicWindowBox *box)
   box->icon_pixbuf = NULL;
   box->icon_surface = NULL;
   box->icon_context = NULL;
+  box->desktop = -1;
 }
 
 static GObject*	mosaic_window_box_constructor (GType gtype,
@@ -420,6 +421,20 @@ void mosaic_window_box_update_xclass (MosaicWindowBox *box)
   }
 }
 
+gint mosaic_window_box_get_desktop (MosaicWindowBox *box)
+{
+  g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), -1);
+
+  return box->desktop;
+}
+
+void mosaic_window_box_set_desktop (MosaicWindowBox *box, gint desktop)
+{
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
+
+  box->desktop = desktop;
+}
+
 static gushort get_crc16 (gchar *octets, guint len)
 {
   gushort crc16_poly = 0x8408;
@@ -486,7 +501,63 @@ static void mosaic_window_box_create_colors (MosaicWindowBox *box)
   }
 }
 
-void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint req_height)
+void mosaic_window_box_setup_icon_from_wm (MosaicWindowBox *box, guint req_width, guint req_height)
+{
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
+
+  GdkPixbuf *pixbuf = get_window_icon (box->xwindow, req_width, req_height);
+  if (!pixbuf) {
+    // Try to load fallback icon.
+    gchar *class1 = g_ascii_strdown (box->xclass, -1);
+    gchar *class2 = g_ascii_strdown (box->xclass+strlen (class1)+1, -1);
+
+    GtkIconTheme *theme = gtk_icon_theme_get_default ();
+    pixbuf = gtk_icon_theme_load_icon (theme, class1, req_width,
+				       GTK_ICON_LOOKUP_USE_BUILTIN |
+				       GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+				       NULL);
+
+    if (!pixbuf)
+      pixbuf = gtk_icon_theme_load_icon (theme, class2, req_width,
+					 GTK_ICON_LOOKUP_USE_BUILTIN |
+					 GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+					 NULL);
+
+    if (!pixbuf)
+      pixbuf = gtk_icon_theme_load_icon (theme, "application-x-executable", req_width,
+					 GTK_ICON_LOOKUP_USE_BUILTIN |
+					 GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+					 NULL);
+    g_free (class1);
+    g_free (class2);
+  }
+  if (!pixbuf) {
+    box->has_icon = FALSE;
+    return;
+  }
+
+  mosaic_window_box_setup_icon (box, pixbuf);
+}
+
+void mosaic_window_box_setup_icon_from_theme (MosaicWindowBox *box, const gchar *name, guint req_width, guint req_height)
+{
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
+
+  GtkIconTheme *theme = gtk_icon_theme_get_default ();
+  GdkPixbuf *pixbuf = gtk_icon_theme_load_icon (theme, name, req_width,
+				     GTK_ICON_LOOKUP_USE_BUILTIN |
+				     GTK_ICON_LOOKUP_GENERIC_FALLBACK,
+				     NULL);
+
+  if (!pixbuf) {
+    box->has_icon = FALSE;
+    return;
+  }
+
+  mosaic_window_box_setup_icon (box, pixbuf);
+}
+
+static void mosaic_window_box_setup_icon (MosaicWindowBox *box, GdkPixbuf *pixbuf)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
@@ -497,44 +568,19 @@ void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint 
   if (box->icon_context)
     cairo_destroy (box->icon_context);
 
-  box->icon_pixbuf = get_window_icon (box->xwindow, req_width, req_height);
-  if (!box->icon_pixbuf) {
-    // Try to load fallback icon.
-    gchar *class1 = g_ascii_strdown (box->xclass, -1);
-    gchar *class2 = g_ascii_strdown (box->xclass+strlen (class1)+1, -1);
+  if (pixbuf) {
+    box->icon_pixbuf = pixbuf;
 
-    GtkIconTheme *theme = gtk_icon_theme_get_default ();
-    box->icon_pixbuf = gtk_icon_theme_load_icon (theme, class1, req_width,
-						 GTK_ICON_LOOKUP_USE_BUILTIN |
-						 GTK_ICON_LOOKUP_GENERIC_FALLBACK,
-						 NULL);
-
-    if (!box->icon_pixbuf)
-      box->icon_pixbuf = gtk_icon_theme_load_icon (theme, class2, req_width,
-						   GTK_ICON_LOOKUP_USE_BUILTIN |
-						   GTK_ICON_LOOKUP_GENERIC_FALLBACK,
-						   NULL);
-
-    if (!box->icon_pixbuf)
-      box->icon_pixbuf = gtk_icon_theme_load_icon (theme, "application-x-executable", req_width,
-						   GTK_ICON_LOOKUP_USE_BUILTIN |
-						   GTK_ICON_LOOKUP_GENERIC_FALLBACK,
-						   NULL);
-    g_free (class1);
-    g_free (class2);
-  }
-  if (!box->icon_pixbuf) {
+    box->has_icon = TRUE;
+    box->icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+						    gdk_pixbuf_get_width (box->icon_pixbuf),
+						    gdk_pixbuf_get_height (box->icon_pixbuf));
+    box->icon_context = cairo_create (box->icon_surface);
+    gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
+    cairo_paint (box->icon_context);
+  } else {
     box->has_icon = FALSE;
-    return;
   }
-
-  box->has_icon = TRUE;
-  box->icon_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-						  gdk_pixbuf_get_width (box->icon_pixbuf),
-						  gdk_pixbuf_get_height (box->icon_pixbuf));
-  box->icon_context = cairo_create (box->icon_surface);
-  gdk_cairo_set_source_pixbuf (box->icon_context, box->icon_pixbuf, 0, 0);
-  cairo_paint (box->icon_context);
 }
 
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize)
