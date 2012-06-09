@@ -1,3 +1,11 @@
+xwinmosaic (0.4+git20120610-1) precise; urgency=low
+
+  * Much more flexibility for defining items (option -t)
+  * Updated emacs scripts with some bells and whistles, more native emacs keys
+  * Huge amount of bugfixes
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Sun, 10 Jun 2012 00:11:51 +0400
+
 xwinmosaic (0.3.3+git20120609-1) precise; urgency=low
 
   * Ability to use user-defined colors
