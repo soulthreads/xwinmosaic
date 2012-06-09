@@ -6,7 +6,7 @@
 emacs_ls ()
 {
     emacsclient --eval \
-	'(mapconcat (quote (lambda (s) (format ", %s,%s,%s"
+	'(mapconcat (quote (lambda (s) (format ", %s,%s,%s,"
                                   (cond
                                    ((string-match "jabber" s) "#cfb53b")
                                    ((string-match "*" s) "#df73ff")

@@ -22,7 +22,7 @@ emacs_sw ()
 
 items=$(emacs_ls)
 
-sel=$(echo "$items" | grep -v ^$ | ~/src/xwinmosaic/build/src/xwinmosaic -rt $@)
+sel=$(echo "$items" | grep -v ^$ | xwinmosaic -rt $@)
 test -z "$sel" && exit 0 # 1?
 
 emacs_sw "$sel"
