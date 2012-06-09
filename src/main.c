@@ -490,7 +490,7 @@ static void update_box_list ()
 	}
 
 	if (!color && fallback_size)
-	  ctolor = g_strdup (fallback_colors [i % fallback_size]);
+	  color = g_strdup (fallback_colors [i % fallback_size]);
 
 	if (color)
 	  mosaic_window_box_set_color_from_string (MOSAIC_WINDOW_BOX (boxes[i]), color);
