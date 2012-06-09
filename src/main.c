@@ -507,25 +507,21 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   key_pressed = TRUE;
   switch (event->keyval) {
   case GDK_Escape:
-  {
-    int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
-    if (text_length > 0 || gtk_widget_get_visible (search)) {
+    if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)))
+	|| gtk_widget_get_visible (search)) {
       gtk_widget_hide (search);
       mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
     } else {
       gtk_main_quit ();
     }
     break;
-  }
   case GDK_Return:
-  {
     if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
        options.read_stdin && options.permissive) {
       puts (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
       gtk_main_quit();
     }
     break;
-  }
   case GDK_Left:
   case GDK_Up:
   case GDK_Right:
@@ -582,9 +578,18 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	  if (!strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))))
 	    gtk_widget_hide (search);
 	  break;
+	case GDK_g:
+	  if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)))
+	      || gtk_widget_get_visible (search)) {
+	    gtk_widget_hide (search);
+	    mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
+	  } else {
+	    gtk_main_quit ();
+	  }
+	  break;
+	}
       }
       return FALSE;
-    }
     }
 
     if (options.vim_mode && !gtk_widget_get_visible (search)) {
