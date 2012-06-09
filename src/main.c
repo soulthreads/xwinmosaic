@@ -571,6 +571,11 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	  if (!strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))))
 	    gtk_widget_hide (search);
 	  break;
+	case GDK_w:
+	  mosaic_search_box_kill_word (MOSAIC_SEARCH_BOX (search));
+	  if (!strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))))
+	    gtk_widget_hide (search);
+	  break;
       }
       return FALSE;
     }

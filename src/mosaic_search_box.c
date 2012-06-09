@@ -255,3 +255,22 @@ void mosaic_search_box_remove_symbols (MosaicSearchBox *box, guint size)
   }
   g_free (text);
 }
+
+void mosaic_search_box_kill_word (MosaicSearchBox *box)
+{
+  const gchar *text = mosaic_search_box_get_text (box);
+  gint size = strlen (text);
+  if (size) {
+    const gchar *p = text + size;
+    int len = 0;
+    while (p > text) {
+      p = g_utf8_find_prev_char (text, p);
+      gunichar c = g_utf8_get_char (p);
+      if (g_unichar_isspace (c) && len > 0)
+	break;
+
+      len++;
+    }
+    mosaic_search_box_remove_symbols (box, len);
+  }
+}

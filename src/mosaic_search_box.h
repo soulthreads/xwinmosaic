@@ -42,6 +42,7 @@ void mosaic_search_box_set_text (MosaicSearchBox *box, const gchar *text);
 const gchar *mosaic_search_box_get_text (MosaicSearchBox *box);
 void mosaic_search_box_append_text (MosaicSearchBox *box, const gchar *text);
 void mosaic_search_box_remove_symbols (MosaicSearchBox *box, guint size);
+void mosaic_search_box_kill_word (MosaicSearchBox *box);
 
 G_END_DECLS
 
