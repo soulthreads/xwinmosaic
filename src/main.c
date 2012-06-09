@@ -70,6 +70,7 @@ typedef struct {
   gchar *iconpath;
   gchar *color;
   gchar *label;
+  gchar *opt_name;
 } Entry;
 
 static GOptionEntry entries [] =
@@ -461,6 +462,10 @@ static void update_box_list ()
                 mosaic_window_box_setup_icon_from_theme(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
                                                         options.icon_size, options.icon_size);
               }
+            }
+            if(strlen(entry.opt_name)){
+              g_printerr("%s\n", entry.opt_name);
+              mosaic_window_box_set_opt_name(MOSAIC_WINDOW_BOX(boxes[i]), entry.opt_name);
             }
           } else {
             boxes[i] = mosaic_window_box_new_with_name("Parse error");
@@ -1028,8 +1033,8 @@ static void read_colors ()
 }
 static gboolean parse_format (Entry* entry, char *data)
 {
-  gchar **opts = g_strsplit(data, ",", 4);
-  if(!opts[1] + !opts[2] + !opts[3]) { //What did i just write?
+  gchar **opts = g_strsplit(data, ",", 5);
+  if(!opts[1] + !opts[2] + !opts[3] + !opts[4]) { //What did i just write?
     g_printerr("Format error\n");
     return FALSE;
   }
@@ -1041,9 +1046,11 @@ static gboolean parse_format (Entry* entry, char *data)
   entry->color = opts[1];
   entry->iconpath = opts[2];
   entry->label = opts[3];
+  entry->opt_name = opts[4];
   //g_strfreev(opts);
   g_strchug(entry->color);
   g_strchug(entry->iconpath);
   g_strchug(entry->label);
+  g_strchug(entry->opt_name);
   return TRUE;
 }
