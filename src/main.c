@@ -859,15 +859,34 @@ static GdkPixbuf* get_screenshot ()
   gint x, y;
   gint swidth, sheight;
 
+  guint m_offset_x = 0, m_offset_y = 0;
+  gint monitors = gdk_screen_get_n_monitors (gdk_screen_get_default ());
+  if (monitors > 1) {
+    gint px = 0, py = 0;
+    gdk_display_get_pointer (gdk_display_get_default (), NULL, &px, &py, NULL);
+    gint current_monitor = gdk_screen_get_monitor_at_point (gdk_screen_get_default (), px, py);
+    for (int i = 0; i < current_monitor; i++) {
+      GdkRectangle mon_rect;
+      gdk_screen_get_monitor_geometry (gdk_screen_get_default (), i, &mon_rect);
+      m_offset_x += mon_rect.width;
+      m_offset_y += mon_rect.height;
+    }
+  }
+
   gdk_drawable_get_size (root_window, &swidth, &sheight);
   gdk_window_get_origin (root_window, &x, &y);
 
+  if (swidth <= m_offset_x)
+    m_offset_x = 0;
+  if (sheight <= m_offset_y)
+    m_offset_y = 0;
+
   return gdk_pixbuf_get_from_drawable (NULL, root_window, NULL,
-				       x + options.screenshot_offset_x,
-				       y + options.screenshot_offset_y,
+				       x + options.screenshot_offset_x + m_offset_x,
+				       y + options.screenshot_offset_y + m_offset_y,
 				       0, 0,
-				       swidth - options.screenshot_offset_x,
-				       sheight - options.screenshot_offset_y);
+				       swidth - options.screenshot_offset_x - m_offset_x,
+				       sheight - options.screenshot_offset_y - m_offset_y);
 }
 
 static void read_config ()
