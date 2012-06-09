@@ -491,17 +491,11 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     }
     break;
   case GDK_BackSpace:
-  {
-    int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
-    if (text_length > 0) {
-      mosaic_search_box_remove_symbols (MOSAIC_SEARCH_BOX (search), 1);
-    }
-    if (text_length == 1 || text_length == 0) {
+    mosaic_search_box_remove_symbols (MOSAIC_SEARCH_BOX (search), 1);
+    if (!strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))))
       if (!options.vim_mode)
 	gtk_widget_hide (search);
-    }
     break;
-  }
   default:
   {
     // Ignore Ctrl key.
@@ -529,9 +523,14 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	    g_signal_emit_by_name (gtk_window_get_focus (GTK_WINDOW (window)), "clicked", NULL);
 	  }
 	  break;
-	}
+	case GDK_h:
+	  mosaic_search_box_remove_symbols (MOSAIC_SEARCH_BOX (search), 1);
+	  if (!strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))))
+	    gtk_widget_hide (search);
+	  break;
       }
       return FALSE;
+    }
     }
 
     if (options.vim_mode && !gtk_widget_get_visible (search)) {

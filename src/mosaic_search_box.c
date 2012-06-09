@@ -246,10 +246,13 @@ void mosaic_search_box_append_text (MosaicSearchBox *box, const gchar *text)
 void mosaic_search_box_remove_symbols (MosaicSearchBox *box, guint size)
 {
   gchar *text = g_strdup (mosaic_search_box_get_text (box));
-  gchar *p = text + strlen (text);
-  for (int i = 0; i < size; i++) {
-    p = g_utf8_find_prev_char (text, p);
-    *p = '\0';
+  if (strlen (text)) {
+    gchar *p = text + strlen (text);
+    for (int i = 0; i < size; i++) {
+      p = g_utf8_find_prev_char (text, p);
+      *p = '\0';
+    }
+    mosaic_search_box_set_text (box, text);
   }
-  mosaic_search_box_set_text (box, text);
+  g_free (text);
 }
