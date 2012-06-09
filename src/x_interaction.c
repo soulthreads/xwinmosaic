@@ -335,7 +335,7 @@ GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
 
 gboolean already_opened ()
 {
-  int size;
+  int size = 0;
   Window *win_list = (Window *) property (gdk_x11_get_default_root_xwindow (), a_NET_CLIENT_LIST, XA_WINDOW, &size);
   if (size) {
     for (int i = 0; i < size; i++) {
