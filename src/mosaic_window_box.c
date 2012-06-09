@@ -80,10 +80,10 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 			 NULL,
 			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
-
-  g_object_class_install_properties (gobject_class,
-				     N_PROPERTIES,
-				     obj_properties);
+  g_object_class_install_property (gobject_class, PROP_IS_WINDOW, obj_properties [PROP_IS_WINDOW]);
+  g_object_class_install_property (gobject_class, PROP_XWINDOW, obj_properties [PROP_XWINDOW]);
+  g_object_class_install_property (gobject_class, PROP_NAME, obj_properties [PROP_NAME]);
+  g_object_class_install_property (gobject_class, PROP_XCLASS, obj_properties [PROP_XCLASS]);
 }
 
 static void

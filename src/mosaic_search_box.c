@@ -64,9 +64,8 @@ mosaic_search_box_class_init (MosaicSearchBoxClass *klass)
 			 NULL,
 			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
-  g_object_class_install_properties (gobject_class,
-				     N_PROPERTIES,
-				     obj_properties);
+  g_object_class_install_property (gobject_class, PROP_TEXT, obj_properties [PROP_TEXT]);
+
   search_box_signals [CHANGED] =
     g_signal_new ("changed",
 		  G_TYPE_FROM_CLASS (gobject_class),
