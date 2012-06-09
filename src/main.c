@@ -1004,7 +1004,11 @@ static gboolean parse_format (Entry* entry, char *data)
     g_printerr("Format error\n");
     return FALSE;
   }
-  if(sscanf(opts[0], "%d", &(entry->desktop))==EOF) return FALSE;
+  g_strchug(opts[0]);
+  if(g_ascii_isdigit(opts[0][0])) {
+    if(sscanf(opts[0], "%d", &(entry->desktop))==EOF) return FALSE;
+  } else
+      entry->desktop = -1;
   entry->color = opts[1];
   entry->iconpath = opts[2];
   entry->label = opts[3];
