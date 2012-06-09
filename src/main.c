@@ -79,7 +79,7 @@ static GOptionEntry entries [] =
   { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
     "Lets search entry text to be used as individual item.", NULL},
   { "format", 't', 0, G_OPTION_ARG_NONE, &options.format,
-    "Read items from stdin in next format: <desktop_num>, <box_color>, <iconpath>, <label>", NULL},
+    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>.", NULL},
   { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
     "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
@@ -443,9 +443,19 @@ static void update_box_list ()
         else {
           if(parse_format(&entry, in_items[i])){
             boxes[i] = mosaic_window_box_new_with_name(entry.label);
-            if((entry.desktop)>=0) g_printerr("Custom background digits not implemented yet\n");
-              //mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX(boxes[i]), TRUE);
-            if((entry.iconpath)[0]!='*') g_printerr("Custom icons not implemented yet\n");
+            if((entry.desktop)>=0) {//g_printerr("Custom background digits not implemented yet\n");
+              mosaic_window_box_set_desktop(MOSAIC_WINDOW_BOX(boxes[i]), entry.desktop-1);
+              mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX(boxes[i]), TRUE);
+            }
+            if((entry.iconpath)[0]!='*') {
+              if(strchr(entry.iconpath, '.')) {
+                mosaic_window_box_setup_icon_from_file(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
+                                                         options.icon_size, options.icon_size);
+              } else {
+                mosaic_window_box_setup_icon_from_theme(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
+                                                        options.icon_size, options.icon_size);
+              }
+            }
           } else {
             boxes[i] = mosaic_window_box_new_with_name("Parse error");
           }
