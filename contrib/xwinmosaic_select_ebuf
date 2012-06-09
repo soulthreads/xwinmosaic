@@ -1,24 +1,35 @@
 #!/bin/sh
 
+#You can customize icons and color of boxes in function below. Don't
+#forget to do same in xwinmosaic_open_ebuf!
+
 emacs_ls ()
 {
     emacsclient --eval \
-	'(mapconcat (quote (lambda (s) (format "%s" s)))
-	    (remove-if (quote (lambda (name) (string= (substring name 0 1) " ")))
-		       (mapcar (quote buffer-name) (buffer-list)))
-		       "\n")' \
+	'(mapconcat (quote (lambda (s) (format ", %s,%s,%s"
+                                  (cond
+                                   ((string-match "jabber" s) "#cfb53b")
+                                   ((string-match "*" s) "#df73ff")
+                                   (t ""))
+                                  (cond
+                                   ((string-match "jabber" s) "im-jabber")
+                                   (t "emacs"))
+                                 s)))
+                  (remove-if (quote (lambda (name) (string= (substring name 0 1) " ")))
+                             (mapcar (quote buffer-name) (buffer-list)))
+                  "\n")' \
                            | xargs echo -e
 }
 
 emacs_sw ()
 {
-    emacs_ls | grep -x -F -q -e "$1" && \
+    emacs_ls |awk -F',' '{ print $4 }'| grep -x -F -q -e "$1" && \
         emacsclient --eval "(switch-to-buffer \"$1\")"
 }
 
 items=$(emacs_ls)
 
-sel=$(echo "$items" | grep -v ^$ | xwinmosaic -r $@)
+sel=$(echo "$items" | grep -v ^$ | xwinmosaic -rt $@)
 test -z "$sel" && exit 0 # 1?
 
 emacs_sw "$sel"
