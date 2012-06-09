@@ -75,6 +75,7 @@ void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box);
 void mosaic_window_box_update_xclass (MosaicWindowBox *box);
 void mosaic_window_box_setup_icon_from_wm (MosaicWindowBox *box, guint req_width, guint req_height);
 void mosaic_window_box_setup_icon_from_theme (MosaicWindowBox *box, const gchar *name, guint req_width, guint req_height);
+void mosaic_window_box_setup_icon_from_file (MosaicWindowBox *box, const gchar *file, guint req_width, guint req_height);
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
 void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
