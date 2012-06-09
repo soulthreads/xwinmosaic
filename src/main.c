@@ -376,7 +376,6 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
   gtk_main_quit ();
 }
 
-
 static void update_box_list ()
 {
   if (!options.read_stdin) {
@@ -520,6 +519,15 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	  break;
 	case GDK_KEY_b:
 	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
+	  break;
+	case GDK_KEY_m:
+	  if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
+	     options.read_stdin && options.permissive) {
+	    puts (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
+	    gtk_main_quit();
+	  } else {
+	    g_signal_emit_by_name (gtk_window_get_focus (GTK_WINDOW (window)), "clicked", NULL);
+	  }
 	  break;
 	}
       }
