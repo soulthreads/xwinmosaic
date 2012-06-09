@@ -457,7 +457,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 {
   key_pressed = TRUE;
   switch (event->keyval) {
-  case GDK_KEY_Escape:
+  case GDK_Escape:
   {
     int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
     if (text_length > 0 || gtk_widget_get_visible (search)) {
@@ -468,7 +468,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     }
     break;
   }
-  case GDK_KEY_Return:
+  case GDK_Return:
   {
     if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
        options.read_stdin && options.permissive) {
@@ -477,20 +477,20 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     }
     break;
   }
-  case GDK_KEY_Left:
-  case GDK_KEY_Up:
-  case GDK_KEY_Right:
-  case GDK_KEY_Down:
-  case GDK_KEY_Tab:
+  case GDK_Left:
+  case GDK_Up:
+  case GDK_Right:
+  case GDK_Down:
+  case GDK_Tab:
     break;
-  case GDK_KEY_End:
+  case GDK_End:
     if (options.permissive) {
       MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
       mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), mosaic_window_box_get_name (box));
       gtk_widget_show (search);
     }
     break;
-  case GDK_KEY_BackSpace:
+  case GDK_BackSpace:
   {
     int text_length = strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
     if (text_length > 0) {
