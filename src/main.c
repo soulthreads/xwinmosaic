@@ -738,11 +738,11 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 
       wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
-      if (!options.read_stdin) {
-	const gchar *wclass = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
-	if (wclass) {
-	  wclass1_cmp = g_utf8_casefold (wclass, -1);
-	  wc1_size = strlen (wclass1_cmp);
+      const gchar *wclass = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
+      if (wclass) {
+	wclass1_cmp = g_utf8_casefold (wclass, -1);
+	wc1_size = strlen (wclass1_cmp);
+	if (!options.read_stdin) {
 	  wclass2_cmp = g_utf8_casefold (wclass+wc1_size+1, -1);
 	  wc2_size = strlen (wclass2_cmp);
 	}
@@ -753,16 +753,14 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 	priority1 [p1size++] = boxes [i];
       }
       if (!found && ((g_strstr_len (wname_cmp, wn_size, search_for) != NULL) ||
-		     (!options.read_stdin &&
-		      (g_str_has_prefix (wclass1_cmp, search_for) ||
-		       g_str_has_prefix (wclass2_cmp, search_for))))) {
+		     (wc1_size && g_str_has_prefix (wclass1_cmp, search_for)) ||
+		     (wc2_size && g_str_has_prefix (wclass2_cmp, search_for)))) {
 	found = TRUE;
 	priority2 [p2size++] = boxes [i];
       }
       if (!found && ((search_by_letters (wname_cmp, wn_size, search_for, s_size)) ||
-		     (!options.read_stdin &&
-		      (g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL ||
-		       g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL)))) {
+		     (wc1_size && g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL) ||
+		     (wc2_size && g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL))) {
 	found = TRUE;
 	priority3 [p3size++] = boxes [i];
       }
