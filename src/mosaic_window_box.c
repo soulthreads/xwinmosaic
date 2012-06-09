@@ -247,7 +247,7 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
   pl = pango_cairo_create_layout (cr);
 
   /* Shall we draw the desktop number */
-  if (box->is_window && box->show_desktop) {
+  if (box->show_desktop) {
     gchar desk [4] = { 0 };
     sprintf (desk, "%d", box->desktop+1);
 
