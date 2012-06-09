@@ -14,7 +14,8 @@ emacs_ls ()
                                    ((string-match "jabber" s) "im-jabber")
                                    (t "emacs"))
                                   s
-                                  (save-excursion (set-buffer s) major-mode))))
+                                  (replace-regexp-in-string "-mode" ""
+                                        (format "%s" (save-excursion (set-buffer s) major-mode))))))
                   (remove-if (quote (lambda (name) (string= (substring name 0 1) " ")))
                              (mapcar (quote buffer-name) (buffer-list)))
                   "\n")' \
