@@ -80,7 +80,7 @@ static GOptionEntry entries [] =
   { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
     "Lets search entry text to be used as individual item.", NULL},
   { "format", 't', 0, G_OPTION_ARG_NONE, &options.format,
-    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>.", NULL},
+    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>, <opt-name>.", NULL},
   { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
     "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
@@ -490,7 +490,7 @@ static void update_box_list ()
 	}
 
 	if (!color && fallback_size)
-	  color = g_strdup (fallback_colors [i % fallback_size]);
+	  ctolor = g_strdup (fallback_colors [i % fallback_size]);
 
 	if (color)
 	  mosaic_window_box_set_color_from_string (MOSAIC_WINDOW_BOX (boxes[i]), color);
