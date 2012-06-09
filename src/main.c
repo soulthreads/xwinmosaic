@@ -551,19 +551,19 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     if (event->state & GDK_CONTROL_MASK) {
       if (!options.vim_mode) {
 	switch (event->keyval) {
-	case GDK_KEY_n:
+	case GDK_n:
 	  gtk_widget_child_focus (layout, GTK_DIR_DOWN);
 	  break;
-	case GDK_KEY_p:
+	case GDK_p:
 	  gtk_widget_child_focus (layout, GTK_DIR_UP);
 	  break;
-	case GDK_KEY_f:
+	case GDK_f:
 	  gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	  break;
-	case GDK_KEY_b:
+	case GDK_b:
 	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	  break;
-	case GDK_KEY_m:
+	case GDK_m:
 	  if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
 	     options.read_stdin && options.permissive) {
 	    puts (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
@@ -579,19 +579,19 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 
     if (options.vim_mode && !gtk_widget_get_visible (search)) {
       switch (event->keyval) {
-      case GDK_KEY_h:
+      case GDK_h:
 	gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	break;
-      case GDK_KEY_j:
+      case GDK_j:
 	gtk_widget_child_focus (layout, GTK_DIR_DOWN);
 	break;
-      case GDK_KEY_k:
+      case GDK_k:
 	gtk_widget_child_focus (layout, GTK_DIR_UP);
 	break;
-      case GDK_KEY_l:
+      case GDK_l:
 	gtk_widget_child_focus (layout, GTK_DIR_RIGHT);
 	break;
-      case GDK_KEY_slash:
+      case GDK_slash:
 	gtk_widget_show (search);
 	g_signal_emit_by_name (G_OBJECT (search), "changed", NULL);
 	break;
