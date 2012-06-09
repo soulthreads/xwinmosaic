@@ -70,6 +70,7 @@ typedef struct {
   gchar *iconpath;
   gchar *color;
   gchar *label;
+  gchar *opt_name;
 } Entry;
 
 static GOptionEntry entries [] =
@@ -79,7 +80,7 @@ static GOptionEntry entries [] =
   { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
     "Lets search entry text to be used as individual item.", NULL},
   { "format", 't', 0, G_OPTION_ARG_NONE, &options.format,
-    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>.", NULL},
+    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>, <opt-name>.", NULL},
   { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
     "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
@@ -462,6 +463,10 @@ static void update_box_list ()
                                                         options.icon_size, options.icon_size);
               }
             }
+            if(strlen(entry.opt_name)){
+              g_printerr("%s\n", entry.opt_name);
+              mosaic_window_box_set_opt_name(MOSAIC_WINDOW_BOX(boxes[i]), entry.opt_name);
+            }
           } else {
             boxes[i] = mosaic_window_box_new_with_name("Parse error");
           }
@@ -473,7 +478,7 @@ static void update_box_list ()
       if (options.colorize && options.color_file) {
 	gchar *color = NULL;
 	if (!options.read_stdin) {
-	  const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	  const gchar *wm_class = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
 	  gchar *class1 = g_strdup (wm_class);
 	  gchar *class2 = g_strdup (wm_class+strlen (class1)+1);
 	  if (g_key_file_has_key (color_config, "colors", class1, &col_error))
@@ -738,11 +743,11 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 
       wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
-      if (!options.read_stdin) {
-	const gchar *wclass = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
-	if (wclass) {
-	  wclass1_cmp = g_utf8_casefold (wclass, -1);
-	  wc1_size = strlen (wclass1_cmp);
+      const gchar *wclass = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
+      if (wclass) {
+	wclass1_cmp = g_utf8_casefold (wclass, -1);
+	wc1_size = strlen (wclass1_cmp);
+	if (!options.read_stdin) {
 	  wclass2_cmp = g_utf8_casefold (wclass+wc1_size+1, -1);
 	  wc2_size = strlen (wclass2_cmp);
 	}
@@ -753,16 +758,14 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 	priority1 [p1size++] = boxes [i];
       }
       if (!found && ((g_strstr_len (wname_cmp, wn_size, search_for) != NULL) ||
-		     (!options.read_stdin &&
-		      (g_str_has_prefix (wclass1_cmp, search_for) ||
-		       g_str_has_prefix (wclass2_cmp, search_for))))) {
+		     (wc1_size && g_str_has_prefix (wclass1_cmp, search_for)) ||
+		     (wc2_size && g_str_has_prefix (wclass2_cmp, search_for)))) {
 	found = TRUE;
 	priority2 [p2size++] = boxes [i];
       }
       if (!found && ((search_by_letters (wname_cmp, wn_size, search_for, s_size)) ||
-		     (!options.read_stdin &&
-		      (g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL ||
-		       g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL)))) {
+		     (wc1_size && g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL) ||
+		     (wc2_size && g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL))) {
 	found = TRUE;
 	priority3 [p3size++] = boxes [i];
       }
@@ -1033,8 +1036,8 @@ static void read_colors ()
 }
 static gboolean parse_format (Entry* entry, char *data)
 {
-  gchar **opts = g_strsplit(data, ",", 4);
-  if(!opts[1] + !opts[2] + !opts[3]) { //What did i just write?
+  gchar **opts = g_strsplit(data, ",", 5);
+  if(!opts[1] + !opts[2] + !opts[3] + !opts[4]) { //What did i just write?
     g_printerr("Format error\n");
     return FALSE;
   }
@@ -1046,9 +1049,11 @@ static gboolean parse_format (Entry* entry, char *data)
   entry->color = opts[1];
   entry->iconpath = opts[2];
   entry->label = opts[3];
+  entry->opt_name = opts[4];
   //g_strfreev(opts);
   g_strchug(entry->color);
   g_strchug(entry->iconpath);
   g_strchug(entry->label);
+  g_strchug(entry->opt_name);
   return TRUE;
 }
