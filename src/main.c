@@ -225,7 +225,7 @@ int main (int argc, char **argv)
   gtk_window_set_default_size (GTK_WINDOW (window), width, height);
   gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
   gtk_window_set_decorated (GTK_WINDOW (window), False);
-  gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU);
+  gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
   gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), True);
   gtk_window_set_skip_pager_hint (GTK_WINDOW (window), True);
 /**/
@@ -393,7 +393,6 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
   gtk_main_quit ();
 }
 
-
 static void update_box_list ()
 {
   if (!options.read_stdin) {
@@ -437,7 +436,7 @@ static void update_box_list ()
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
 	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
 	if (options.show_icons)
-	  mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
+	  mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {
         if(!options.format)
           boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
@@ -554,6 +553,15 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
 	case GDK_KEY_b:
 	  gtk_widget_child_focus (layout, GTK_DIR_LEFT);
 	  break;
+	case GDK_KEY_m:
+	  if(strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) && !filtered_size &&
+	     options.read_stdin && options.permissive) {
+	    puts (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)));
+	    gtk_main_quit();
+	  } else {
+	    g_signal_emit_by_name (gtk_window_get_focus (GTK_WINDOW (window)), "clicked", NULL);
+	  }
+	  break;
 	}
       }
       return FALSE;
@@ -638,7 +646,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 	// Search for appropriate widget to update icon.
 	for (int i = 0; i < wsize; i++)
 	  if (wins [i] == win) {
-	    mosaic_window_box_setup_icon (MOSAIC_WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
+	    mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX (boxes[i]), options.icon_size, options.icon_size);
 	    break;
 	  }
       }

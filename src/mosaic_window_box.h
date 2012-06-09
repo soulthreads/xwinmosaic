@@ -73,11 +73,14 @@ void mosaic_window_box_set_xclass (MosaicWindowBox *box, const gchar *xclass);
 const gchar *mosaic_window_box_get_xclass (MosaicWindowBox *box);
 void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box);
 void mosaic_window_box_update_xclass (MosaicWindowBox *box);
-void mosaic_window_box_setup_icon (MosaicWindowBox *box, guint req_width, guint req_height);
+void mosaic_window_box_setup_icon_from_wm (MosaicWindowBox *box, guint req_width, guint req_height);
+void mosaic_window_box_setup_icon_from_theme (MosaicWindowBox *box, const gchar *name, guint req_width, guint req_height);
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
 void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
 void mosaic_window_box_set_color_from_string (MosaicWindowBox *box, const gchar *color);
+gint mosaic_window_box_get_desktop (MosaicWindowBox *box);
+void mosaic_window_box_set_desktop (MosaicWindowBox *box, gint desktop);
 
 G_END_DECLS
 
