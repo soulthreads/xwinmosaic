@@ -473,7 +473,7 @@ static void update_box_list ()
       if (options.colorize && options.color_file) {
 	gchar *color = NULL;
 	if (!options.read_stdin) {
-	  const gchar *wm_class = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	  const gchar *wm_class = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
 	  gchar *class1 = g_strdup (wm_class);
 	  gchar *class2 = g_strdup (wm_class+strlen (class1)+1);
 	  if (g_key_file_has_key (color_config, "colors", class1, &col_error))
@@ -734,7 +734,7 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
       wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
       if (!options.read_stdin) {
-	const gchar *wclass = mosaic_window_box_get_xclass (MOSAIC_WINDOW_BOX (boxes[i]));
+	const gchar *wclass = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
 	if (wclass) {
 	  wclass1_cmp = g_utf8_casefold (wclass, -1);
 	  wc1_size = strlen (wclass1_cmp);

@@ -33,7 +33,7 @@ struct _MosaicWindowBox
   gboolean is_window;
   Window xwindow;
 
-  gchar *xclass;
+  gchar *opt_name;
   gboolean show_desktop;
   gint desktop;
 
@@ -69,10 +69,10 @@ void mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window);
 guint mosaic_window_box_get_xwindow (MosaicWindowBox *box);
 void mosaic_window_box_set_name (MosaicWindowBox *box, const gchar *name);
 const gchar *mosaic_window_box_get_name (MosaicWindowBox *box);
-void mosaic_window_box_set_xclass (MosaicWindowBox *box, const gchar *xclass);
-const gchar *mosaic_window_box_get_xclass (MosaicWindowBox *box);
+void mosaic_window_box_set_opt_name (MosaicWindowBox *box, const gchar *opt_name);
+const gchar *mosaic_window_box_get_opt_name (MosaicWindowBox *box);
 void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box);
-void mosaic_window_box_update_xclass (MosaicWindowBox *box);
+void mosaic_window_box_update_opt_name (MosaicWindowBox *box);
 void mosaic_window_box_setup_icon_from_wm (MosaicWindowBox *box, guint req_width, guint req_height);
 void mosaic_window_box_setup_icon_from_theme (MosaicWindowBox *box, const gchar *name, guint req_width, guint req_height);
 void mosaic_window_box_setup_icon_from_file (MosaicWindowBox *box, const gchar *file, guint req_width, guint req_height);

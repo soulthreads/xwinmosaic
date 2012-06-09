@@ -9,7 +9,7 @@ enum {
   PROP_IS_WINDOW,
   PROP_XWINDOW,
   PROP_NAME,
-  PROP_XCLASS,
+  PROP_OPT_NAME,
   N_PROPERTIES
 };
 
@@ -73,8 +73,8 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 			 NULL,
 			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
-  obj_properties[PROP_XCLASS] =
-    g_param_spec_string ("xclass",
+  obj_properties[PROP_OPT_NAME] =
+    g_param_spec_string ("opt_name",
 			 "WM_CLASS",
 			 "Class of the XWindow",
 			 NULL,
@@ -83,7 +83,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
   g_object_class_install_property (gobject_class, PROP_IS_WINDOW, obj_properties [PROP_IS_WINDOW]);
   g_object_class_install_property (gobject_class, PROP_XWINDOW, obj_properties [PROP_XWINDOW]);
   g_object_class_install_property (gobject_class, PROP_NAME, obj_properties [PROP_NAME]);
-  g_object_class_install_property (gobject_class, PROP_XCLASS, obj_properties [PROP_XCLASS]);
+  g_object_class_install_property (gobject_class, PROP_OPT_NAME, obj_properties [PROP_OPT_NAME]);
 }
 
 static void
@@ -92,7 +92,7 @@ mosaic_window_box_init (MosaicWindowBox *box)
   gtk_widget_set_can_focus (GTK_WIDGET (box), TRUE);
   gtk_widget_set_receives_default (GTK_WIDGET (box), TRUE);
 
-  box->xclass = NULL;
+  box->opt_name = NULL;
   box->icon_pixbuf = NULL;
   box->icon_surface = NULL;
   box->icon_context = NULL;
@@ -112,7 +112,7 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
 
   if (box->is_window) {
     MOSAIC_BOX (box)->name = get_window_name (box->xwindow);
-    box->xclass = get_window_class (box->xwindow);
+    box->opt_name = get_window_class (box->xwindow);
     box->desktop = get_window_desktop (box->xwindow);
   }
   box->show_desktop = FALSE;
@@ -144,9 +144,9 @@ mosaic_window_box_dispose (GObject *gobject)
 {
   MosaicWindowBox *box = MOSAIC_WINDOW_BOX (gobject);
 
-  if (box->xclass)
-    g_free (box->xclass);
-  box->xclass = NULL;
+  if (box->opt_name)
+    g_free (box->opt_name);
+  box->opt_name = NULL;
 
   if (box->icon_context) {
     cairo_destroy (box->icon_context);
@@ -178,8 +178,8 @@ static void mosaic_window_box_set_property (GObject *gobject,
   case PROP_NAME:
     mosaic_window_box_set_name (box, g_value_get_string (value));
     break;
-  case PROP_XCLASS:
-    mosaic_window_box_set_xclass (box, g_value_get_string (value));
+  case PROP_OPT_NAME:
+    mosaic_window_box_set_opt_name (box, g_value_get_string (value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -204,8 +204,8 @@ static void mosaic_window_box_get_property (GObject *gobject,
   case PROP_NAME:
     g_value_set_string (value, MOSAIC_BOX(box)->name);
     break;
-  case PROP_XCLASS:
-    g_value_set_string (value, box->xclass);
+  case PROP_OPT_NAME:
+    g_value_set_string (value, box->opt_name);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -350,7 +350,7 @@ mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
     g_object_notify (G_OBJECT (box), "xwindow");
     box->desktop = get_window_desktop (box->xwindow);
     mosaic_window_box_update_xwindow_name (box);
-    mosaic_window_box_update_xclass (box);
+    mosaic_window_box_update_opt_name (box);
   }
 }
 
@@ -377,26 +377,26 @@ mosaic_window_box_get_name (MosaicWindowBox *box)
 }
 
 void
-mosaic_window_box_set_xclass (MosaicWindowBox *box, const gchar *xclass)
+mosaic_window_box_set_opt_name (MosaicWindowBox *box, const gchar *opt_name)
 {
-  gchar *new_xclass;
+  gchar *new_opt_name;
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
-  new_xclass = g_strdup (xclass);
-  g_free (box->xclass);
-  box->xclass = new_xclass;
+  new_opt_name = g_strdup (opt_name);
+  g_free (box->opt_name);
+  box->opt_name = new_opt_name;
 
-  g_object_notify (G_OBJECT (box), "xclass");
+  g_object_notify (G_OBJECT (box), "opt_name");
   mosaic_window_box_create_colors (box);
   gtk_widget_queue_draw (GTK_WIDGET (box));
 }
 
 const gchar *
-mosaic_window_box_get_xclass (MosaicWindowBox *box)
+mosaic_window_box_get_opt_name (MosaicWindowBox *box)
 {
   g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), NULL);
 
-  return box->xclass;
+  return box->opt_name;
 }
 
 void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box)
@@ -410,14 +410,14 @@ void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box)
   }
 }
 
-void mosaic_window_box_update_xclass (MosaicWindowBox *box)
+void mosaic_window_box_update_opt_name (MosaicWindowBox *box)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   if (box->is_window) {
-    gchar *xclass = get_window_class (box->xwindow);
-    mosaic_window_box_set_xclass (box, xclass);
-    g_free (xclass);
+    gchar *opt_name = get_window_class (box->xwindow);
+    mosaic_window_box_set_opt_name (box, opt_name);
+    g_free (opt_name);
   }
 }
 
@@ -481,7 +481,7 @@ static void mosaic_window_box_create_colors (MosaicWindowBox *box)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
-  gchar *source = (box->is_window) ? box->xclass : MOSAIC_BOX (box)->name;
+  gchar *source = (box->is_window) ? box->opt_name : MOSAIC_BOX (box)->name;
   if (box->colorize && source) {
     gdouble h, s, l;
     gulong crc = get_crc16 (source, strlen (source));
@@ -508,8 +508,8 @@ void mosaic_window_box_setup_icon_from_wm (MosaicWindowBox *box, guint req_width
   GdkPixbuf *pixbuf = get_window_icon (box->xwindow, req_width, req_height);
   if (!pixbuf) {
     // Try to load fallback icon.
-    gchar *class1 = g_ascii_strdown (box->xclass, -1);
-    gchar *class2 = g_ascii_strdown (box->xclass+strlen (class1)+1, -1);
+    gchar *class1 = g_ascii_strdown (box->opt_name, -1);
+    gchar *class2 = g_ascii_strdown (box->opt_name+strlen (class1)+1, -1);
 
     GtkIconTheme *theme = gtk_icon_theme_get_default ();
     pixbuf = gtk_icon_theme_load_icon (theme, class1, req_width,
