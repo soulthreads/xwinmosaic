@@ -447,7 +447,7 @@ static void update_box_list ()
               mosaic_window_box_set_desktop(MOSAIC_WINDOW_BOX(boxes[i]), entry.desktop-1);
               mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX(boxes[i]), TRUE);
             }
-            if((entry.iconpath)[0]!='*') {
+            if(options.show_icons && (entry.iconpath)[0]!='*') {
               if(strchr(entry.iconpath, '.')) {
                 mosaic_window_box_setup_icon_from_file(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
                                                          options.icon_size, options.icon_size);
