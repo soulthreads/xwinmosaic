@@ -151,6 +151,12 @@ int main (int argc, char **argv)
   }
 
   atoms_init ();
+
+  if (already_opened ()) {
+    g_printerr ("Another instance of xwinmosaic is opened.\n");
+    exit (1);
+  }
+
   if (options.read_stdin) {
     if(!options.format) {
       options.show_icons = FALSE;
