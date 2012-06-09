@@ -25,6 +25,11 @@ Config file is created automatically on first program run and stored in `~/.conf
     Application Options:
       -r, --read-stdin             Read items from stdin (and print selected item to stdout)
       -p, --permissive             Lets search entry text to be used as individual item.
+      -t, --format                 Read items from stdin in next format (comma separated):
+                                        <desktop_num>, <box_color>, <icon>, <label>.
+                                   Icon can be path to png file or icon name from theme.
+                                   If desktop_num<=-1, then background digit won't be displayed.
+                                   If icon is '*' (without quotes), then icon won't be displaed.
       -V, --vim-mode               Turn on vim-like navigation (hjkl, search on /)
       -C, --no-colors              Turn off box colorizing
       -I, --no-icons               Turn off showing icons

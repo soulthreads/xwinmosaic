@@ -53,6 +53,7 @@ static struct {
   gchar *font;
   gboolean read_stdin;
   gboolean permissive;
+  gboolean format;
   gboolean screenshot;
   guchar color_offset;
   gint screenshot_offset_x;
@@ -64,12 +65,21 @@ static struct {
   gchar *color_file;
 } options;
 
+typedef struct {
+  gint desktop;
+  gchar *iconpath;
+  gchar *color;
+  gchar *label;
+} Entry;
+
 static GOptionEntry entries [] =
 {
   { "read-stdin", 'r', 0, G_OPTION_ARG_NONE, &options.read_stdin,
     "Read items from stdin (and print selected item to stdout)", NULL },
   { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
     "Lets search entry text to be used as individual item.", NULL},
+  { "format", 't', 0, G_OPTION_ARG_NONE, &options.format,
+    "Read items from stdin in next format: <desktop_num>, <box_color>, <icon>, <label>.", NULL},
   { "vim-mode", 'V', 0, G_OPTION_ARG_NONE, &options.vim_mode,
     "Turn on vim-like navigation (hjkl, search on /)", NULL },
   { "no-colors", 'C', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.colorize,
@@ -115,6 +125,7 @@ static void read_config ();
 static void write_default_config ();
 static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer data);
 static void read_colors ();
+static gboolean parse_format (Entry *entry, gchar *data);
 
 int main (int argc, char **argv)
 {
@@ -134,11 +145,17 @@ int main (int argc, char **argv)
   }
   g_option_context_free (context);
 
-  atoms_init ();
+  if(options.format && !options.read_stdin) {
+    g_printerr("You must provide option --read-stdin!");
+    exit(1);
+  }
 
+  atoms_init ();
   if (options.read_stdin) {
-    options.show_icons = FALSE;
-    options.show_desktop = FALSE;
+    if(!options.format) {
+      options.show_icons = FALSE;
+      options.show_desktop = FALSE;
+    }
     read_stdin ();
   } else {
     // Checks whether WM supports EWMH specifications.
@@ -413,6 +430,7 @@ static void update_box_list ()
     }
 
     GError *col_error;
+    Entry entry;
     for (int i = 0; i < wsize; i++) {
       if (!options.read_stdin) {
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
@@ -420,7 +438,28 @@ static void update_box_list ()
 	if (options.show_icons)
 	  mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {
-	boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
+        if(!options.format)
+          boxes[i] = mosaic_window_box_new_with_name (in_items[i]);
+        else {
+          if(parse_format(&entry, in_items[i])){
+            boxes[i] = mosaic_window_box_new_with_name(entry.label);
+            if((entry.desktop)>=0) {//g_printerr("Custom background digits not implemented yet\n");
+              mosaic_window_box_set_desktop(MOSAIC_WINDOW_BOX(boxes[i]), entry.desktop-1);
+              mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX(boxes[i]), TRUE);
+            }
+            if((entry.iconpath)[0]!='*') {
+              if(strchr(entry.iconpath, '.')) {
+                mosaic_window_box_setup_icon_from_file(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
+                                                         options.icon_size, options.icon_size);
+              } else {
+                mosaic_window_box_setup_icon_from_theme(MOSAIC_WINDOW_BOX(boxes[i]), entry.iconpath,
+                                                        options.icon_size, options.icon_size);
+              }
+            }
+          } else {
+            boxes[i] = mosaic_window_box_new_with_name("Parse error");
+          }
+        }
       }
       mosaic_box_set_font (MOSAIC_BOX (boxes [i]), options.font);
       mosaic_window_box_set_colorize (MOSAIC_WINDOW_BOX (boxes[i]), options.colorize);
@@ -446,6 +485,10 @@ static void update_box_list ()
 	  mosaic_window_box_set_color_from_string (MOSAIC_WINDOW_BOX (boxes[i]), color);
 
 	g_free (color);
+      }
+      if(options.format) {
+        if((entry.color)[0]=='#')
+          mosaic_window_box_set_color_from_string(MOSAIC_WINDOW_BOX(boxes[i]), entry.color);
       }
       g_signal_connect (G_OBJECT (boxes[i]), "clicked",
 			G_CALLBACK (on_rect_click), NULL);
@@ -952,4 +995,25 @@ static void read_colors ()
     if (g_key_file_has_key (color_config, group, "fallback", &error))
       fallback_colors = g_key_file_get_string_list (color_config, group, "fallback", &fallback_size, &error);
   }
+}
+static gboolean parse_format (Entry* entry, char *data)
+{
+  gchar **opts = g_strsplit(data, ",", 4);
+  if(!opts[1] + !opts[2] + !opts[3]) { //What did i just write?
+    g_printerr("Format error\n");
+    return FALSE;
+  }
+  g_strchug(opts[0]);
+  if(g_ascii_isdigit(opts[0][0])) {
+    if(sscanf(opts[0], "%d", &(entry->desktop))==EOF) return FALSE;
+  } else
+      entry->desktop = -1;
+  entry->color = opts[1];
+  entry->iconpath = opts[2];
+  entry->label = opts[3];
+  //g_strfreev(opts);
+  g_strchug(entry->color);
+  g_strchug(entry->iconpath);
+  g_strchug(entry->label);
+  return TRUE;
 }
