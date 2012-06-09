@@ -481,7 +481,7 @@ static void mosaic_window_box_create_colors (MosaicWindowBox *box)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
-  gchar *source = (box->is_window) ? box->opt_name : MOSAIC_BOX (box)->name;
+  gchar *source = (box->opt_name) ? box->opt_name : MOSAIC_BOX (box)->name;
   if (box->colorize && source) {
     gdouble h, s, l;
     gulong crc = get_crc16 (source, strlen (source));
