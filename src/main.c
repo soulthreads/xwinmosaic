@@ -735,21 +735,21 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 
     for (int i = 0; i < wsize; i++) {
       gchar *wname_cmp = NULL;
-      gchar *wclass1_cmp = NULL;
-      gchar *wclass2_cmp = NULL;
+      gchar *opt_name1_cmp = NULL;
+      gchar *opt_name2_cmp = NULL;
       int wn_size = 0;
-      int wc1_size = 0;
-      int wc2_size = 0;
+      int op1_size = 0;
+      int op2_size = 0;
 
       wname_cmp = g_utf8_casefold (mosaic_window_box_get_name (MOSAIC_WINDOW_BOX (boxes[i])), -1);
       wn_size = strlen (wname_cmp);
-      const gchar *wclass = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
-      if (wclass) {
-	wclass1_cmp = g_utf8_casefold (wclass, -1);
-	wc1_size = strlen (wclass1_cmp);
+      const gchar *opt_name = mosaic_window_box_get_opt_name (MOSAIC_WINDOW_BOX (boxes[i]));
+      if (opt_name) {
+	opt_name1_cmp = g_utf8_casefold (opt_name, -1);
+	op1_size = strlen (opt_name1_cmp);
 	if (!options.read_stdin) {
-	  wclass2_cmp = g_utf8_casefold (wclass+wc1_size+1, -1);
-	  wc2_size = strlen (wclass2_cmp);
+	  opt_name2_cmp = g_utf8_casefold (opt_name+op1_size+1, -1);
+	  op2_size = strlen (opt_name2_cmp);
 	}
       }
       gboolean found = FALSE;
@@ -758,20 +758,20 @@ static void refilter (MosaicSearchBox *search_box, gpointer data)
 	priority1 [p1size++] = boxes [i];
       }
       if (!found && ((g_strstr_len (wname_cmp, wn_size, search_for) != NULL) ||
-		     (wc1_size && g_str_has_prefix (wclass1_cmp, search_for)) ||
-		     (wc2_size && g_str_has_prefix (wclass2_cmp, search_for)))) {
+		     (op1_size && g_str_has_prefix (opt_name1_cmp, search_for)) ||
+		     (op2_size && g_str_has_prefix (opt_name2_cmp, search_for)))) {
 	found = TRUE;
 	priority2 [p2size++] = boxes [i];
       }
       if (!found && ((search_by_letters (wname_cmp, wn_size, search_for, s_size)) ||
-		     (wc1_size && g_strstr_len (wclass1_cmp, wc1_size, search_for) != NULL) ||
-		     (wc2_size && g_strstr_len (wclass2_cmp, wc2_size, search_for) != NULL))) {
+		     (op1_size && g_strstr_len (opt_name1_cmp, op1_size, search_for) != NULL) ||
+		     (op2_size && g_strstr_len (opt_name2_cmp, op2_size, search_for) != NULL))) {
 	found = TRUE;
 	priority3 [p3size++] = boxes [i];
       }
       g_free (wname_cmp);
-      g_free (wclass1_cmp);
-      g_free (wclass2_cmp);
+      g_free (opt_name1_cmp);
+      g_free (opt_name2_cmp);
       if (found)
 	filtered_size++;
     }
