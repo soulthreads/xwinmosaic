@@ -145,7 +145,7 @@ int get_window_desktop (Window win)
   int32_t *desktop = property (win,
 			   a_NET_WM_DESKTOP,
 			   XA_CARDINAL, NULL);
-  int32_t result = (desktop) ? *desktop : -1;
+  int32_t result = (desktop) ? *desktop : 0;
   XFree (desktop);
   return result;
 }
