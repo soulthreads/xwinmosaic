@@ -249,7 +249,10 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
   /* Shall we draw the desktop number */
   if (box->show_desktop) {
     gchar desk [4] = { 0 };
-    sprintf (desk, "%d", box->desktop+1);
+    if (box->desktop > -1)
+      sprintf (desk, "%d", box->desktop+1);
+    else
+      sprintf (desk, "A");
 
     pango_layout_set_text (pl, desk, -1);
     pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);

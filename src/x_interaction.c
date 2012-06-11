@@ -174,7 +174,7 @@ static gboolean show_window (Window win)
       break;
     }
 
-  return ((desktop != -1) && type_ok);
+  return ((desktop != -1) || type_ok);
 }
 
 // Returns a list of windows (except panels and other windows with desktop=-1)
@@ -256,8 +256,8 @@ void switch_to_window (Window win)
 {
   Window root_window = gdk_x11_get_default_root_xwindow ();
   int32_t desktop = get_window_desktop (win);
+  climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
   if (desktop > -1) {
-    climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
     climsg (root_window, a_NET_CURRENT_DESKTOP, desktop, CurrentTime, 0, 0, 0);
     climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
   }
