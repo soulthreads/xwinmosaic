@@ -1,21 +1,35 @@
-(defun get-buffer-mode-str (buffer-name)
-  (format "%s" (save-excursion
-                 (set-buffer buffer-name)
-                 major-mode)))
+(require 'cl)
 
-(defmacro buffer-mode-match (str name)
-  `(string-match ,str (get-buffer-mode-str name)))
+(defvar xwm-modes-alist   
+      '(("jabber" "im-jabber" "#cfb53b")
+        ("haskell" "text-x-haskell")
+        ("python" "text-x-python")
+        ("sh" "application-x-shellscript")
+        ("c-mode" "text-x-csrc")
+        ("" "emacs")))
 
-(defun get-color-name (name)
-  (cond
-   ((buffer-mode-match "jabber" name) "#cfb53b")
-   (t "")))
 
-(defun get-icon-name (name)
-  (cond
-   ((buffer-mode-match "jabber" name) "im-jabber")
-   ((buffer-mode-match "haskell" name) "text-x-haskell")
-   ((buffer-mode-match "python" name) "text-x-python")
-   ((buffer-mode-match "sh" name) "application-x-shellscript")
-   ((buffer-mode-match "c-mode" name) "text-x-csrc")
-   (t "emacs")))
+(defun xwm-buffer-mode-str (buffer-name)
+  (format "%s" 
+          (with-current-buffer buffer-name major-mode)))
+
+(defun xwm-mode-icon-color (name)
+  (cdar (remove-if-not (lambda (ic) 
+                         (string-match (car ic) (xwm-buffer-mode-str name)))
+                       xwm-modes-alist)))
+
+(defun xwm-valid-buffer-list () 
+  (remove-if '(lambda (name) (string= (substring name 0 1) " "))
+             (mapcar 'buffer-name (buffer-list))))
+
+(defun xwm-list-buffers ()
+  (mapconcat  '(lambda (s) 
+                 (let ((ic-list (xwm-mode-icon-color s)))
+                   (format ", %s,%s,%s,%s"
+                           (or (second ic-list) "")
+                           (first ic-list)
+                           s
+                           (xwm-buffer-mode-str s))))
+            (xwm-valid-buffer-list)
+            "\n"))
+
