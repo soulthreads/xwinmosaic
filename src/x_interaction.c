@@ -152,8 +152,6 @@ int get_window_desktop (Window win)
 
 static gboolean show_window (Window win)
 {
-  int desktop = get_window_desktop (win);
-
   int num = 0;
   gboolean type_ok = TRUE;
   Atom *type = (Atom *) property (win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num);
@@ -174,7 +172,7 @@ static gboolean show_window (Window win)
       break;
     }
 
-  return ((desktop != -1) || type_ok);
+  return type_ok;
 }
 
 // Returns a list of windows (except panels and other windows with desktop=-1)
