@@ -12,3 +12,6 @@ add_subdirectory (src)
 if (WITH_SCRIPTS)
   add_subdirectory (contrib)
 ENDIF (WITH_SCRIPTS)
+
+install (FILES xwinmosaic.1
+	DESTINATION share/man/man1)

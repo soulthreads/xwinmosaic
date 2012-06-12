@@ -12,6 +12,3 @@ target_link_libraries (xwinmosaic ${DEPS_LIBRARIES})
 
 install (TARGETS xwinmosaic
 	RUNTIME DESTINATION bin)
-
-install (FILES xwinmosaic.1
-	DESTINATION "share/man/man1")
