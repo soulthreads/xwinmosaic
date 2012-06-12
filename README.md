@@ -57,7 +57,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 
 * Debian/Ubuntu: https://launchpad.net/~soulthreads/+archive/xwinmosaic/
 * ArchLinux: https://aur.archlinux.org/packages.php?ID=59660
-* Gentoo: https://github.com/soulthreads/xwinmosaic/raw/master/contrib/gentoo/xwinmosaic-9999.ebuild
+* Gentoo: https://github.com/funtoo/flora/tree/master/x11-apps/xwinmosaic
 * openSUSE (packages for 11.4, 12.1 and Tumbleweed): http://download.opensuse.org/repositories/home:/ZaWertun:/gtk2/
 
 Other distributions/for development:
