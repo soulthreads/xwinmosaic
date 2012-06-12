@@ -1,3 +1,10 @@
+xwinmosaic (0.4.1+git20120612-1) precise; urgency=low
+
+  * Added man page
+  * Various bugfixes
+
+ -- Anton S. Lobashev <soulthreads@linuxoids.net>  Tue, 12 Jun 2012 22:21:43 +0400
+
 xwinmosaic (0.4+git20120610-1) precise; urgency=low
 
   * Much more flexibility for defining items (option -t)
