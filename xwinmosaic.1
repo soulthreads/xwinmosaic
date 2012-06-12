@@ -28,7 +28,7 @@ as a window switcher you should run it in WM that supports EWMH (Extended Window
 .SH OPTIONS
 .TP
 .BR \-r ", " \-\^\-read\-stdin
-Read items from stdin and print selected item to stdout
+Read items from stdin and print selected item to stdout.
 .TP
 .BR \-p ", " \-\^\-permissive
 Lets search entry text to be used as individual item (i.e. when no one item is mathed, text from search entry is printed to stdout).
@@ -83,52 +83,52 @@ Pick colors from file. File format is described in USAGE section.
 
 .SH USAGE
 .SS Keybindings
-Use arrow keys or mouse to navigate through windows. Start typing to search for required window. Use Return or mouse button 1 to select item. Following hotkeys are also available:
+Use arrow keys or mouse to navigate through windows. Start typing to search for required window. Use Return or mouse button 1 to confirm selection (switch to selected window or print selected item to stdout). Following hotkeys are also available:
 
 .SB Default (Emacs) mode:
 .TP
 C\-n
-Move down
+Move down.
 .TP
 C\-p
-Move up
+Move up.
 .TP
 C\-f
-Move right
+Move right.
 .TP
 C\-b
-Move left
+Move left.
 .TP
 C\-h
-Delete character backward
+Delete character backward.
 .TP
 C\-w
-Delete word backward
+Delete word backward.
 .TP
 C\-m
-Confirm selection (switch to selected item or print selected item to stdout)
+Confirm selection.
 
 .P
 .SB Vim mode:
 .TP
 h
-Move left
+Move left.
 .TP
 j
-Move down
+Move down.
 .TP
 k
-Move up
+Move up.
 .TP
 l
-Move right
+Move right.
 .TP
 /
-Activate search
+Activate search.
 
 .SS Configuration
 Config file is created automatically on first program run and stored in
-.I ~/.config/xwinmosaic/config
+.IR ~/.config/xwinmosaic/config "."
 
 It has the following entries:
 .TP
@@ -200,7 +200,8 @@ fallback = #778899; #AABBCC; #DDEEFF
 .SH BUGS
 If you found some bug in
 .BR xwinmosaic ", "
-please report it at https://github.com/soulthreads/xwinmosaic/issues
+please report it at
+.IR https://github.com/soulthreads/xwinmosaic/issues "."
 
 .SH AUTHOR
 xwinmosaic and this manual page is written by Anton Lobashev <soulthreads@linuxoids.net>
