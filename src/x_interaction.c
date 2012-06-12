@@ -139,7 +139,7 @@ char* get_window_class (Window win)
   return "<empty>";
 }
 
-// What desktop does window belongs to.
+// What desktop does window belong to.
 int get_window_desktop (Window win)
 {
   int32_t *desktop = property (win,
@@ -150,6 +150,7 @@ int get_window_desktop (Window win)
   return result;
 }
 
+// If window type is "normal" or "dialog" (or null) then show it.
 static gboolean show_window (Window win)
 {
   int num = 0;
@@ -175,7 +176,7 @@ static gboolean show_window (Window win)
   return type_ok;
 }
 
-// Returns a list of windows (except panels and other windows with desktop=-1)
+// Returns a list of windows (except panels and other "non-normal" windows)
 Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 {
   Window root_win = (Window)gdk_x11_get_default_root_xwindow ();
@@ -248,8 +249,7 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
   return NULL;
 }
 
-// Switch to window given in "data".
-// This function has to be called with g_signal mechanism.
+// Switch to window and it's desktop.
 void switch_to_window (Window win)
 {
   Window root_window = gdk_x11_get_default_root_xwindow ();
@@ -332,6 +332,7 @@ GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
   return pixmap;
 }
 
+// If xwinmosaic is already opened, exit.
 gboolean already_opened ()
 {
   int size = 0;
