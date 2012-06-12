@@ -1,0 +1,206 @@
+.\" Man page for xwinmosaic
+.TH XWINMOSAIC 1 "June 12, 2012"
+
+.SH NAME
+xwinmosaic \- show X11 windows as colour mosaic
+
+.SH SYNOPSYS
+.B xwinmosaic
+.RI [ "options" ] ...
+
+.SH DESCRIPTION
+.B xwinmosaic
+is a X11 window switcher that draws windows list as colour mosaic.
+It is inspired by XMonad.Actions.GridSelect, but written in C + GTK+2, uses
+nice-looking colours and has some set of helpful features.
+
+.P
+.B xwinmosaic
+can also be used as
+.B dmenu
+to select item from newline-separated list given from stdin and print it to stdout.
+
+.P
+For using
+.B xwinmosaic
+as a window switcher you should run it in WM that supports EWMH (Extended Window Manager Hints) specification. However, it is not necessary for read_stdin mode.
+
+.SH OPTIONS
+.TP
+.BR \-r ", " \-\^\-read\-stdin
+Read items from stdin and print selected item to stdout
+.TP
+.BR \-p ", " \-\^\-permissive
+Lets search entry text to be used as individual item (i.e. when no one item is mathed, text from search entry is printed to stdout).
+Can be used only with
+.BR \-r
+option.
+.TP
+.BR \-t ", " \-\^\-format
+Read items from stdin in next format (comma separated):
+
+ <desktop_num>, <box_color>, <icon>, <label>, <opt_name>
+
+Any option, except <label> can be skipped (only comma is necessary).
+<icon> should be a path to png file or icon name from theme.
+Any positive value of <desktop_num> is allowed.
+.TP
+.BR \-V ", " \-\^\-vim\-mode
+Turn on vim\-like navigation (hjkl, search on /)
+.TP
+.BR \-C ", " \-\^\-no\-colors
+Turn off box colorizing
+.TP
+.BR \-I ", " \-\^\-no\-icons
+Turn off showing icons
+.TP
+.BR \-D ", " \-\^\-no\-desktops
+Turn off showing desktop number
+.TP
+.BR \-S ", " \-\^\-screenshot
+Get screenshot and set it as a background (for WMs that do not support XShape)
+.TP
+.BR \-P ", " \-\^\-at\-pointer
+Place center of mosaic at pointer position.
+.TP
+.BI \-W " <int>" "\fR,\fP \-\^\-box\-width=" <int>
+Width of the boxes (default: 200)
+.TP
+.BI \-H " <int>" "\fR,\fP \-\^\-box\-height=" <int>
+Height of the boxes (default: 40)
+.TP
+.BI \-i " <int>" "\fR,\fP \-\^\-icon\-size=" <int>
+Size of window icons (default: 16)
+.TP
+.BI \-f " 'font [size]'" "\fR,\fP \-\^\-font=" "'font [size]'"
+Which font to use for displaying widgets. (default: 'Sans 10')
+.TP
+.BI \-o " <int>" "\fR,\fP\-\^\-hue\-offset=" <int>
+Set color hue offset (from 0 to 255)
+.TP
+.BI \-F " /path/to/file" "\fR,\fP \-\^\-color\-file=" /path/to/file
+Pick colors from file. File format is described in USAGE section.
+
+.SH USAGE
+.SS Keybindings
+Use arrow keys or mouse to navigate through windows. Start typing to search for required window. Use Return or mouse button 1 to select item. Following hotkeys are also available:
+
+.SB Default (Emacs) mode:
+.TP
+C\-n
+Move down
+.TP
+C\-p
+Move up
+.TP
+C\-f
+Move right
+.TP
+C\-b
+Move left
+.TP
+C\-h
+Delete character backward
+.TP
+C\-w
+Delete word backward
+.TP
+C\-m
+Confirm selection (switch to selected item or print selected item to stdout)
+
+.P
+.SB Vim mode:
+.TP
+h
+Move left
+.TP
+j
+Move down
+.TP
+k
+Move up
+.TP
+l
+Move right
+.TP
+/
+Activate search
+
+.SS Configuration
+Config file is created automatically on first program run and stored in
+.I ~/.config/xwinmosaic/config
+
+It has the following entries:
+.TP
+.I vim_mode
+Should program run in vim mode.
+.TP
+.I box_width
+Width of the boxes.
+.TP
+.I box_height
+Height of the boxes.
+
+.TP
+.I colorize
+Should program colorize boxes or not.
+.TP
+.I color_offset
+Set hue offset for default colorizing method (save values are beetwen 0 and 255).
+.TP
+.I show_icons
+Should program show icons.
+.TP
+.I show_desktop
+Should program show desktop number.
+.TP
+.I icon_size
+Size of the icons in boxes.
+.TP
+.I font
+Which font to use in all program widgets.
+.TP
+.I screenshot
+Set screenshot as a background. Useful for WM's that don't work properly with shaped windows.
+.TP
+.I screenshot_offset_x
+Screenshot offset by x coordinate. Can be useful if your WM does not support _NET_WM_STRUT and/or _NET_WM_STRUT_PARTIAL property.
+.TP
+.I screenshot_offset_y
+Screenshot offset by y coordinate. As above.
+.TP
+.I at_pointer
+If true, center of the mosaic is placed at the current pointer position.
+.TP
+.I color_file
+Path to file with colors that
+.B xwinmoasic
+should use. Colors can be set for each window class individually or be taken from
+.I fallback
+list (note each color is separated by semicolon).
+
+.SB Color file format:
+.RS
+.TP
+.PD 0
+[colors]
+.TP
+# Use xprop to determine window class
+.TP
+WindowClass1 = #112233
+.TP
+WindowClass2 = #445566
+.TP
+# For other windows to use. You can omit that line and it will use standard colorizing scheme.
+.TP
+fallback = #778899; #AABBCC; #DDEEFF
+.PD
+.RE
+
+.SH BUGS
+If you found some bug in
+.BR xwinmosaic ", "
+please report it at https://github.com/soulthreads/xwinmosaic/issues
+
+.SH AUTHOR
+xwinmosaic and this manual page is written by Anton Lobashev <soulthreads@linuxoids.net>
