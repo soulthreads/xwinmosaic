@@ -30,7 +30,7 @@
 (defun xwm-list-buffers ()
   (mapconcat  '(lambda (s)
                  (let ((ic-list (xwm-mode-icon s)))
-                   (format ", %s,%s,%s,%s"
+                   (format " , %s,%s,%s,%s"
                            (or (second ic-list) "")
                            (first ic-list)
                            s
