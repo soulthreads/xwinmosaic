@@ -340,11 +340,12 @@ gboolean already_opened ()
   if (size) {
     for (int i = 0; i < size; i++) {
       gchar *wmclass = get_window_class (win_list [i]);
-      if (!g_strcmp0 (wmclass, "xwinmosaic")) {
+      if (wmclass && !g_strcmp0 (wmclass, "xwinmosaic")) {
 	g_free (wmclass);
 	return TRUE;
       }
-      g_free (wmclass);
+      if (wmclass)
+	g_free (wmclass);
     }
   }
   return FALSE;
