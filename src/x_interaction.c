@@ -136,7 +136,7 @@ char* get_window_class (Window win)
   if (wm_class)
     return wm_class;
 
-  return "<empty>";
+  return g_strdup ("<empty>");
 }
 
 // What desktop does window belong to.
