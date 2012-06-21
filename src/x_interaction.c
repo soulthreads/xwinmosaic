@@ -336,17 +336,19 @@ GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
 gboolean already_opened ()
 {
   int size = 0;
+  gboolean opened = FALSE;
   Window *win_list = (Window *) property (gdk_x11_get_default_root_xwindow (), a_NET_CLIENT_LIST, XA_WINDOW, &size);
   if (size) {
     for (int i = 0; i < size; i++) {
       gchar *wmclass = get_window_class (win_list [i]);
       if (wmclass && show_window (win_list[i]) && !g_strcmp0 (wmclass, "xwinmosaic")) {
-	g_free (wmclass);
-	return TRUE;
+	opened = TRUE;
+	break;
       }
       if (wmclass)
 	g_free (wmclass);
     }
   }
-  return FALSE;
+  XFree (win_list);
+  return opened;
 }
