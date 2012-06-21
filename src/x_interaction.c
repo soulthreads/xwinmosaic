@@ -125,9 +125,7 @@ char* get_window_name (Window win)
     return wm_name;
   XFree (wm_name);
 
-  char *str = (char *) malloc (8);
-  strcpy (str, "<empty>");
-  return str;
+  return g_strdup ("<empty>");
 }
 
 char* get_window_class (Window win)
