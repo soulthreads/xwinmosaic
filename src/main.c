@@ -967,37 +967,21 @@ static void write_default_config ()
   if (g_mkdir_with_parents (confdir, 0755) != -1) {
     FILE *config;
     if ((config = fopen (filename, "w")) != NULL) {
-      fprintf (config,
-	       "[default]\n\
-vim_mode = %s\n\
-box_width = %d\n\
-box_height = %d\n\
-colorize = %s\n\
-color_offset = %d\n\
-show_icons = %s\n\
-show_desktop = %s\n\
-icon_size = %d\n\
-font = %s\n\
-screenshot = %s\n\
-screenshot_offset_x = %d\n\
-screenshot_offset_y = %d\n\
-at_pointer = %s\n\
-# color_file = /path/to/file\n\
-",
-	       (options.vim_mode) ? "true" : "false",
-	       options.box_width,
-	       options.box_height,
-	       (options.colorize) ? "true" : "false",
-	       options.color_offset,
-	       (options.show_icons) ? "true" : "false",
-	       (options.show_desktop) ? "true" : "false",
-	       options.icon_size,
-	       options.font,
-	       (options.screenshot) ? "true" : "false",
-	       options.screenshot_offset_x,
-	       options.screenshot_offset_y,
-	       (options.at_pointer) ? "true" : "false");
-
+      fprintf (config, "[default]\n");
+      fprintf (config, "vim_mode = %s\n", (options.vim_mode) ? "true" : "false");
+      fprintf (config, "box_width = %d\n", options.box_width);
+      fprintf (config, "box_height = %d\n", options.box_height);
+      fprintf (config, "colorize = %s\n", (options.colorize) ? "true" : "false");
+      fprintf (config, "color_offset = %d\n", options.color_offset);
+      fprintf (config, "show_icons = %s\n", (options.show_icons) ? "true" : "false");
+      fprintf (config, "show_desktop = %s\n", (options.show_desktop) ? "true" : "false");
+      fprintf (config, "icon_size = %d\n", options.icon_size);
+      fprintf (config, "font = %s\n", options.font);
+      fprintf (config, "screenshot = %s\n", (options.screenshot) ? "true" : "false");
+      fprintf (config, "screenshot_offset_x = %d\n", options.screenshot_offset_x);
+      fprintf (config, "screenshot_offset_y = %d\n", options.screenshot_offset_y);
+      fprintf (config, "at_pointer = %s\n", (options.at_pointer) ? "true" : "false");
+      fprintf (config, "# color_file = /path/to/file\n");
       fclose (config);
       }
   }
