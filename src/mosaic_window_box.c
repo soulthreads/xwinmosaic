@@ -113,7 +113,9 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
   if (box->is_window) {
     MOSAIC_BOX (box)->name = get_window_name (box->xwindow);
     box->opt_name = get_window_class (box->xwindow);
+#ifdef X11
     box->desktop = get_window_desktop (box->xwindow);
+#endif
   }
   box->show_desktop = FALSE;
   box->has_icon = FALSE;
@@ -173,7 +175,12 @@ static void mosaic_window_box_set_property (GObject *gobject,
     mosaic_window_box_set_is_window (box, g_value_get_boolean (value));
     break;
   case PROP_XWINDOW:
+#ifdef X11
     mosaic_window_box_set_xwindow (box, g_value_get_uint (value));
+#endif
+#ifdef WIN32
+    mosaic_window_box_set_xwindow (box, (Window)value);
+#endif
     break;
   case PROP_NAME:
     mosaic_window_box_set_name (box, g_value_get_string (value));
@@ -198,9 +205,11 @@ static void mosaic_window_box_get_property (GObject *gobject,
   case PROP_IS_WINDOW:
     g_value_set_boolean (value, box->is_window);
     break;
+#ifdef X11
   case PROP_XWINDOW:
     g_value_set_uint (value, box->xwindow);
     break;
+#endif
   case PROP_NAME:
     g_value_set_string (value, MOSAIC_BOX(box)->name);
     break;
@@ -343,7 +352,12 @@ mosaic_window_box_get_is_window (MosaicWindowBox *box)
 }
 
 void
+#ifdef X11
 mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
+#endif
+#ifdef WIN32
+mosaic_window_box_set_xwindow (MosaicWindowBox *box, Window window)
+#endif
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
@@ -351,13 +365,19 @@ mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
     box->xwindow = window;
 
     g_object_notify (G_OBJECT (box), "xwindow");
+#ifdef X11
     box->desktop = get_window_desktop (box->xwindow);
+#endif
     mosaic_window_box_update_xwindow_name (box);
     mosaic_window_box_update_opt_name (box);
   }
 }
-
+#ifdef X11
 guint
+#endif
+#ifdef WIN32
+Window
+#endif
 mosaic_window_box_get_xwindow (MosaicWindowBox *box)
 {
   g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), 0);

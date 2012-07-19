@@ -4,6 +4,15 @@ project (XWinMosaic C)
 OPTION (WITH_SCRIPTS "Install extra scripts" OFF)
 
 ADD_DEFINITIONS ("-std=c99 -Wall")
+
+IF(WIN32)
+  add_definitions("-DWIN32")
+ENDIF(WIN32)
+
+IF(UNIX)
+  add_definitions("-DX11")
+ENDIF(UNIX)
+
 set (CMAKE_C_FLAGS_RELEASE "-O3")
 set (CMAKE_C_FLAGS_DEBUG "-g")
 

@@ -5,10 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#ifdef X11
 #include <gdk/gdkx.h>
+#endif
 #include <gtk/gtk.h>
 #include "x_interaction.h"
 
+#ifdef X11
 // Initialize Xatoms values.
 void atoms_init ()
 {
@@ -50,7 +53,9 @@ void atoms_init ()
   a_NET_WM_WINDOW_TYPE_DND = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DND", 0);
   a_NET_WM_WINDOW_TYPE_NORMAL = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_NORMAL", 0);
 }
+#endif
 
+#ifdef X11
 // Get property for a window.
 void* property (Window win, Atom prop, Atom type, int *nitems)
 {
@@ -69,7 +74,9 @@ void* property (Window win, Atom prop, Atom type, int *nitems)
 
   return prop_data;
 }
+#endif
 
+#ifdef X11
 // Send a message to a window.
 void climsg(Window win, long type, long l0, long l1, long l2, long l3, long l4)
 {
@@ -89,7 +96,8 @@ void climsg(Window win, long type, long l0, long l1, long l2, long l3, long l4)
           (SubstructureNotifyMask | SubstructureRedirectMask),
           (XEvent *)&xev);
 }
-
+#endif
+#ifdef X11
 // Pretty obvious function name, I think.
 int wm_supports_ewmh ()
 {
@@ -106,9 +114,10 @@ int wm_supports_ewmh ()
   XFree (wm);
   return supports;
 }
-
+#endif
 char* get_window_name (Window win)
 {
+#ifdef X11
   int length = 0;
   char *net_wm_visible_name = (char *) property (win, a_NET_WM_VISIBLE_NAME, a_UTF8_STRING, &length);
   if (net_wm_visible_name && length)
@@ -124,19 +133,20 @@ char* get_window_name (Window win)
   if (wm_name && length)
     return wm_name;
   XFree (wm_name);
-
+#endif
   return g_strdup ("<empty>");
 }
 
 char* get_window_class (Window win)
 {
+#ifdef X11 
   char *wm_class = (char *) property (win, a_WM_CLASS, XA_STRING, NULL);
   if (wm_class)
     return wm_class;
-
+#endif
   return g_strdup ("<empty>");
 }
-
+#ifdef X11
 // What desktop does window belong to.
 int get_window_desktop (Window win)
 {
@@ -147,10 +157,11 @@ int get_window_desktop (Window win)
   XFree (desktop);
   return result;
 }
-
+#endif
 // If window type is "normal" or "dialog" (or null) then show it.
 static gboolean show_window (Window win)
 {
+#ifdef X11
   int num = 0;
   gboolean type_ok = TRUE;
   Atom *type = (Atom *) property (win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num);
@@ -172,11 +183,16 @@ static gboolean show_window (Window win)
     }
 
   return type_ok;
+#endif
+#ifdef WIN32
+  return TRUE;
+#endif
 }
 
 // Returns a list of windows (except panels and other "non-normal" windows)
 Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 {
+#ifdef X11
   Window root_win = (Window)gdk_x11_get_default_root_xwindow ();
   int pre_size = 0;
 
@@ -242,7 +258,7 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
     *nitems = size;
     return win_list;
   }
-
+#endif
   *nitems = 0;
   return NULL;
 }
@@ -250,6 +266,7 @@ Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
 // Switch to window and it's desktop.
 void switch_to_window (Window win)
 {
+#ifdef X11
   Window root_window = gdk_x11_get_default_root_xwindow ();
   int32_t desktop = get_window_desktop (win);
   climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
@@ -257,12 +274,13 @@ void switch_to_window (Window win)
     climsg (root_window, a_NET_CURRENT_DESKTOP, desktop, CurrentTime, 0, 0, 0);
     climsg (win, a_NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
   }
+#endif
 }
 
 GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
 {
   GdkPixbuf *pixmap = NULL;
-
+#ifdef X11
   /* get the _NET_WM_ICON property */
   gint nitems = 0;
   gulong *data = (gulong *) property (win, a_NET_WM_ICON, XA_CARDINAL, &nitems);
@@ -326,7 +344,7 @@ GdkPixbuf *get_window_icon (Window win, guint req_width, guint req_height)
     }
   }
   XFree (data);
-
+#endif
   return pixmap;
 }
 
@@ -335,6 +353,7 @@ gboolean already_opened ()
 {
   int size = 0;
   gboolean opened = FALSE;
+#ifdef X11
   Window *win_list = (Window *) property (gdk_x11_get_default_root_xwindow (), a_NET_CLIENT_LIST, XA_WINDOW, &size);
   if (size) {
     for (int i = 0; i < size; i++) {
@@ -348,5 +367,6 @@ gboolean already_opened ()
     }
   }
   XFree (win_list);
+#endif
   return opened;
 }

@@ -6,10 +6,17 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#ifdef X11
 #include <X11/Xlib.h>
+#endif
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#ifdef X11
 #include <gdk/gdkx.h>
+#endif
+#ifdef WIN32
+#include <gdk/gdkwin32.h>
+#endif
 #include "x_interaction.h"
 #include "mosaic_window_box.h"
 #include "mosaic_search_box.h"
@@ -117,7 +124,9 @@ static void draw_mosaic (GtkLayout *where,
 static void on_rect_click (GtkWidget *widget, gpointer data);
 static void update_box_list ();
 static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer data);
+#ifdef X11
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data);
+#endif
 static void refilter (MosaicSearchBox *search_box, gpointer data);
 static void draw_mask (GdkDrawable *bitmap, guint size);
 static void read_stdin ();
@@ -150,9 +159,9 @@ int main (int argc, char **argv)
     g_printerr("You must provide option --read-stdin!");
     exit(1);
   }
-
+#ifdef X11
   atoms_init ();
-
+#endif
   if (already_opened ()) {
     g_printerr ("Another instance of xwinmosaic is opened.\n");
     exit (1);
@@ -165,6 +174,7 @@ int main (int argc, char **argv)
     }
     read_stdin ();
   } else {
+#ifdef X11
     // Checks whether WM supports EWMH specifications.
     if (!wm_supports_ewmh ()) {
       GtkWidget *dialog = gtk_message_dialog_new
@@ -179,11 +189,11 @@ int main (int argc, char **argv)
 				G_CALLBACK (gtk_main_quit), NULL);
       return 1;
     }
-
     active_window = (Window *) property (gdk_x11_get_default_root_xwindow (),
 					 a_NET_ACTIVE_WINDOW,
 					 XA_WINDOW,
 					 NULL);
+#endif
   }
 
   if (options.color_file)
@@ -231,10 +241,10 @@ int main (int argc, char **argv)
 
   gtk_window_set_default_size (GTK_WINDOW (window), width, height);
   gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
-  gtk_window_set_decorated (GTK_WINDOW (window), False);
+  gtk_window_set_decorated (GTK_WINDOW (window), 0);
   gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
-  gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), True);
-  gtk_window_set_skip_pager_hint (GTK_WINDOW (window), True);
+  gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), 1);
+  gtk_window_set_skip_pager_hint (GTK_WINDOW (window), 1);
 /**/
   gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE);
   g_signal_connect (G_OBJECT (window), "focus-out-event",
@@ -285,8 +295,13 @@ int main (int argc, char **argv)
   gtk_window_present (GTK_WINDOW (window));
 
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
+#ifdef X11
   myown_window = GDK_WINDOW_XID (gdk_window);
-
+#endif
+#ifdef WIN32
+  myown_window = GDK_WINDOW_HWND (gdk_window);
+#endif
+#ifdef X11
   if (!options.read_stdin) {
     // Get PropertyNotify events from root window.
     XSelectInput (gdk_x11_get_default_xdisplay (),
@@ -294,20 +309,21 @@ int main (int argc, char **argv)
 		  PropertyChangeMask);
     gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
   }
+#endif
   update_box_list ();
   draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
 	       options.box_width, options.box_height);
-
+#ifdef X11
   // Window wil be shown on all desktops (and so hidden in windows list)
   unsigned int desk = 0xFFFFFFFF; // -1
   XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
 		  32, PropModeReplace, (unsigned char *)&desk, 1);
-
+#endif
   gtk_main ();
-
+#ifdef X11
   if (!options.read_stdin)
     XFree (wins);
-
+#endif
   return 0;
 }
 
@@ -408,15 +424,20 @@ static void update_box_list ()
 	gtk_widget_destroy (boxes[i]);
       }
       free (boxes);
+#ifdef X11
       XFree (wins);
+#endif
     }
     wins = sorted_windows_list (&myown_window, active_window, &wsize);
     if (wins) {
       // Get PropertyNotify events from each relevant window.
-      for (int i = 0; i < wsize; i++)
+      for (int i = 0; i < wsize; i++) {
+#ifdef X11
 	XSelectInput (gdk_x11_get_default_xdisplay (),
 		      wins[i],
 		      PropertyChangeMask);
+#endif
+      }
     }
   }
 
@@ -631,7 +652,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   }
   return FALSE;
 }
-
+#ifdef X11
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 {
   if (xevent->type == PropertyNotify) {
@@ -685,7 +706,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
 
   return GDK_FILTER_CONTINUE;
 }
-
+#endif
 static gboolean search_by_letters (const gchar *source, gint s_len, const gchar *letters, gint l_len)
 {
   gboolean found = FALSE;

@@ -65,8 +65,19 @@ GtkWidget* mosaic_window_box_new_with_xwindow (Window win);
 GtkWidget* mosaic_window_box_new_with_name (gchar *name);
 void mosaic_window_box_set_is_window (MosaicWindowBox *box, gboolean is_window);
 gboolean mosaic_window_box_get_is_window (MosaicWindowBox *box);
+#ifdef X11
 void mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window);
-guint mosaic_window_box_get_xwindow (MosaicWindowBox *box);
+#endif
+#ifdef WIN32
+void mosaic_window_box_set_xwindow (MosaicWindowBox *box, Window window);
+#endif
+#ifdef X11
+guint
+#endif
+#ifdef WIN32
+Window
+#endif
+mosaic_window_box_get_xwindow (MosaicWindowBox *box);
 void mosaic_window_box_set_name (MosaicWindowBox *box, const gchar *name);
 const gchar *mosaic_window_box_get_name (MosaicWindowBox *box);
 void mosaic_window_box_set_opt_name (MosaicWindowBox *box, const gchar *opt_name);
