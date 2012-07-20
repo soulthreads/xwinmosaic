@@ -59,6 +59,8 @@ Config file is created automatically on first program run and stored in `~/.conf
 * ArchLinux: https://aur.archlinux.org/packages.php?ID=59660
 * Gentoo: https://github.com/funtoo/flora/tree/master/x11-apps/xwinmosaic
 * openSUSE (packages for 11.4, 12.1 and Tumbleweed): http://download.opensuse.org/repositories/home:/ZaWertun:/gtk2/
+* Window: http://artifth.ru/~artifth/xwinmosaic.zip
+Unzip archive and then create a shortcut for xwinmosaic.exe, put shortcut on desktop or in start menu and set a hot key in properties.
 
 Other distributions/for development:
 
