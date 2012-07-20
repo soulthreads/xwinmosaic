@@ -1,4 +1,8 @@
 #include "win32_interaction.h"
+#include <winuser.h>
+
+WINUSERAPI VOID WINAPI SwitchToThisWindow(HWND,BOOL);
+
 
 static HWND* window_list;
 
@@ -112,5 +116,12 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
 
 void switch_to_window(HWND win)
 {
-  SetForegroundWindow(win);
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(WINDOWPLACEMENT);
+  GetWindowPlacement(win, &wp);
+  if((wp.showCmd == SW_MINIMIZE) || (wp.showCmd == SW_SHOWMINIMIZED) ||
+     (wp.showCmd == SW_SHOWMINNOACTIVE))
+    ShowWindow(win, SW_RESTORE);
+  else
+    SwitchToThisWindow(win, FALSE);
 }
