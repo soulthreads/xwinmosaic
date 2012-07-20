@@ -17,7 +17,12 @@
 #ifdef WIN32
 #include <gdk/gdkwin32.h>
 #endif
+#ifdef X11
 #include "x_interaction.h"
+#endif
+#ifdef WIN32
+#include "win32_interaction.h"
+#endif
 #include "mosaic_window_box.h"
 #include "mosaic_search_box.h"
 
@@ -461,8 +466,11 @@ static void update_box_list ()
     Entry entry;
     for (int i = 0; i < wsize; i++) {
       if (!options.read_stdin) {
+        printf("A: %s, %p\n" ,get_window_name(wins[i]), wins[i]);
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
+#ifdef X11
 	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
+#endif
 	if (options.show_icons)
 	  mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {

@@ -1,21 +1,15 @@
 /* Copyright (c) 2012, Anton S. Lobashev
  * x_interaction.h - layer to talk with X11.
  */
-#ifdef X11
+
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xcomposite.h>
 #include <X11/extensions/Xdamage.h>
-#endif
-#ifdef WIN32
-#include <windows.h>
-#define Window HWND
-#endif
 
 #ifndef X_INTERACTION_H
 #define X_INTERACTION_H
 
-#ifdef X11
 Atom a_UTF8_STRING;
 
 Atom a_WM_CLASS;
@@ -51,18 +45,12 @@ Atom a_NET_WM_WINDOW_TYPE_NOTIFICATION;
 Atom a_NET_WM_WINDOW_TYPE_COMBO;
 Atom a_NET_WM_WINDOW_TYPE_DND;
 Atom a_NET_WM_WINDOW_TYPE_NORMAL;
-#endif
 
-#ifdef X11
+
 void atoms_init ();
-#endif
-#ifdef X11
 void* property (Window win, Atom prop, Atom type, int *nitems);
-#endif
 void climsg(Window win, long type, long l0, long l1, long l2, long l3, long l4);
-#ifdef X11
 int wm_supports_ewmh ();
-#endif
 char* get_window_name (Window win);
 char* get_window_class (Window win);
 int get_window_desktop (Window win);

@@ -57,7 +57,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 			  "If set, the box stores XWindow information",
 			  FALSE,
 			  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-
+#ifdef X11
   obj_properties[PROP_XWINDOW] =
     g_param_spec_uint ("xwindow",
 		       "XWindow",
@@ -65,7 +65,14 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 		       0, G_MAXUINT,
 		       0,
 		       G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-
+#endif
+#ifdef WIN32
+  obj_properties[PROP_XWINDOW] =
+    g_param_spec_pointer ("xwindow",
+		       "Window handler",
+		       "Actually HWND pointer.",
+		       G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+#endif
   obj_properties[PROP_NAME] =
     g_param_spec_string ("name",
 			 "Name in the box",
@@ -112,6 +119,7 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
 
   if (box->is_window) {
     MOSAIC_BOX (box)->name = get_window_name (box->xwindow);
+    printf("B: %s, %p\n", get_window_name(box->xwindow), box->xwindow);
     box->opt_name = get_window_class (box->xwindow);
 #ifdef X11
     box->desktop = get_window_desktop (box->xwindow);
@@ -133,6 +141,7 @@ GtkWidget* mosaic_window_box_new (void)
 
 GtkWidget* mosaic_window_box_new_with_xwindow (Window win)
 {
+  printf("C: %s, %p\n", get_window_name(win), win);
   return g_object_new (MOSAIC_TYPE_WINDOW_BOX, "is-window", TRUE, "xwindow", win, NULL);
 }
 
@@ -179,7 +188,7 @@ static void mosaic_window_box_set_property (GObject *gobject,
     mosaic_window_box_set_xwindow (box, g_value_get_uint (value));
 #endif
 #ifdef WIN32
-    mosaic_window_box_set_xwindow (box, (Window)value);
+    mosaic_window_box_set_xwindow (box, g_value_get_pointer(value));
 #endif
     break;
   case PROP_NAME:

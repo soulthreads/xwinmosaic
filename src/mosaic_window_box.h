@@ -11,7 +11,12 @@
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 #include "mosaic_box.h"
+#ifdef X11
 #include "x_interaction.h"
+#endif
+#ifdef WIN32
+#include "win32_interaction.h"
+#endif
 
 G_BEGIN_DECLS
 
