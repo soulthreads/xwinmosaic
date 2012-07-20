@@ -144,7 +144,7 @@ static gboolean parse_format (Entry *entry, gchar *data);
 
 int main (int argc, char **argv)
 {
-  gtk_init (&argc, &argv);
+  gtk_init(&argc, &argv);
 
   read_config ();
 
