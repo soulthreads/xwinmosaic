@@ -7,14 +7,7 @@ char* get_window_name(HWND win)
   TCHAR* title;
   title = malloc(256*sizeof(TCHAR));
   GetWindowText(win, title, 255);
-//  _tprintf(TEXT("%s\n"), title);
-  if(sizeof(TCHAR) == sizeof(wchar_t))
-  {
-    return g_utf16_to_utf8((gunichar2*)title, lstrlen(title), NULL, NULL, NULL);
-  } else
-  {
-    return title;
-  }
+  return g_locale_to_utf8(title, lstrlen(title), NULL, NULL, NULL);
 }
 
 char* get_window_class(HWND win)
@@ -22,12 +15,7 @@ char* get_window_class(HWND win)
   TCHAR* class;
   class = malloc(256*sizeof(TCHAR));
   RealGetWindowClass(win, class, 255);
-  if(sizeof(TCHAR) == sizeof(wchar_t))
-  {
-    return g_utf16_to_utf8((gunichar2*)class, lstrlen(class), NULL, NULL, NULL);
-  } else {
-    return class;
-  }
+  return g_locale_to_utf8(class, lstrlen(class), NULL, NULL, NULL);
 }
 
 BOOL CALLBACK EnumWindowsProc(
@@ -40,8 +28,10 @@ BOOL CALLBACK EnumWindowsProc(
   GetWindowInfo(hwnd, &pwi);
 
   if(((pwi.dwStyle)&WS_VISIBLE) && !(pwi.dwStyle&WS_POPUP)){
-    *window_list = hwnd;
-    window_list++;
+    if(g_strcmp0(get_window_name(hwnd), "XWinMosaic")){
+      *window_list = hwnd;
+      window_list++;
+    }
   }
   return 1;
 }
@@ -79,12 +69,23 @@ gboolean already_opened()
 
 GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height)
 {
-  return NULL;
-}
-
-void switch_wo_window(HWND win)
-{
-  
+  GdkPixbuf* gicon;
+  HICON icon = (HICON)SendMessage(win,WM_GETICON,ICON_SMALL,0);
+  if(!icon)
+  {
+    icon = (HICON)GetClassLongPtr(win, GCL_HICON);
+  }
+  if(!icon)
+  {
+    icon = (HICON)GetClassLongPtr(win, GCL_HICONSM);
+  }
+  if(!icon)
+  {
+    icon = (HICON)SendMessage(win,WM_GETICON,ICON_BIG,0);
+  }
+  gicon = gdk_win32_icon_to_pixbuf_libgtk_only(icon);
+  gicon = gdk_pixbuf_scale_simple(gicon, req_width, req_height, GDK_INTERP_BILINEAR);
+  return gicon;
 }
 
 HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
@@ -103,7 +104,7 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
   *nitems = size;
   myown = pre_win_list;
   active_win = pre_win_list+1;
-  printf("%d windows\n", size);
+//  printf("%d windows\n", size);
   /* Looks like WinAPI returns already sorted by last access time
      window list */
   return pre_win_list;
@@ -111,5 +112,5 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
 
 void switch_to_window(HWND win)
 {
-  printf("%s\n", get_window_name(win));
+  SetForegroundWindow(win);
 }

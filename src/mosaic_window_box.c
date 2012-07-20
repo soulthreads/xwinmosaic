@@ -119,7 +119,6 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
 
   if (box->is_window) {
     MOSAIC_BOX (box)->name = get_window_name (box->xwindow);
-    printf("B: %s, %p\n", get_window_name(box->xwindow), box->xwindow);
     box->opt_name = get_window_class (box->xwindow);
 #ifdef X11
     box->desktop = get_window_desktop (box->xwindow);
@@ -141,7 +140,6 @@ GtkWidget* mosaic_window_box_new (void)
 
 GtkWidget* mosaic_window_box_new_with_xwindow (Window win)
 {
-  printf("C: %s, %p\n", get_window_name(win), win);
   return g_object_new (MOSAIC_TYPE_WINDOW_BOX, "is-window", TRUE, "xwindow", win, NULL);
 }
 

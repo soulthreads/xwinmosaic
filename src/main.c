@@ -466,7 +466,6 @@ static void update_box_list ()
     Entry entry;
     for (int i = 0; i < wsize; i++) {
       if (!options.read_stdin) {
-        printf("A: %s, %p\n" ,get_window_name(wins[i]), wins[i]);
 	boxes[i] = mosaic_window_box_new_with_xwindow (wins[i]);
 #ifdef X11
 	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
