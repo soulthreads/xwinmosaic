@@ -35,7 +35,7 @@ BOOL CALLBACK EnumWindowsProc(
   pwi.cbSize = sizeof(WINDOWINFO);
   GetWindowInfo(hwnd, &pwi);
 
-  if(((pwi.dwStyle)&WS_VISIBLE) && !(pwi.dwStyle&WS_POPUP)){
+  if(((pwi.dwStyle)&WS_VISIBLE) && (pwi.dwStyle&WS_TILEDWINDOW)){
     if(g_strcmp0(get_window_name(hwnd), "XWinMosaic")){
       *window_list = hwnd;
       window_list++;
