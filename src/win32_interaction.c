@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Timur S. Sultanov
+ * win32_interaction.c - layer to talk with WinAPI.
+ */
+
 #include "win32_interaction.h"
 #include <winuser.h>
 

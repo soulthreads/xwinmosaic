@@ -1,3 +1,7 @@
+/* Copyright (c) 2012, Timur S. Sultanov
+ * win32_interaction.h - layer to talk with WinAPI.
+ */
+
 #include <windows.h>
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>
