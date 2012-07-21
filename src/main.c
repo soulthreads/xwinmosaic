@@ -6,23 +6,20 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
-#ifdef X11
-#include <X11/Xlib.h>
-#endif
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+
 #ifdef X11
+#include <X11/Xlib.h>
 #include <gdk/gdkx.h>
-#endif
-#ifdef WIN32
-#include <gdk/gdkwin32.h>
-#endif
-#ifdef X11
 #include "x_interaction.h"
 #endif
+
 #ifdef WIN32
+#include <gdk/gdkwin32.h>
 #include "win32_interaction.h"
 #endif
+
 #include "mosaic_window_box.h"
 #include "mosaic_search_box.h"
 
@@ -105,7 +102,6 @@ static GOptionEntry entries [] =
     "Get screenshot and set it as a background (for WMs that do not support XShape)", NULL },
   { "at-pointer", 'P', 0, G_OPTION_ARG_NONE, &options.at_pointer,
     "Place center of mosaic at pointer position.", NULL },
-
   { "box-width", 'W', 0, G_OPTION_ARG_INT, &options.box_width,
     "Width of the boxes (default: 200)", "<int>" },
   { "box-height", 'H', 0, G_OPTION_ARG_INT, &options.box_height,
@@ -144,7 +140,7 @@ static gboolean parse_format (Entry *entry, gchar *data);
 
 int main (int argc, char **argv)
 {
-  gtk_init(&argc, &argv);
+  gtk_init (&argc, &argv);
 
   read_config ();
 
@@ -164,9 +160,11 @@ int main (int argc, char **argv)
     g_printerr("You must provide option --read-stdin!");
     exit(1);
   }
+
 #ifdef X11
   atoms_init ();
 #endif
+
   if (already_opened ()) {
     g_printerr ("Another instance of xwinmosaic is opened.\n");
     exit (1);
@@ -194,6 +192,7 @@ int main (int argc, char **argv)
 				G_CALLBACK (gtk_main_quit), NULL);
       return 1;
     }
+
     active_window = (Window *) property (gdk_x11_get_default_root_xwindow (),
 					 a_NET_ACTIVE_WINDOW,
 					 XA_WINDOW,
@@ -302,6 +301,7 @@ int main (int argc, char **argv)
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
 #ifdef X11
   myown_window = GDK_WINDOW_XID (gdk_window);
+
   if (!options.read_stdin) {
     // Get PropertyNotify events from root window.
     XSelectInput (gdk_x11_get_default_xdisplay (),
@@ -316,17 +316,21 @@ int main (int argc, char **argv)
   update_box_list ();
   draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
 	       options.box_width, options.box_height);
+
 #ifdef X11
   // Window wil be shown on all desktops (and so hidden in windows list)
   unsigned int desk = 0xFFFFFFFF; // -1
   XChangeProperty(gdk_x11_get_default_xdisplay (), myown_window, a_NET_WM_DESKTOP, XA_CARDINAL,
 		  32, PropModeReplace, (unsigned char *)&desk, 1);
 #endif
+
   gtk_main ();
+
 #ifdef X11
   if (!options.read_stdin)
     XFree (wins);
 #endif
+
   return 0;
 }
 
@@ -436,7 +440,6 @@ static void update_box_list ()
     if (wins) {
       // Get PropertyNotify events from each relevant window.
       for (int i = 0; i < wsize; i++) {
-
 	XSelectInput (gdk_x11_get_default_xdisplay (),
 		      wins[i],
 		      PropertyChangeMask);
@@ -658,6 +661,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   }
   return FALSE;
 }
+
 #ifdef X11
 static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer data)
 {
@@ -713,6 +717,7 @@ static GdkFilterReturn event_filter (XEvent *xevent, GdkEvent *event, gpointer d
   return GDK_FILTER_CONTINUE;
 }
 #endif
+
 static gboolean search_by_letters (const gchar *source, gint s_len, const gchar *letters, gint l_len)
 {
   gboolean found = FALSE;

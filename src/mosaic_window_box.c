@@ -57,6 +57,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 			  "If set, the box stores XWindow information",
 			  FALSE,
 			  G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+
 #ifdef X11
   obj_properties[PROP_XWINDOW] =
     g_param_spec_uint ("xwindow",
@@ -66,6 +67,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 		       0,
 		       G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 #endif
+
 #ifdef WIN32
   obj_properties[PROP_XWINDOW] =
     g_param_spec_pointer ("xwindow",
@@ -73,6 +75,7 @@ mosaic_window_box_class_init (MosaicWindowBoxClass *klass)
 		       "Actually HWND pointer.",
 		       G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 #endif
+
   obj_properties[PROP_NAME] =
     g_param_spec_string ("name",
 			 "Name in the box",
