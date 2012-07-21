@@ -302,11 +302,6 @@ int main (int argc, char **argv)
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
 #ifdef X11
   myown_window = GDK_WINDOW_XID (gdk_window);
-#endif
-#ifdef WIN32
-  myown_window = GDK_WINDOW_HWND (gdk_window);
-#endif
-#ifdef X11
   if (!options.read_stdin) {
     // Get PropertyNotify events from root window.
     XSelectInput (gdk_x11_get_default_xdisplay (),
@@ -314,6 +309,9 @@ int main (int argc, char **argv)
 		  PropertyChangeMask);
     gdk_window_add_filter (NULL, (GdkFilterFunc) event_filter, NULL);
   }
+#endif
+#ifdef WIN32
+  myown_window = GDK_WINDOW_HWND (gdk_window);
 #endif
   update_box_list ();
   draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
@@ -434,16 +432,17 @@ static void update_box_list ()
 #endif
     }
     wins = sorted_windows_list (&myown_window, active_window, &wsize);
+#ifdef X11
     if (wins) {
       // Get PropertyNotify events from each relevant window.
       for (int i = 0; i < wsize; i++) {
-#ifdef X11
+
 	XSelectInput (gdk_x11_get_default_xdisplay (),
 		      wins[i],
 		      PropertyChangeMask);
-#endif
       }
     }
+#endif
   }
 
   if (!options.screenshot && box_rects) {

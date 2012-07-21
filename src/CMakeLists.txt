@@ -17,9 +17,9 @@ add_definitions (${CFLAGS})
 IF(UNIX)
   add_executable (xwinmosaic x_interaction.c mosaic_box.c mosaic_window_box.c mosaic_search_box.c main.c)
 ENDIF(UNIX)
-  add_executable (xwinmosaic win32_interaction.c mosaic_box.c mosaic_window_box.c mosaic_search_box.c main.c)
-IF(WIN32)
 
+IF(WIN32)
+  add_executable (xwinmosaic win32_interaction.c mosaic_box.c mosaic_window_box.c mosaic_search_box.c main.c)
 ENDIF(WIN32)
 
 target_link_libraries (xwinmosaic ${DEPS_LIBRARIES})

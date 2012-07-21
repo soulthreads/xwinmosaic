@@ -212,11 +212,14 @@ static void mosaic_window_box_get_property (GObject *gobject,
   case PROP_IS_WINDOW:
     g_value_set_boolean (value, box->is_window);
     break;
-#ifdef X11
   case PROP_XWINDOW:
+#ifdef X11
     g_value_set_uint (value, box->xwindow);
-    break;
 #endif
+#ifdef WIN32
+    g_value_set_pointer (value, box->xwindow);
+#endif
+    break;
   case PROP_NAME:
     g_value_set_string (value, MOSAIC_BOX(box)->name);
     break;
@@ -358,13 +361,7 @@ mosaic_window_box_get_is_window (MosaicWindowBox *box)
   return box->is_window;
 }
 
-void
-#ifdef X11
-mosaic_window_box_set_xwindow (MosaicWindowBox *box, guint window)
-#endif
-#ifdef WIN32
-mosaic_window_box_set_xwindow (MosaicWindowBox *box, Window window)
-#endif
+void mosaic_window_box_set_xwindow (MosaicWindowBox *box, Window window)
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
@@ -379,13 +376,8 @@ mosaic_window_box_set_xwindow (MosaicWindowBox *box, Window window)
     mosaic_window_box_update_opt_name (box);
   }
 }
-#ifdef X11
-guint
-#endif
-#ifdef WIN32
-Window
-#endif
-mosaic_window_box_get_xwindow (MosaicWindowBox *box)
+
+Window mosaic_window_box_get_xwindow (MosaicWindowBox *box)
 {
   g_return_val_if_fail (MOSAIC_IS_WINDOW_BOX (box), 0);
 
