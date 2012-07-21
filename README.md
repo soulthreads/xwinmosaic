@@ -60,7 +60,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 * Gentoo: https://github.com/funtoo/flora/tree/master/x11-apps/xwinmosaic
 * openSUSE (packages for 11.4, 12.1 and Tumbleweed): http://download.opensuse.org/repositories/home:/ZaWertun:/gtk2/
 * MS Windows: http://artifth.ru/~artifth/xwinmosaic.zip
-Unzip archive and then create a shortcut for xwinmosaic.exe, put shortcut on desktop or in start menu and set a hot key in properties.
+Unzip archive and then create a shortcut for xwinmosaic.exe, put shortcut on desktop or in start menu and set a hotkey in properties.
 
 Other distributions/for development:
 
