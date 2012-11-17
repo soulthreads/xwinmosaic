@@ -564,26 +564,15 @@ void mosaic_window_box_setup_icon_from_file (MosaicWindowBox *box, const gchar *
 {
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
-  GError *error;
-  GdkPixbuf *pre_pixbuf;
-  if (!(pre_pixbuf = gdk_pixbuf_new_from_file (file, &error)))
-    g_printerr ("%s\n", error->message);
+  GError *error = NULL;
+  GdkPixbuf *pixbuf;
+  
+  if(!(pixbuf = gdk_pixbuf_new_from_file_at_size (file, req_width, req_height, &error)))
+    g_printerr("%s\n", error->message);
 
-  if (!pre_pixbuf) {
+  if (!pixbuf) {
     box->has_icon = FALSE;
     return;
-  }
-
-  GdkPixbuf *pixbuf;
-  if (gdk_pixbuf_get_width (box->icon_pixbuf) > req_width ||
-      gdk_pixbuf_get_height (box->icon_pixbuf) > req_height) {
-    pixbuf = gdk_pixbuf_scale_simple (pre_pixbuf,
-				      req_width,
-				      req_height,
-				      GDK_INTERP_BILINEAR);
-    g_object_unref (pre_pixbuf);
-  } else {
-    pixbuf = pre_pixbuf;
   }
 
   mosaic_window_box_setup_icon (box, pixbuf);
