@@ -254,6 +254,7 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
     else
       sprintf (desk, "A");
 
+    pango_layout_set_ellipsize (pl, PANGO_ELLIPSIZE_END);
     pango_layout_set_text (pl, desk, -1);
     pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
     pango_font_description_set_weight (pfd, PANGO_WEIGHT_BOLD);
@@ -289,7 +290,10 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
       cairo_restore (cr);
 
       text_offset = iwidth+5;
+      pango_layout_set_width (pl, (width-iwidth-15) * PANGO_SCALE);
     }
+  } else {
+    pango_layout_set_width (pl, (width-15) * PANGO_SCALE);
   }
 
   // Draw name.
