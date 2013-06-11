@@ -49,6 +49,9 @@ void atoms_init ()
   a_NET_WM_WINDOW_TYPE_COMBO = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_COMBO", 0);
   a_NET_WM_WINDOW_TYPE_DND = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_DND", 0);
   a_NET_WM_WINDOW_TYPE_NORMAL = XInternAtom (dpy, "_NET_WM_WINDOW_TYPE_NORMAL", 0);
+
+  a_NET_WM_STATE = XInternAtom (dpy, "_NET_WM_STATE", 0);
+  a_NET_WM_STATE_SKIP_TASKBAR = XInternAtom (dpy, "_NET_WM_STATE_SKIP_TASKBAR", 0);
 }
 
 // Get property for a window.
@@ -155,19 +158,26 @@ static gboolean show_window (Window win)
   gboolean type_ok = TRUE;
   Atom *type = (Atom *) property (win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num);
   for (int i = 0; i < num; i++)
-    if (*type == a_NET_WM_WINDOW_TYPE_DESKTOP ||
-	*type == a_NET_WM_WINDOW_TYPE_DOCK ||
-	*type == a_NET_WM_WINDOW_TYPE_TOOLBAR ||
-	*type == a_NET_WM_WINDOW_TYPE_MENU ||
-	*type == a_NET_WM_WINDOW_TYPE_UTILITY ||
-	*type == a_NET_WM_WINDOW_TYPE_SPLASH ||
-	*type == a_NET_WM_WINDOW_TYPE_DROPDOWN_MENU ||
-	*type == a_NET_WM_WINDOW_TYPE_POPUP_MENU ||
-	*type == a_NET_WM_WINDOW_TYPE_TOOLTIP ||
-	*type == a_NET_WM_WINDOW_TYPE_NOTIFICATION ||
-	*type == a_NET_WM_WINDOW_TYPE_COMBO ||
-	*type == a_NET_WM_WINDOW_TYPE_DND ||
+    if (type[i] == a_NET_WM_WINDOW_TYPE_DESKTOP ||
+	type[i] == a_NET_WM_WINDOW_TYPE_DOCK ||
+	type[i] == a_NET_WM_WINDOW_TYPE_TOOLBAR ||
+	type[i] == a_NET_WM_WINDOW_TYPE_MENU ||
+	type[i] == a_NET_WM_WINDOW_TYPE_UTILITY ||
+	type[i] == a_NET_WM_WINDOW_TYPE_SPLASH ||
+	type[i] == a_NET_WM_WINDOW_TYPE_DROPDOWN_MENU ||
+	type[i] == a_NET_WM_WINDOW_TYPE_POPUP_MENU ||
+	type[i] == a_NET_WM_WINDOW_TYPE_TOOLTIP ||
+	type[i] == a_NET_WM_WINDOW_TYPE_NOTIFICATION ||
+	type[i] == a_NET_WM_WINDOW_TYPE_COMBO ||
+	type[i] == a_NET_WM_WINDOW_TYPE_DND ||
 	get_window_desktop(win) == -1) {
+      type_ok = FALSE;
+      break;
+    }
+  num = 0;
+  Atom *state = (Atom *) property (win, a_NET_WM_STATE, XA_ATOM, &num);
+  for (int i = 0; i < num; i++)
+    if (state[i] == a_NET_WM_STATE_SKIP_TASKBAR) {
       type_ok = FALSE;
       break;
     }
