@@ -166,7 +166,8 @@ static gboolean show_window (Window win)
 	*type == a_NET_WM_WINDOW_TYPE_TOOLTIP ||
 	*type == a_NET_WM_WINDOW_TYPE_NOTIFICATION ||
 	*type == a_NET_WM_WINDOW_TYPE_COMBO ||
-	*type == a_NET_WM_WINDOW_TYPE_DND) {
+	*type == a_NET_WM_WINDOW_TYPE_DND ||
+	get_window_desktop(win) == -1) {
       type_ok = FALSE;
       break;
     }
