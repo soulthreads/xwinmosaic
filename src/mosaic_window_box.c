@@ -116,6 +116,7 @@ static GObject*	mosaic_window_box_constructor (GType gtype,
     box->desktop = get_window_desktop (box->xwindow);
   }
   box->show_desktop = FALSE;
+  box->show_titles = TRUE;
   box->has_icon = FALSE;
   box->colorize = TRUE;
   box->color_offset = 0;
@@ -254,7 +255,6 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
     else
       sprintf (desk, "A");
 
-    pango_layout_set_ellipsize (pl, PANGO_ELLIPSIZE_END);
     pango_layout_set_text (pl, desk, -1);
     pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
     pango_font_description_set_weight (pfd, PANGO_WEIGHT_BOLD);
@@ -297,32 +297,35 @@ mosaic_window_box_paint (MosaicWindowBox *box, cairo_t *cr, gint width, gint hei
   }
 
   // Draw name.
-  pango_layout_set_text (pl, MOSAIC_BOX (box)->name, -1);
-  pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
-  pango_layout_set_font_description (pl, pfd);
-  pango_font_description_free (pfd);
+  if (box->show_titles) {
+    pango_layout_set_ellipsize (pl, PANGO_ELLIPSIZE_END);
+    pango_layout_set_text (pl, MOSAIC_BOX (box)->name, -1);
+    pfd = pango_font_description_from_string (MOSAIC_BOX (box)->font);
+    pango_layout_set_font_description (pl, pfd);
+    pango_font_description_free (pfd);
 
-  int pwidth, pheight;
-  pango_layout_get_pixel_size (pl, &pwidth, &pheight);
+    int pwidth, pheight;
+    pango_layout_get_pixel_size (pl, &pwidth, &pheight);
 
-  if (has_focus)
-    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-  else
-    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
-
-  if (text_offset > 0) {
-    if ((width-pwidth)/2 > text_offset+5)
-      cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+    if (has_focus)
+      cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
     else
-      cairo_move_to (cr, text_offset+5, (height - pheight)/2);
-  } else {
-    if (width-5 > pwidth)
-      cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
-    else
-      cairo_move_to (cr, 5, (height - pheight)/2);
+      cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+
+    if (text_offset > 0) {
+      if ((width-pwidth)/2 > text_offset+5)
+	cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+      else
+	cairo_move_to (cr, text_offset+5, (height - pheight)/2);
+    } else {
+      if (width-5 > pwidth)
+	cairo_move_to (cr, (width - pwidth)/2, (height - pheight)/2);
+      else
+	cairo_move_to (cr, 5, (height - pheight)/2);
+    }
+
+    pango_cairo_show_layout (cr, pl);
   }
-
-  pango_cairo_show_layout (cr, pl);
   g_object_unref (pl);
 
   mosaic_box_paint (MOSAIC_BOX (box), cr, width, height);
@@ -621,6 +624,13 @@ void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_des
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->show_desktop = show_desktop;
+}
+
+void mosaic_window_box_set_show_titles (MosaicWindowBox *box, gboolean show_titles)
+{
+  g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
+
+  box->show_titles = show_titles;
 }
 
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset)
