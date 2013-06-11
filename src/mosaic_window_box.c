@@ -418,6 +418,7 @@ void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box)
     mosaic_window_box_set_name (box, wname);
     g_free (wname);
   }
+  gtk_widget_set_tooltip_text (GTK_WIDGET(box), MOSAIC_BOX(box)->name);
 }
 
 void mosaic_window_box_update_opt_name (MosaicWindowBox *box)
