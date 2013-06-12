@@ -418,7 +418,9 @@ void mosaic_window_box_update_xwindow_name (MosaicWindowBox *box)
     mosaic_window_box_set_name (box, wname);
     g_free (wname);
   }
-  gtk_widget_set_tooltip_text (GTK_WIDGET(box), MOSAIC_BOX(box)->name);
+
+  if (gtk_widget_get_has_tooltip(GTK_WIDGET(box)))
+    gtk_widget_set_tooltip_text (GTK_WIDGET(box), MOSAIC_BOX(box)->name);
 }
 
 void mosaic_window_box_update_opt_name (MosaicWindowBox *box)
@@ -632,6 +634,8 @@ void mosaic_window_box_set_show_titles (MosaicWindowBox *box, gboolean show_titl
   g_return_if_fail (MOSAIC_IS_WINDOW_BOX (box));
 
   box->show_titles = show_titles;
+  if (!show_titles)
+    gtk_widget_set_tooltip_text (GTK_WIDGET(box), MOSAIC_BOX(box)->name);
 }
 
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset)
