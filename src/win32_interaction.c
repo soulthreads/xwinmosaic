@@ -8,27 +8,25 @@
 WINUSERAPI VOID WINAPI SwitchToThisWindow(HWND,BOOL);
 
 
-static HWND* window_list;
+static HWND window_list[1024];
 
 char* get_window_name(HWND win)
 {
-  TCHAR* title;
-  title = malloc(256*sizeof(TCHAR));
+  TCHAR title[256];
   GetWindowText(win, title, 255);
   return g_locale_to_utf8(title, lstrlen(title), NULL, NULL, NULL);
 }
 
 char* get_window_class(HWND win)
 {
-  TCHAR* class;
-  class = malloc(256*sizeof(TCHAR));
+  TCHAR class[256];
   RealGetWindowClass(win, class, 255);
   return g_locale_to_utf8(class, lstrlen(class), NULL, NULL, NULL);
 }
 
 BOOL CALLBACK EnumWindowsProc(
   HWND hwnd,
-  LPARAM list
+  LPARAM num
 )
 {
   WINDOWINFO pwi;
@@ -37,8 +35,7 @@ BOOL CALLBACK EnumWindowsProc(
 
   if(((pwi.dwStyle)&WS_VISIBLE) && (pwi.dwStyle&WS_TILEDWINDOW) && (pwi.dwStyle&WS_TABSTOP)){
     if(g_strcmp0(get_window_name(hwnd), "XWinMosaic")){
-      *window_list = hwnd;
-      window_list++;
+      window_list[(*((int*)num))++] = hwnd;
     }
   }
   return 1;
@@ -46,12 +43,10 @@ BOOL CALLBACK EnumWindowsProc(
 
 HWND* get_windows_list()
 {
-  HWND *list;
-  window_list = malloc(sizeof(HWND)*1024);
-  list = window_list;
-   memset(window_list, 0, sizeof(HWND)*1024);
-  EnumWindows(EnumWindowsProc, 0);
-  return list;
+  int num = 0;
+  EnumWindows(EnumWindowsProc, (int)&num);
+  window_list[num] = NULL;
+  return window_list;
 }
 
 gboolean already_opened()
