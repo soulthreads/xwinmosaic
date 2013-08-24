@@ -49,7 +49,7 @@ HWND* get_windows_list()
   HWND *list;
   window_list = malloc(sizeof(HWND)*1024);
   list = window_list;
-  //  memset(window_list, 0, sizeof(HWND)*1024);
+   memset(window_list, 0, sizeof(HWND)*1024);
   EnumWindows(EnumWindowsProc, 0);
   return list;
 }
@@ -98,9 +98,14 @@ GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height)
 
 HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
 {
+  WINDOWINFO pwi;
   HWND* pre_win_list = get_windows_list();
   int size = 0;
   while(*(pre_win_list + size)) {
+    GetWindowInfo(*(pre_win_list + size), &pwi);
+    printf("%s, %s, %x\n", get_window_name(*(pre_win_list + size)),
+           get_window_class(*(pre_win_list + size)),
+           pwi.dwStyle);
     size++;
   }
   *nitems = size;
