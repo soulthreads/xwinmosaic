@@ -53,8 +53,6 @@ gboolean already_opened()
 {
   gboolean opened = FALSE;
   HWND *win_list = get_windows_list();
-  HWND *_win_list;
-  _win_list = win_list;
   while(*win_list++)
   {
     gchar* wmclass = get_window_class(*win_list);
@@ -66,7 +64,6 @@ gboolean already_opened()
     if(wmclass)
       g_free(wmclass);
   }
-  free(_win_list);
   return opened;
 }
 
