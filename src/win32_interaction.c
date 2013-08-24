@@ -35,7 +35,7 @@ BOOL CALLBACK EnumWindowsProc(
   pwi.cbSize = sizeof(WINDOWINFO);
   GetWindowInfo(hwnd, &pwi);
 
-  if(((pwi.dwStyle)&WS_VISIBLE) && (pwi.dwStyle&WS_TILEDWINDOW)){
+  if(((pwi.dwStyle)&WS_VISIBLE) && (pwi.dwStyle&WS_TILEDWINDOW) && (pwi.dwStyle&WS_TABSTOP)){
     if(g_strcmp0(get_window_name(hwnd), "XWinMosaic")){
       *window_list = hwnd;
       window_list++;
@@ -49,7 +49,7 @@ HWND* get_windows_list()
   HWND *list;
   window_list = malloc(sizeof(HWND)*1024);
   list = window_list;
-  memset(window_list, 0, sizeof(HWND)*1024);
+  //  memset(window_list, 0, sizeof(HWND)*1024);
   EnumWindows(EnumWindowsProc, 0);
   return list;
 }
@@ -100,21 +100,12 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
 {
   HWND* pre_win_list = get_windows_list();
   int size = 0;
-  while(1) {
-    if(*(pre_win_list + size))
-    {
-//      printf("%s\n", get_window_name(*(pre_win_list + size)));
-      size++;
-    }
-    else
-      break;
+  while(*(pre_win_list + size)) {
+    size++;
   }
   *nitems = size;
   myown = pre_win_list;
   active_win = pre_win_list+1;
-//  printf("%d windows\n", size);
-  /* Looks like WinAPI returns already sorted by last access time
-     window list */
   return pre_win_list;
 }
 
