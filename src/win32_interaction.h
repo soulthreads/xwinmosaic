@@ -25,4 +25,6 @@ gboolean already_opened ();
 
 HWND* get_windows_list();
 
+void install_alt_tab_hook ();
+
 #endif /* WIN32_INTERACTION_H */

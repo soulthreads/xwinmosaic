@@ -117,3 +117,35 @@ void switch_to_window(HWND win)
   else
     SwitchToThisWindow(win, FALSE);
 }
+
+LRESULT CALLBACK alt_tab_hook (INT nCode, WPARAM wParam, LPARAM lParam)
+{
+    // By returning a non-zero value from the hook procedure, the
+    // message does not get passed to the target window
+  KBDLLHOOKSTRUCT *pkbhs = (KBDLLHOOKSTRUCT *) lParam;
+  switch (nCode)
+    {
+    case HC_ACTION:
+      {
+        // Disable ALT+TAB
+        if (pkbhs->vkCode == VK_TAB && pkbhs->flags & LLKHF_ALTDOWN) {
+          if (pkbhs->flags & LLKHF_UP)
+            g_printerr("Alt-Tab up!\n");
+          else
+            g_printerr("Alt-Tab pressed!\n");
+          return 1;
+        }
+        break;
+      }
+      
+    default:
+      break;
+    }
+  return CallNextHookEx (NULL, nCode, wParam, lParam);
+}
+
+void install_alt_tab_hook ()
+{
+  if(!SetWindowsHookEx(WH_KEYBOARD_LL, alt_tab_hook, NULL, 0))
+    g_printerr("Alt+Tab hook setup failed");
+}
