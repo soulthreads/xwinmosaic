@@ -58,6 +58,7 @@ static struct {
   gboolean colorize;
   gboolean show_icons;
   gboolean show_desktop;
+  gboolean show_titles;
   guint icon_size;
   gchar *font;
   gboolean read_stdin;
@@ -98,6 +99,8 @@ static GOptionEntry entries [] =
     "Turn off showing icons", NULL },
   { "no-desktops", 'D', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.show_desktop,
     "Turn off showing desktop number", NULL },
+    { "no-titles", 'T', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.show_titles,
+    "Turn off showing titles", NULL },
   { "screenshot", 'S', 0, G_OPTION_ARG_NONE, &options.screenshot,
     "Get screenshot and set it as a background (for WMs that do not support XShape)", NULL },
   { "at-pointer", 'P', 0, G_OPTION_ARG_NONE, &options.at_pointer,
@@ -472,6 +475,7 @@ static void update_box_list ()
 #ifdef X11
 	mosaic_window_box_set_show_desktop (MOSAIC_WINDOW_BOX (boxes[i]), options.show_desktop);
 #endif
+	mosaic_window_box_set_show_titles (MOSAIC_WINDOW_BOX (boxes[i]), options.show_titles);
 	if (options.show_icons)
 	  mosaic_window_box_setup_icon_from_wm (MOSAIC_WINDOW_BOX(boxes[i]), options.icon_size, options.icon_size);
       } else {
@@ -939,6 +943,7 @@ static void read_config ()
   options.color_offset = 0;
   options.show_icons = TRUE;
   options.show_desktop = TRUE;
+  options.show_titles = TRUE;
   options.icon_size = 16;
   options.font = g_strdup ("Sans 10");
   options.read_stdin = FALSE;
@@ -972,6 +977,8 @@ static void read_config ()
       options.show_icons = g_key_file_get_boolean (config, group, "show_icons", &error);
     if (g_key_file_has_key (config, group, "show_desktop", &error))
       options.show_desktop = g_key_file_get_boolean (config, group, "show_desktop", &error);
+    if (g_key_file_has_key (config, group, "show_titles", &error))
+      options.show_titles = g_key_file_get_boolean (config, group, "show_titles", &error);
     if (g_key_file_has_key (config, group, "icon_size", &error))
       options.icon_size = g_key_file_get_integer (config, group, "icon_size", &error);
     if (g_key_file_has_key (config, group, "font", &error))
@@ -1007,6 +1014,7 @@ static void write_default_config ()
       fprintf (config, "color_offset = %d\n", options.color_offset);
       fprintf (config, "show_icons = %s\n", (options.show_icons) ? "true" : "false");
       fprintf (config, "show_desktop = %s\n", (options.show_desktop) ? "true" : "false");
+      fprintf (config, "show_titles = %s\n", (options.show_titles) ? "true" : "false");
       fprintf (config, "icon_size = %d\n", options.icon_size);
       fprintf (config, "font = %s\n", options.font);
       fprintf (config, "screenshot = %s\n", (options.screenshot) ? "true" : "false");

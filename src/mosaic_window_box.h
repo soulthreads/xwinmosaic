@@ -40,6 +40,7 @@ struct _MosaicWindowBox
 
   gchar *opt_name;
   gboolean show_desktop;
+  gboolean show_titles;
   gint desktop;
 
   gboolean colorize;
@@ -83,6 +84,7 @@ void mosaic_window_box_setup_icon_from_theme (MosaicWindowBox *box, const gchar 
 void mosaic_window_box_setup_icon_from_file (MosaicWindowBox *box, const gchar *file, guint req_width, guint req_height);
 void mosaic_window_box_set_colorize (MosaicWindowBox *box, gboolean colorize);
 void mosaic_window_box_set_show_desktop (MosaicWindowBox *box, gboolean show_desktop);
+void mosaic_window_box_set_show_titles (MosaicWindowBox *box, gboolean show_titles);
 void mosaic_window_box_set_color_offset (MosaicWindowBox *box, guchar color_offset);
 void mosaic_window_box_set_color_from_string (MosaicWindowBox *box, const gchar *color);
 gint mosaic_window_box_get_desktop (MosaicWindowBox *box);

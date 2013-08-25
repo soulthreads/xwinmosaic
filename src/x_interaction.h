@@ -46,6 +46,9 @@ Atom a_NET_WM_WINDOW_TYPE_COMBO;
 Atom a_NET_WM_WINDOW_TYPE_DND;
 Atom a_NET_WM_WINDOW_TYPE_NORMAL;
 
+Atom a_NET_WM_STATE;
+Atom a_NET_WM_STATE_SKIP_TASKBAR;
+
 
 void atoms_init ();
 void* property (Window win, Atom prop, Atom type, int *nitems);
