@@ -1083,3 +1083,13 @@ static gboolean parse_format (Entry* entry, char *data)
   g_strchug(entry->opt_name);
   return TRUE;
 }
+
+void alt_tab_event (gboolean shift) //FIXME: focus stops on last widget
+                                    //and does not wrap around like if
+                                    //the real Tab key was pressed
+{
+  if(!shift)
+    gtk_widget_child_focus (layout, GTK_DIR_TAB_FORWARD);
+  else
+    gtk_widget_child_focus (layout, GTK_DIR_TAB_BACKWARD);
+}
