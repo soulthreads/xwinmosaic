@@ -1114,6 +1114,19 @@ GtkWidget* get_topmost_box ()
   return topmost;
 }
 
+GtkWidget* get_bottommost_box ()
+{
+  GtkWidget* bottommost = boxes[0];
+  int i = 0;
+  while(boxes[i]) {
+    if((boxes[i]->allocation.x >= bottommost->allocation.x) ||
+       (boxes[i]->allocation.y >= bottommost->allocation.y))
+      bottommost = boxes[i];
+    i++;
+  }
+  return bottommost;
+}
+
 void alt_tab_event (gboolean shift) //FIXME: focus stops on last widget
                                     //and does not wrap around like if
                                     //the real Tab key was pressed
@@ -1126,7 +1139,7 @@ void alt_tab_event (gboolean shift) //FIXME: focus stops on last widget
         gtk_widget_grab_focus (get_topmost_box ());
     } else {
       if (!gtk_widget_child_focus (layout, GTK_DIR_TAB_BACKWARD))
-        g_printerr ("Bound");
+        gtk_widget_grab_focus (get_bottommost_box ());
     }
   } else {
     update_box_list();
