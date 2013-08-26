@@ -63,6 +63,7 @@ static struct {
   gchar *font;
   gboolean read_stdin;
   gboolean permissive;
+  gboolean persistent;
   gboolean format;
   gboolean screenshot;
   guchar color_offset;
@@ -85,6 +86,8 @@ typedef struct {
 
 static GOptionEntry entries [] =
 {
+  { "persistent", 'R', 0, G_OPTION_ARG_NONE, &options.persistent,
+    "Make XWinMosaic acts like Alt-Tab switcher", NULL },
   { "read-stdin", 'r', 0, G_OPTION_ARG_NONE, &options.read_stdin,
     "Read items from stdin (and print selected item to stdout)", NULL },
   { "permissive", 'p', 0, G_OPTION_ARG_NONE, &options.permissive,
@@ -205,8 +208,10 @@ int main (int argc, char **argv)
 
   if (options.color_file)
     read_colors ();
-
-  install_alt_tab_hook();
+  if (options.persistent) {
+      g_printerr ("Installing Alt-Tab hook");
+      install_alt_tab_hook();
+  }
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
@@ -257,7 +262,7 @@ int main (int argc, char **argv)
 /**/
   gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE);
   g_signal_connect (G_OBJECT (window), "focus-out-event",
-		    G_CALLBACK (on_focus_change), NULL);
+        	    G_CALLBACK (on_focus_change), NULL);
 /**/
   layout = gtk_layout_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (window), layout);
@@ -291,7 +296,7 @@ int main (int argc, char **argv)
   g_signal_connect (G_OBJECT (window), "key-press-event",
 		    G_CALLBACK (on_key_press), NULL);
   g_signal_connect_swapped(G_OBJECT (window), "destroy",
-			   G_CALLBACK(gtk_main_quit), NULL);
+        		   G_CALLBACK(gtk_main_quit), NULL);
 
   if (!options.screenshot) {
     window_shape_bitmap = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 1);
@@ -302,6 +307,9 @@ int main (int argc, char **argv)
   gtk_widget_show_all (window);
   gtk_widget_hide (search);
   gtk_window_present (GTK_WINDOW (window));
+  
+  if (options.persistent)
+    gtk_widget_hide (window);
 
   GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
 #ifdef X11
@@ -425,7 +433,10 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
   } else {
     puts (mosaic_window_box_get_name (box));
   }
-  gtk_main_quit ();
+  if (options.persistent)
+    gtk_widget_hide (window);
+  else
+    gtk_main_quit ();
 }
 
 static void update_box_list ()
@@ -553,7 +564,10 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
       gtk_widget_hide (search);
       mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
     } else {
-      gtk_main_quit ();
+      if (options.persistent)
+        gtk_widget_hide (window);
+      else
+        gtk_main_quit ();
     }
     break;
   case GDK_Return:
@@ -1037,7 +1051,10 @@ static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer d
     /* workaround for awesome wm and its unexpected focus changes */
     if (options.screenshot && !key_pressed)
       return;
-    gtk_main_quit ();
+    if (options.persistent)
+      gtk_widget_hide (window);
+    else
+      gtk_main_quit ();
   }
 }
 
@@ -1084,12 +1101,37 @@ static gboolean parse_format (Entry* entry, char *data)
   return TRUE;
 }
 
+GtkWidget* get_topmost_box ()
+{
+  GtkWidget* topmost = boxes[0];
+  int i = 0;
+  while(boxes[i]) {
+    if((boxes[i]->allocation.x <= topmost->allocation.x) &&
+       (boxes[i]->allocation.y <= topmost->allocation.y))
+      topmost = boxes[i];
+    i++;
+  }
+  return topmost;
+}
+
 void alt_tab_event (gboolean shift) //FIXME: focus stops on last widget
                                     //and does not wrap around like if
                                     //the real Tab key was pressed
 {
-  if(!shift)
-    gtk_widget_child_focus (layout, GTK_DIR_TAB_FORWARD);
-  else
-    gtk_widget_child_focus (layout, GTK_DIR_TAB_BACKWARD);
+  gboolean is_visible = FALSE;
+  g_object_get (window, "visible", &is_visible, NULL);
+  if(is_visible) {
+    if(!shift) {
+      if (!gtk_widget_child_focus (layout, GTK_DIR_TAB_FORWARD))
+        gtk_widget_grab_focus (get_topmost_box ());
+    } else {
+      if (!gtk_widget_child_focus (layout, GTK_DIR_TAB_BACKWARD))
+        g_printerr ("Bound");
+    }
+  } else {
+    update_box_list();
+    draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
+                 options.box_width, options.box_height);
+    gtk_widget_show (window);
+  }
 }
