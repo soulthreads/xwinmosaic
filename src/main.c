@@ -208,10 +208,13 @@ int main (int argc, char **argv)
 
   if (options.color_file)
     read_colors ();
+
+#ifdef WIN32
   if (options.persistent) {
       g_printerr ("Installing Alt-Tab hook");
       install_alt_tab_hook();
   }
+#endif
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "XWinMosaic");
