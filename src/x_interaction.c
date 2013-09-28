@@ -120,10 +120,15 @@ char* get_window_name (Window win)
 
   char *net_wm_name = (char *) property (win, a_NET_WM_NAME, a_UTF8_STRING, &length);
   if (net_wm_name && length)
-      return net_wm_name;
+    return net_wm_name;
   XFree (net_wm_name);
 
- char *wm_name = (char *) property (win, a_WM_NAME, XA_STRING, &length);
+ char *wm_name_utf8 = (char *) property (win, a_WM_NAME, a_UTF8_STRING, &length);
+ if (wm_name_utf8 && length)
+   return wm_name_utf8;
+  XFree (wm_name_utf8);
+
+  char *wm_name = (char *) property (win, a_WM_NAME, XA_STRING, &length);
   if (wm_name && length)
     return wm_name;
   XFree (wm_name);
