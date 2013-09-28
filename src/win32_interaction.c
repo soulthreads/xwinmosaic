@@ -118,7 +118,7 @@ void switch_to_window(HWND win)
     SwitchToThisWindow(win, FALSE);
 }
 
-void alt_tab_event (gboolean shift);
+void tab_event (gboolean shift);
 
 LRESULT CALLBACK alt_tab_hook (INT nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -134,7 +134,7 @@ LRESULT CALLBACK alt_tab_hook (INT nCode, WPARAM wParam, LPARAM lParam)
 
         if (pkbhs->vkCode == VK_TAB && pkbhs->flags & LLKHF_ALTDOWN) {
           if (!(pkbhs->flags & LLKHF_UP))
-            alt_tab_event(isShiftPressed);
+            tab_event(isShiftPressed);
           return 1;
         }
         break;

@@ -30,6 +30,7 @@ static Window *wins;
 static gchar **in_items; // If we read from stdin.
 static int wsize = 0;
 static GtkWidget **boxes;
+static guint current_box = 0;
 static GtkWidget *layout;
 static GtkWidget *search;
 static GtkWidget **filtered_boxes;
@@ -143,6 +144,7 @@ static void write_default_config ();
 static void on_focus_change (GtkWidget *widget, GdkEventFocus *event, gpointer data);
 static void read_colors ();
 static gboolean parse_format (Entry *entry, gchar *data);
+void tab_event (gboolean shift);
 
 int main (int argc, char **argv)
 {
@@ -584,7 +586,12 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
   case GDK_Up:
   case GDK_Right:
   case GDK_Down:
+    break;
   case GDK_Tab:
+    tab_event(FALSE);
+    return TRUE;
+  case GDK_ISO_Left_Tab:
+    tab_event(TRUE);
     break;
   case GDK_End:
     if (options.permissive) {
@@ -649,7 +656,20 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
       }
       return FALSE;
     }
-
+    
+    /* if(event->state & GDK_SHIFT_MASK) { */
+    /*   switch(event->keyval) { */
+    /*   case GDK_Tab: */
+    /*     { */
+    /*       g_printerr("Shift-Tab\n"); */
+    /*       tab_event(TRUE); */
+    /*       return TRUE; */
+    /*     } */
+    /*   default: */
+    /*     g_printerr("keyval = %d\n", event->keyval); */
+    /*   } */
+    /* } */
+    
     if (options.vim_mode && !gtk_widget_get_visible (search)) {
       switch (event->keyval) {
       case GDK_h:
@@ -1104,45 +1124,26 @@ static gboolean parse_format (Entry* entry, char *data)
   return TRUE;
 }
 
-GtkWidget* get_topmost_box ()
-{
-  GtkWidget* topmost = boxes[0];
-  int i = 0;
-  while(boxes[i]) {
-    if((boxes[i]->allocation.x <= topmost->allocation.x) &&
-       (boxes[i]->allocation.y <= topmost->allocation.y))
-      topmost = boxes[i];
-    i++;
-  }
-  return topmost;
-}
-
-GtkWidget* get_bottommost_box ()
-{
-  GtkWidget* bottommost = boxes[0];
-  int i = 0;
-  while(boxes[i]) {
-    if((boxes[i]->allocation.x >= bottommost->allocation.x) ||
-       (boxes[i]->allocation.y >= bottommost->allocation.y))
-      bottommost = boxes[i];
-    i++;
-  }
-  return bottommost;
-}
-
-void alt_tab_event (gboolean shift) //FIXME: focus stops on last widget
-                                    //and does not wrap around like if
-                                    //the real Tab key was pressed
+void tab_event (gboolean shift) //FIXME: put prototype for this function
+                                //in some header file
 {
   gboolean is_visible = FALSE;
   g_object_get (window, "visible", &is_visible, NULL);
   if(is_visible) {
     if(!shift) {
-      if (!gtk_widget_child_focus (layout, GTK_DIR_TAB_FORWARD))
-        gtk_widget_grab_focus (get_topmost_box ());
+      if(current_box < wsize-1) {
+        gtk_widget_grab_focus (boxes[++current_box]);
+      } else {
+        gtk_widget_grab_focus (boxes[0]);
+        current_box = 0;
+      }
     } else {
-      if (!gtk_widget_child_focus (layout, GTK_DIR_TAB_BACKWARD))
-        gtk_widget_grab_focus (get_bottommost_box ());
+      if(current_box == 0) {
+        gtk_widget_grab_focus(boxes[wsize-1]);
+        current_box = wsize-1;
+      } else {
+        gtk_widget_grab_focus(boxes[--current_box]);
+      }
     }
   } else {
     update_box_list();
