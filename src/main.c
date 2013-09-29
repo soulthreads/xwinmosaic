@@ -30,7 +30,6 @@ static Window *wins;
 static gchar **in_items; // If we read from stdin.
 static int wsize = 0;
 static GtkWidget **boxes;
-static guint current_box = 0;
 static GtkWidget *layout;
 static GtkWidget *search;
 static GtkWidget **filtered_boxes;
@@ -592,6 +591,7 @@ static gboolean on_key_press (GtkWidget *widget, GdkEventKey *event, gpointer da
     return TRUE;
   case GDK_ISO_Left_Tab:
     tab_event(TRUE);
+    return TRUE;
     break;
   case GDK_End:
     if (options.permissive) {
@@ -1130,21 +1130,29 @@ void tab_event (gboolean shift) //FIXME: put prototype for this function
   gboolean is_visible = FALSE;
   g_object_get (window, "visible", &is_visible, NULL);
   if(is_visible) {
-    if(!shift) {
-      if(current_box < wsize-1) {
-        gtk_widget_grab_focus (boxes[++current_box]);
-      } else {
-        gtk_widget_grab_focus (boxes[0]);
-        current_box = 0;
-      }
+    GtkWidget **bs;
+    guint bsize = 0;
+    if(gtk_widget_get_visible (search)) {
+      bs = filtered_boxes;
+      bsize = filtered_size;
     } else {
-      if(current_box == 0) {
-        gtk_widget_grab_focus(boxes[wsize-1]);
-        current_box = wsize-1;
-      } else {
-        gtk_widget_grab_focus(boxes[--current_box]);
-      }
+      bs = boxes;
+      bsize = wsize;
     }
+    // Calculate current box by straightforward pointer comprasion
+    guint current_box = 0;
+    MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
+    for (guint i = 0; i < bsize; i++)
+      if (MOSAIC_WINDOW_BOX(box) == MOSAIC_WINDOW_BOX(bs[i])) {
+	current_box = i;
+	break;
+      }
+    if(!shift) {
+	current_box < bsize-1 ? current_box++ : (current_box = 0);
+    } else {
+	current_box > 0 ? current_box-- : (current_box = bsize-1);
+    }
+    gtk_widget_grab_focus (bs[current_box]);
   } else {
     update_box_list();
     draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
