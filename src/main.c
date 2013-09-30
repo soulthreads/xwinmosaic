@@ -1139,6 +1139,7 @@ void tab_event (gboolean shift) //FIXME: put prototype for this function
       bs = boxes;
       bsize = wsize;
     }
+    if (bsize == 0) return; // nothing to switch between
     // Calculate current box by straightforward pointer comprasion
     guint current_box = 0;
     MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
