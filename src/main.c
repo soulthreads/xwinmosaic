@@ -431,16 +431,19 @@ static void draw_mosaic (GtkLayout *where,
 static void on_rect_click (GtkWidget *widget, gpointer data)
 {
   MosaicWindowBox *box = MOSAIC_WINDOW_BOX (widget);
+  Window win_to_switch;
   if (!options.read_stdin) {
-    Window win = mosaic_window_box_get_xwindow (box);
-    switch_to_window (win);
+    win_to_switch = mosaic_window_box_get_xwindow (box);
   } else {
     puts (mosaic_window_box_get_name (box));
   }
-  if (options.persistent)
-    gtk_widget_hide (window);
-  else
+  gtk_widget_hide (window);
+  if (!options.read_stdin) {
+    switch_to_window (win_to_switch);
+  }
+  if (!options.persistent) {
     gtk_main_quit ();
+  }
 }
 
 static void update_box_list ()
