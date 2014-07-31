@@ -1,7 +1,7 @@
 XWinMosaic
 ==========
 
-X11 window switcher that draws windows list as colour mosaic
+X11 window switcher that draws windows list as a colourful mosaic
 ------------------------------------------------------------
 
 Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html), but written in C + GTK+2, uses nice-looking colours and has some set of helpful features.
@@ -11,7 +11,7 @@ Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-con
 Use arrow keys (also `C-n`, `C-p`, `C-f`, `C-b` in default mode, `hjkl` in vim mode) or mouse to navigate through windows.
 Start typing to search for required window.
 
-Config file is created automatically on first program run and stored in `~/.config/xwinmosaic/config`.
+Config file is created automatically on a first program run and stored in `~/.config/xwinmosaic/config`.
 
 ### Usage:
     Usage:
@@ -56,7 +56,7 @@ Config file is created automatically on first program run and stored in `~/.conf
 
 ### Installation:
 
-* Debian/Ubuntu: https://launchpad.net/~soulthreads/+archive/xwinmosaic/
+* Debian/Ubuntu: https://launchpad.net/~soulthreads/+archive/xwinmosaic/ (might be old, better build it yourself)
 * ArchLinux: https://aur.archlinux.org/packages.php?ID=59660
 * Gentoo: https://github.com/funtoo/flora/tree/master/x11-apps/xwinmosaic
 * openSUSE (packages for 11.4, 12.1 and Tumbleweed): http://download.opensuse.org/repositories/home:/ZaWertun:/gtk2/
