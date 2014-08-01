@@ -212,7 +212,9 @@ int main (int argc, char **argv)
 
 #ifdef WIN32
   if (options.persistent) {
+#ifdef DEBUG
       g_printerr ("Installing Alt-Tab hook");
+#endif
       install_alt_tab_hook();
   }
 #endif
@@ -441,7 +443,12 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
   if (!options.read_stdin) {
     switch_to_window (win_to_switch);
   }
-  if (!options.persistent) {
+  if (options.persistent) {
+    if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search))) || gtk_widget_get_visible (search)) {
+      gtk_widget_hide (search);
+      mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
+    }
+  } else {
     gtk_main_quit ();
   }
 }
@@ -1162,5 +1169,8 @@ void tab_event (gboolean shift) //FIXME: put prototype for this function
     draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
                  options.box_width, options.box_height);
     gtk_widget_show (window);
+#ifdef WIN32
+    raise_window (gdk_win32_drawable_get_handle(  window->window ));
+#endif
   }
 }

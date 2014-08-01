@@ -91,6 +91,11 @@ GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height)
   return gicon;
 }
 
+void raise_window(HWND win)
+{
+  SwitchToThisWindow(win, TRUE);
+}
+
 HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
 {
   WINDOWINFO pwi;
@@ -98,9 +103,11 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
   int size = 0;
   while(*(pre_win_list + size)) {
     GetWindowInfo(*(pre_win_list + size), &pwi);
+#ifdef DEBUG
     printf("%s, %s, %x\n", get_window_name(*(pre_win_list + size)),
            get_window_class(*(pre_win_list + size)),
            pwi.dwStyle);
+#endif
     size++;
   }
   *nitems = size;

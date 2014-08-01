@@ -18,6 +18,7 @@
 char *get_window_name(HWND win);
 char *get_window_class(HWND win);
 HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems);
+void raise_window(HWND win);
 void switch_to_window(HWND win);
 GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height);
 
