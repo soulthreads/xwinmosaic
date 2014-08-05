@@ -120,7 +120,7 @@ void switch_to_window(HWND win)
      (wp.showCmd == SW_SHOWMINNOACTIVE))
     ShowWindow(win, SW_RESTORE);
   else
-    SwitchToThisWindow(win, FALSE);
+    SetForegroundWindow (win);
 }
 
 void tab_event (gboolean shift);
