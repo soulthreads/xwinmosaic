@@ -98,9 +98,11 @@ HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
   int size = 0;
   while(*(pre_win_list + size)) {
     GetWindowInfo(*(pre_win_list + size), &pwi);
-    printf("%s, %s, %x\n", get_window_name(*(pre_win_list + size)),
+#ifdef DEBUG
+    g_printerr ("%s, %s, %x\n", get_window_name(*(pre_win_list + size)),
            get_window_class(*(pre_win_list + size)),
            pwi.dwStyle);
+#endif
     size++;
   }
   *nitems = size;

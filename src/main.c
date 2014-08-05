@@ -212,7 +212,9 @@ int main (int argc, char **argv)
 
 #ifdef WIN32
   if (options.persistent) {
+#ifdef DEBUG
       g_printerr ("Installing Alt-Tab hook");
+#endif
       install_alt_tab_hook();
   }
 #endif
