@@ -441,7 +441,12 @@ static void on_rect_click (GtkWidget *widget, gpointer data)
   if (!options.read_stdin) {
     switch_to_window (win_to_switch);
   }
-  if (!options.persistent) {
+  if (options.persistent) {
+    if (strlen (mosaic_search_box_get_text (MOSAIC_SEARCH_BOX (search)))) {
+      gtk_widget_hide (search);
+      mosaic_search_box_set_text (MOSAIC_SEARCH_BOX (search), "\0");
+    }
+  } else {
     gtk_main_quit ();
   }
 }
@@ -1143,7 +1148,7 @@ void tab_event (gboolean shift) //FIXME: put prototype for this function
       bsize = wsize;
     }
     if (bsize == 0) return; // nothing to switch between
-    // Calculate current box by straightforward pointer comprasion
+    // Calculate current box by straightforward pointer comparison
     guint current_box = 0;
     MosaicWindowBox* box = MOSAIC_WINDOW_BOX (gtk_window_get_focus (GTK_WINDOW (window)));
     for (guint i = 0; i < bsize; i++)
