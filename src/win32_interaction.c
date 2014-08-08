@@ -32,12 +32,10 @@ BOOL CALLBACK EnumWindowsProc(
   WINDOWINFO pwi;
   pwi.cbSize = sizeof(WINDOWINFO);
   GetWindowInfo(hwnd, &pwi);
-
-if ((pwi.dwStyle & WS_VISIBLE) && ((pwi.dwStyle & WS_TILEDWINDOW) || (pwi.dwStyle & WS_DLGFRAME) || (pwi.dwStyle & WS_TABSTOP)) && (!(pwi.dwStyle & WS_DISABLED)) ){
+if ((pwi.dwStyle & WS_VISIBLE) && !(pwi.dwStyle & WS_DISABLED) && (pwi.dwStyle & WS_SYSMENU))
+{
     if(g_strcmp0(get_window_name(hwnd), "XWinMosaic")){
-      if(g_strcmp0(get_window_class(hwnd), "Shell_TrayWnd")){
         window_list[(*((int*)num))++] = hwnd;
-      }
     }
   }
   return 1;
