@@ -6,8 +6,6 @@
 #include <winuser.h>
 #include <winable.h>
 
-WINUSERAPI VOID WINAPI SwitchToThisWindow(HWND,BOOL);
-
 static HWND window_list[1024];
 
 char* get_window_name(HWND win)
@@ -44,7 +42,7 @@ if ((pwi.dwStyle & WS_VISIBLE) && !(pwi.dwStyle & WS_DISABLED) && (pwi.dwStyle &
 HWND* get_windows_list()
 {
   int num = 0;
-  EnumWindows(EnumWindowsProc, (int)&num);
+  EnumWindows(EnumWindowsProc, (LPARAM)&num);
   window_list[num] = NULL;
   return window_list;
 }
@@ -77,11 +75,11 @@ GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height)
   }
   if(!icon)
   {
-    icon = (HICON)GetClassLongPtr(win, GCL_HICON);
+    icon = (HICON)GetClassLongPtr(win, GCLP_HICON);
   }
   if(!icon)
   {
-    icon = (HICON)GetClassLongPtr(win, GCL_HICONSM);
+    icon = (HICON)GetClassLongPtr(win, GCLP_HICONSM);
   }
   gicon = gdk_win32_icon_to_pixbuf_libgtk_only(icon);
   if (gdk_pixbuf_get_width (gicon) > req_width)
