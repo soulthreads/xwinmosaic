@@ -6,7 +6,7 @@ X11 window switcher that draws windows list as a colourful mosaic
 
 Inspired by [XMonad.Actions.GridSelect](http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html), but written in C + GTK+2, uses nice-looking colours and has some set of helpful features.
 
-![xwinmosaic's screenshot](http://www.linux.org.ru/gallery/7845668.png "Screenshot")
+![xwinmosaic's screenshot](https://www.linux.org.ru/images/591/original.png "Screenshot")
 
 Use arrow keys (also `C-n`, `C-p`, `C-f`, `C-b` in default mode, `hjkl` in vim mode) or mouse to navigate through windows.
 Start typing to search for required window.
