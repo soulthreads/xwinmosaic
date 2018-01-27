@@ -74,6 +74,7 @@ static struct {
   gint center_x;
   gint center_y;
   gchar *color_file;
+  gint selected;
 } options;
 
 typedef struct {
@@ -110,6 +111,8 @@ static GOptionEntry entries [] =
     "Place center of mosaic at pointer position.", NULL },
   { "box-width", 'W', 0, G_OPTION_ARG_INT, &options.box_width,
     "Width of the boxes (default: 200)", "<int>" },
+  { "selected", 's', 0, G_OPTION_ARG_INT, &options.selected,
+    "Initially selected box", "<int>" },
   { "box-height", 'H', 0, G_OPTION_ARG_INT, &options.box_height,
     "Height of the boxes (default: 40)", "<int>" },
   { "icon-size", 'i', 0, G_OPTION_ARG_INT, &options.icon_size,
@@ -334,7 +337,9 @@ int main (int argc, char **argv)
   myown_window = GDK_WINDOW_HWND (gdk_window);
 #endif
   update_box_list ();
-  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize, 0,
+
+  draw_mosaic (GTK_LAYOUT (layout), boxes, wsize,
+               options.selected >= wsize ? 0 : options.selected,
 	       options.box_width, options.box_height);
 
 #ifdef X11
