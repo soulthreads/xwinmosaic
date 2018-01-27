@@ -39,6 +39,7 @@ Config file is created automatically on a first program run and stored in `~/.co
       -T, --no-titles              Turn off showing titles
       -S, --screenshot             Get screenshot and set it as a background (for WMs that do not support XShape)
       -P, --at-pointer             Place center of mosaic at pointer position.
+      -s, --selected=<N>           Select box number N at spawn. (default: 0)
       -W, --box-width=<int>        Width of the boxes (default: 200)
       -H, --box-height=<int>       Height of the boxes (default: 40)
       -i, --icon-size=<int>        Size of window icons (default: 16)
