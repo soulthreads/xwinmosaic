@@ -87,8 +87,9 @@ GdkPixbuf* get_window_icon(HWND win, guint req_width, guint req_height)
   return gicon;
 }
 
-HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems)
+HWND* sorted_windows_list(HWND *myown, HWND *active_win, int *nitems, gboolean only_current)
 {
+  // XXX: Ignoring only_current for now.
   WINDOWINFO pwi;
   HWND* pre_win_list = get_windows_list();
   int size = 0;
