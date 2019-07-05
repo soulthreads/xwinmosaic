@@ -190,32 +190,48 @@ static gboolean show_window (Window win)
   return type_ok;
 }
 
+gboolean filter_window (Window win, Window myown, int32_t cur_desktop, gboolean only_current)
+{
+  if (show_window(win) && (win != myown)) {
+    if (only_current) {
+      return get_window_desktop(win) == cur_desktop;
+    } else {
+      return TRUE;
+    }
+  } else {
+    return FALSE;
+  }
+}
+
+
 // Returns a list of windows (except panels and other "non-normal" windows)
-Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems)
+Window* sorted_windows_list (Window *myown, Window *active_win, int *nitems, gboolean only_current)
 {
   Window root_win = (Window)gdk_x11_get_default_root_xwindow ();
-  int pre_size = 0;
+  int32_t *cur_desktop = (int32_t *) property (root_win, a_NET_CURRENT_DESKTOP, XA_CARDINAL, NULL);
 
+  int pre_size = 0;
   Window *pre_win_list = (Window *) property (root_win, a_NET_CLIENT_LIST, XA_WINDOW, &pre_size);
   if (pre_size) {
     int size = 0;
     // Do not show panels and all-desktop applications in list.
     for (int i = 0; i < pre_size; i++)
-      if ((show_window (pre_win_list[i])) && (pre_win_list[i] != *myown))
-	size++;
+      if (filter_window(pre_win_list[i], *myown, *cur_desktop, only_current))
+        size++;
 
     Window *win_list = (Window *) malloc (size * sizeof (Window));
     // That's actually kinda stupid…
     int offset = 0;
     for (int i = 0; i < pre_size; i++) {
-      if (!(show_window (pre_win_list [i])) || (pre_win_list[i] == *myown)) {
-	offset++;
-	continue;
+      if (!filter_window(pre_win_list[i], *myown, *cur_desktop, only_current)) {
+        offset++;
+        continue;
       }
       win_list[i-offset] = pre_win_list [i];
     }
     XFree (pre_win_list);
-
+    XFree (cur_desktop);
+    
     // active window may not update it's user time.
     int sort_from = 0;
     if (active_win != NULL)
